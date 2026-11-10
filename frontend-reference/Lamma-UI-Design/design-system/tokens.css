@@ -1,0 +1,143 @@
+/* Lamma UI tokens v1 — mirrors Figma variables (Primitives / Color·Light / Spacing & Radius / Motion)
+   Source of truth for the product UI. Brand palette B: olive + apricot. Arabic RTL first. */
+
+/* ---------- Typography v2: "Lamma Latin" (Inter: Latin, digits, symbols) + "Lamma Arabic" (IBM Plex Sans Arabic)
+   Stacked families split by unicode-range: every digit and Latin letter automatically renders in Inter
+   (tabular numbers), every Arabic letter in IBM Plex Sans Arabic. Readex Pro stays for the logo only. */
+@font-face { font-family: "Lamma Latin"; src: url("../assets/fonts/inter-latin-variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-200B, U+2010-206F, U+20AC, U+2122, U+2190-21FF, U+2212, U+2215; }
+@font-face { font-family: "Lamma Arabic"; src: url("../assets/fonts/ibm-plex-sans-arabic-arabic-400.woff2") format("woff2"); font-weight: 400; font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "Lamma Arabic"; src: url("../assets/fonts/ibm-plex-sans-arabic-arabic-500.woff2") format("woff2"); font-weight: 500; font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "Lamma Arabic"; src: url("../assets/fonts/ibm-plex-sans-arabic-arabic-600.woff2") format("woff2"); font-weight: 600; font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "Lamma Arabic"; src: url("../assets/fonts/ibm-plex-sans-arabic-arabic-700.woff2") format("woff2"); font-weight: 700; font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+/* Brand font — logo/marketing only, not loaded unless used */
+@font-face { font-family: "Readex Pro"; src: url("../assets/fonts/ReadexPro-Variable.ttf") format("truetype"); font-weight: 160 700; font-display: swap; }
+/* Fallback tuned toward Plex/Inter metrics to limit layout shift while fonts load */
+@font-face { font-family: "Lamma Fallback"; src: local("Segoe UI"), local("Tahoma"), local("Arial"); size-adjust: 102%; ascent-override: 98%; descent-override: 26%; }
+
+:root {
+  /* ---------- Primitives ---------- */
+  --lamma-olive-50: #F1F3EA;  --lamma-olive-100: #E7E9D8; --lamma-olive-200: #CDD3BC;
+  --lamma-olive-300: #A9B38F; --lamma-olive-400: #7E8C5E; --lamma-olive-500: #5A6B3E;
+  --lamma-olive-600: #3F4F2A; --lamma-olive-700: #344222; --lamma-olive-800: #28331A; --lamma-olive-900: #1F2617;
+  --lamma-apricot-100: #FDEBDB; --lamma-apricot-300: #F8C496; --lamma-apricot-500: #F4A261; --lamma-apricot-700: #B8702E;
+  --lamma-brick-100: #F6E3DD; --lamma-brick-500: #C8553D; --lamma-brick-700: #A3402B;
+  --lamma-cream-100: #F7F3EA; --lamma-white: #FFFFFF;
+  /* v2.1 page canvas: calm sage-mist instead of yellowish cream (easier on the eyes, lets white cards breathe) */
+  --lamma-mist-50: #F7F8F4; --lamma-mist-100: #EFF1EB; --lamma-mist-200: #E4E7DD;
+  --lamma-stone-300: #D9D9C6; --lamma-stone-400: #B9BCA3; --lamma-stone-600: #5E6652;
+  --lamma-green-100: #E4EFE8; --lamma-green-500: #3E8E5E; --lamma-green-700: #2F6E48;
+  --lamma-amber-100: #F9EEDA; --lamma-amber-500: #E0A030; --lamma-amber-700: #8A5A0B;
+  --lamma-red-100: #F6E7E6;   --lamma-red-500: #B83A2E;
+  --lamma-blue-100: #E7EFF4;  --lamma-blue-300: #9DB4C0; --lamma-blue-500: #3A7CA5; --lamma-blue-700: #2B5F82;
+
+  /* ---------- Semantic (Light) ---------- */
+  --lamma-surface-page: var(--lamma-mist-100);
+  --lamma-surface-card: var(--lamma-white);
+  --lamma-surface-muted: var(--lamma-olive-100);
+  --lamma-bg-sidebar: var(--lamma-olive-900);
+  --lamma-bg-attention: var(--lamma-apricot-100);
+  --lamma-bg-selected: var(--lamma-olive-50);
+  --lamma-bg-overlay: rgb(31 38 23 / .42);
+
+  --lamma-text-primary: var(--lamma-olive-900);
+  --lamma-text-secondary: var(--lamma-stone-600);
+  --lamma-text-on-olive: var(--lamma-cream-100);
+  --lamma-text-link: var(--lamma-olive-600);
+  --lamma-text-on-apricot: var(--lamma-olive-900);
+  --lamma-text-brand-accent: var(--lamma-brick-700);
+  --lamma-text-accent-on-dark: var(--lamma-apricot-500);
+
+  --lamma-surface-border: var(--lamma-stone-300);
+  --lamma-surface-border-strong: var(--lamma-stone-400);
+  --lamma-border-focus: var(--lamma-apricot-500);
+
+  --lamma-action-primary: var(--lamma-olive-600);
+  --lamma-action-primary-hover: var(--lamma-olive-700);
+  --lamma-action-primary-pressed: var(--lamma-olive-800);
+  --lamma-action-secondary: var(--lamma-olive-100);
+  --lamma-action-secondary-hover: var(--lamma-olive-200);
+  --lamma-action-accent: var(--lamma-apricot-500);
+  --lamma-action-danger: var(--lamma-red-500);
+
+  --lamma-status-success-fill: var(--lamma-green-500); --lamma-status-success-text: var(--lamma-green-700); --lamma-status-success-bg: var(--lamma-green-100);
+  --lamma-status-warning-fill: var(--lamma-amber-500); --lamma-status-warning-text: var(--lamma-amber-700); --lamma-status-warning-bg: var(--lamma-amber-100);
+  --lamma-status-danger-fill: var(--lamma-red-500);    --lamma-status-danger-text: var(--lamma-red-500);    --lamma-status-danger-bg: var(--lamma-red-100);
+  --lamma-status-info-fill: var(--lamma-blue-500);     --lamma-status-info-text: var(--lamma-blue-700);     --lamma-status-info-bg: var(--lamma-blue-100);
+
+  --lamma-stock-available: var(--lamma-green-500);
+  --lamma-stock-reserved: var(--lamma-blue-500);
+  --lamma-stock-low: var(--lamma-apricot-500);
+  --lamma-stock-out: var(--lamma-red-500);
+  --lamma-money-positive: var(--lamma-green-700);
+  --lamma-money-negative: var(--lamma-red-500);
+
+  --lamma-chart-1: var(--lamma-olive-600); --lamma-chart-2: var(--lamma-apricot-500); --lamma-chart-3: var(--lamma-blue-500);
+  --lamma-chart-4: var(--lamma-stone-400); --lamma-chart-5: var(--lamma-blue-300);    --lamma-chart-6: var(--lamma-olive-900);
+
+  /* ---------- Spacing & radius ---------- */
+  --lamma-space-1: 4px; --lamma-space-2: 8px; --lamma-space-3: 12px; --lamma-space-4: 16px; --lamma-space-5: 20px;
+  --lamma-space-6: 24px; --lamma-space-8: 32px; --lamma-space-10: 40px; --lamma-space-12: 48px; --lamma-space-16: 64px;
+  --lamma-radius-sm: 6px; --lamma-radius-md: 12px; --lamma-radius-lg: 20px; --lamma-radius-pill: 999px;
+
+  /* ---------- Elevation ---------- */
+  --lamma-elevation-1: 0 1px 2px rgb(31 38 23 / .06), 0 4px 12px rgb(31 38 23 / .06);
+  --lamma-elevation-2: 0 2px 6px rgb(31 38 23 / .08), 0 8px 24px rgb(31 38 23 / .12);
+  --lamma-elevation-3: 0 16px 48px rgb(31 38 23 / .18);
+  --lamma-focus-ring: 0 0 0 3px rgb(244 162 97 / .6);
+
+  /* ---------- Typography v2 (text styles) ---------- */
+  --lamma-font: "Lamma Latin", "Lamma Arabic", "Lamma Fallback", "Segoe UI", Tahoma, sans-serif;
+  --lamma-font-brand: "Readex Pro", var(--lamma-font);
+  --lamma-type-display: 700 36px/1.3 var(--lamma-font);
+  --lamma-type-h1: 700 26px/1.35 var(--lamma-font);
+  --lamma-type-h2: 600 18px/1.45 var(--lamma-font);
+  --lamma-type-h3: 600 16px/1.5 var(--lamma-font);
+  --lamma-type-body-lg: 400 16px/1.75 var(--lamma-font);
+  --lamma-type-body: 400 15px/1.7 var(--lamma-font);
+  --lamma-type-body-strong: 500 15px/1.7 var(--lamma-font);
+  --lamma-type-label: 500 14px/1.45 var(--lamma-font);
+  --lamma-type-label-sm: 500 12px/1.45 var(--lamma-font);
+  --lamma-type-caption: 400 13px/1.55 var(--lamma-font);
+  --lamma-type-overline: 600 11px/1.4 var(--lamma-font);
+  --lamma-type-number-hero: 600 40px/1.1 var(--lamma-font);
+  --lamma-type-number-lg: 600 28px/1.15 var(--lamma-font);
+  --lamma-type-number-md: 600 18px/1.3 var(--lamma-font);
+  --lamma-type-number-table: 500 14px/1.5 var(--lamma-font);
+  --lamma-tracking-number: -0.02em;
+
+  /* ---------- Depth & motifs v2 ---------- */
+  --lamma-elevation-card: 0 1px 0 rgb(31 38 23 / .04), 0 1px 3px rgb(31 38 23 / .05);
+  --lamma-elevation-raise: 0 2px 4px rgb(31 38 23 / .05), 0 12px 28px -8px rgb(31 38 23 / .16);
+  --lamma-surface-tint: linear-gradient(180deg, #FBF9F3 0%, #F4F1E7 100%);
+  --lamma-surface-olive-glow: radial-gradient(120% 140% at 100% 0%, #344222 0%, #1F2617 55%);
+  --lamma-dot-grid: radial-gradient(rgb(247 243 234 / .09) 1px, transparent 1px);
+  --lamma-dot-grid-light: radial-gradient(rgb(63 79 42 / .08) 1px, transparent 1px);
+  --lamma-ease-spring: cubic-bezier(.34, 1.4, .64, 1);
+
+  /* ---------- Motion ---------- */
+  --lamma-motion-duration-fast: 120ms;
+  --lamma-motion-duration-base: 200ms;
+  --lamma-motion-duration-slow: 320ms;
+  --lamma-motion-duration-max: 480ms;
+  --lamma-motion-stagger-item: 30ms;
+  --lamma-ease-enter: cubic-bezier(.2, .8, .2, 1);
+  --lamma-ease-exit: cubic-bezier(.4, 0, 1, 1);
+
+  /* ---------- Layout ---------- */
+  --lamma-sidebar-w: 276px;
+  --lamma-sidebar-w-collapsed: 72px;
+  --lamma-topbar-h: 64px;
+  --lamma-content-max: 1440px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --lamma-motion-duration-fast: 0ms; --lamma-motion-duration-base: 0ms;
+    --lamma-motion-duration-slow: 0ms; --lamma-motion-duration-max: 0ms; --lamma-motion-stagger-item: 0ms;
+  }
+}
