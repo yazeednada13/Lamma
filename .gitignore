@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+.vs/
+.idea/
+TestResults/
+*.trx
+
+# Frontend
+node_modules/
+dist/
+coverage/
+
+# Secrets / local config
+.env
+.env.*
+appsettings.*.local.json
+*.pfx

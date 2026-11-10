@@ -54,7 +54,45 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 
 **Dependencies:** Phase 0 approved. **Blocking:** OQ-001 .NET version, OQ-002 auth option, OQ-003 identifier and recovery, OQ-004 membership model, OQ-005 money display, OQ-007 onboarding. Also requires approval of P-001…P-005, P-013…P-015, P-016…P-017 (frontend stack), and P-020.
 
-### Part A — Backend
+### Phase 1 gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-10 | `feature/phase1-foundation` |
+| 2. Plan approved | ☑ | 2026-11-10 | D-086 (approved plan supersedes the draft task list below) |
+| 3. `Backend` started | ☑ | 2026-11-10 | All backend tasks run in one batch (D-087) |
+| 4. Backend pushed (founder confirmed) | ☐ | | migration `InitialIdentityAndBusiness` applied by the founder: ☐ |
+| 5. `Frontend` started | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
+
+### Phase 1 Part A: implementation status (approved plan tasks)
+| ID | Task | Status |
+|---|---|---|
+| 1.A1 | Solution skeleton (.NET 9, central package versions, global.json, .gitignore, .editorconfig) | Done (verified) |
+| 1.A2 | DI composition per layer, ValidateOnBuild/ValidateScopes outside Production | Done (verified) |
+| 1.A3 | Domain foundation: Entity, IBusinessOwned, DomainException, MoneyMath, EnumCode, BusinessTime, MoneyJsonConverter | Done (verified) |
+| 1.A4 | LammaDbContext + IUnitOfWork, conventions (decimal 19,3 · enum codes · UTC), timestamps interceptor, configurations | Done (verified) |
+| 1.A5 | Global exception handler → ProblemDetails (code, Arabic detail, traceId, errors) | Done (verified) |
+| 1.A6 | FluentValidation through a global action filter, Arabic messages, camelCase keys | Done (verified) |
+| 1.A7 | Request logging (no PII), rate limiting, CORS, OpenAPI (Development), /health | Done (verified) |
+| 1.A8 | Identity + cookie auth (no redirects), password policy, lockout | Done (verified) |
+| 1.A9 | Antiforgery on every unsafe method (including login and sign-up) + Origin check | Done (verified) |
+| 1.A10 | Auth service and endpoints, reset tokens, dev log email sender / 503 elsewhere | Done (verified) |
+| 1.A11 | ICurrentUser, ICurrentBusiness (server-resolved), RequireBusiness policy, query filters, tenancy interceptor | Done (verified) |
+| 1.A12 | Onboarding (atomic; double submit → exactly one business) | Done (verified) |
+| 1.A13 | Account and business settings endpoints | Done (verified) |
+| 1.A14 | Full build and tests, docs, checkpoint report | Done. **Waiting for the founder: migration and push** |
+
+**Deviations from the plan (for founder review):**
+1. The settings PUT/GET bodies are wrapped: `{ channels: [...] }` and `{ methods: [...] }`, not bare arrays.
+2. Login lockout returns **423** `auth.locked_out`.
+3. Enum columns are `varchar(32)`, not `nvarchar`, because the codes are ASCII.
+4. The security stamp is validated on **every** request, which costs one user lookup per request. This is what makes "other sessions end immediately" possible.
+5. The test that drift between `EnsureCreated` and the migrations (`HasPendingModelChanges`) is not added yet. It needs the founder's migration first, and will be added once it is confirmed.
+6. There is no expired-reset-token test. Identity's token lifetime (1 hour) can't be controlled from the test clock. Invalid and reused tokens are tested.
+
+### Part A — Backend (Phase 0 draft, superseded by the approved plan above)
 | ID | Task | Acceptance criteria | Tests |
 |---|---|---|---|
 | 1.A1 | Create the solution and projects (`Lamma.Domain`, `Application`, `Infrastructure`, `Api`, five test projects) with the reference rules in MASTER-ARCHITECTURE §3/§4.1. Add `Directory.Build.props` (nullable, warnings, analyzers) | `dotnet build` succeeds; references match the allowed graph | Architecture tests: Domain has no references to EF or ASP.NET; Application doesn't reference Infrastructure; Api doesn't use DbContext |

@@ -183,6 +183,8 @@ Domain entities keep **private setters**, expose behaviour methods (`order.Chang
 | `IReportService` | P&L and sales reports |
 | `ISubscriptionService` | Trial status and plans (display only; enforcement not approved) |
 
+**Identity port (implemented in Phase 1):** `AuthService` and `AccountService` live in Application and keep the use-case rules (validation, enumeration-safe forgot-password, error mapping). They talk to ASP.NET Core Identity only through the `IIdentityService` port, which `Infrastructure/Identity/IdentityService` implements with `UserManager`/`SignInManager`. This keeps Application free of Identity and EF types.
+
 **Controller contract:** bind the request, apply `[Authorize]`, call one service method with `HttpContext.RequestAborted`, then map the result to `200`/`201`/`204`. Nothing else. No try/catch for business errors: the global handler maps them.
 
 **Where rules live:** invariants belong in entity methods; cross-entity rules belong in domain policies; the application service orchestrates loading, calling domain behaviour, persisting, and committing. Rules never go in controllers or repositories.

@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 1: Foundation** |
-| Current gate | **Gate 2 done: Phase 1 plan approved (2026-11-10).** Waiting for the founder to write `Backend` (gate 3) |
+| Current gate | **Gate 4: Backend checkpoint.** All Phase 1 backend tasks are done and verified. Waiting for the founder to create and apply the migration, and to commit and push |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Branch `feature/phase1-foundation` created from the latest `develop` (2026-11-10) |
-| Migrations | None exist. None applied |
-| Next expected founder action | Commit and push the docs, then write `Backend` |
+| Migrations | None created yet. The founder needs to create and apply `InitialIdentityAndBusiness` |
+| Next expected founder action | Set the user-secret, create and apply the migration, commit and push, confirm, then write `Frontend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -27,7 +27,7 @@
 | Phase | Status |
 |---|---|
 | 0 Discovery & planning | **Merged into develop (founder-reported 2026-11-10)** |
-| 1 Foundation | Plan approved (gate 2); Backend (gate 3) next |
+| 1 Foundation | Backend done (gate 4 checkpoint); Frontend waiting for `Frontend` |
 | 2 Catalog | Pending |
 | 3 Inventory | Pending |
 | 4 Customers | Pending |
@@ -55,7 +55,9 @@
 ## Test results log
 | Date | Scope | Result |
 |---|---|---|
-| — | No code exists yet | — |
+| 2026-11-10 | Phase 1 backend: `dotnet build Lamma.sln` | 0 warnings, 0 errors |
+| 2026-11-10 | Phase 1 backend: `dotnet test Lamma.sln` (LocalDB) | **128 passed, 0 failed**: Domain 29, Application 39, Infrastructure 10, Architecture 8, API integration 42 |
+| 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
 | Date | Entry |
@@ -64,3 +66,5 @@
 | 2026-11-10 | Founder reported the Phase 0 merge; P0 decisions recorded; Phase 1 at gate 1 |
 | 2026-11-10 | Founder created `feature/phase1-foundation`; Phase 1 at gate 2 |
 | 2026-11-10 | Phase 1 plan approved (D-086); decisions D-083–D-085 recorded |
+| 2026-11-10 | D-087 recorded (all tasks of a part run together) |
+| 2026-11-10 | Phase 1 Backend 1.A1–1.A14 implemented and verified; waiting at gate 4 |

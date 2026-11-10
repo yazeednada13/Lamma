@@ -109,3 +109,38 @@ A custom `System.Text.Json` converter handles money strings for `decimal`, so th
 
 ## 10. Versioning
 `/api/v1` stays stable within V1. A breaking change introduces `/api/v2` for the affected resources only. Additive changes (new fields) are non-breaking.
+
+## 11. Phase 1 contracts (implemented, 2026-11-10)
+All endpoints live under `/api/v1` and use camelCase JSON. Code values (business types, channels, payment methods, plan) are snake_case strings (`"shoes_bags"`, `"bank_transfer"`).
+
+**CSRF:**
+- Every POST, PUT, PATCH, or DELETE must send `X-XSRF-TOKEN`, taken from `GET auth/antiforgery`. This includes login and sign-up.
+- The token is bound to the signed-in identity, so re-fetch it after sign-up, login, and logout.
+- A browser `Origin` that isn't the API itself or listed in `App:AllowedOrigins` is rejected.
+
+**Session:** cookie `lamma.auth` (HttpOnly, Secure, SameSite=Lax). Without "remember me" it is a session cookie; with it, it lasts 14 days, sliding. Its security stamp is checked on every request, so changing or resetting the password ends all other sessions immediately.
+
+| Method & path | Auth | Request body | Success | Errors (code) |
+|---|---|---|---|---|
+| GET `auth/antiforgery` | anonymous | — | 200 `{ token }` | — |
+| POST `auth/signup` | anonymous | `{ fullName, email, password }` | 201 `AccountDto` + session cookie | 409 `auth.email_taken` · 422 `validation.failed` |
+| POST `auth/login` | anonymous | `{ email, password, rememberMe }` | 200 `AccountDto` + cookie | 401 `auth.invalid_credentials` · 423 `auth.locked_out` (5 failures → 15 min) · 429 `rate_limited` |
+| POST `auth/logout` | user | — | 204 | 401 |
+| POST `auth/forgot-password` | anonymous | `{ email }` | 202 (same response whether or not the email exists) | 503 `email.not_configured` (outside Development until a provider is chosen) |
+| POST `auth/reset-password` | anonymous | `{ email, token, newPassword }` | 204 (also clears a lockout) | 422 `auth.invalid_token` (field `token`) · 422 `validation.failed` |
+| GET `account` | user | — | 200 `AccountDto` | 401 |
+| PUT `account` | user | `{ fullName }` | 200 `AccountDto` | 422 |
+| POST `account/change-password` | user | `{ currentPassword, newPassword }` | 204 (this session stays, other sessions end) | 422 `auth.wrong_password` (field `currentPassword`) |
+| GET `onboarding/business-types` | user | — | 200 `[{ code, labelAr }]` (13 items) | — |
+| POST `onboarding` | user | `{ businessName, businessType, salesChannels: ["instagram", …] }` | 201 `AccountDto` (`isOnboarded: true`) | 409 `onboarding.already_completed` · 422 |
+| GET / PUT `settings/business` | business | `{ name, businessType, defaultLowStockThreshold }` (0–1000) | 200 `{ name, businessType, defaultLowStockThreshold, currency }` | 403 `business.not_onboarded` · 422 |
+| GET / PUT `settings/sales-channels` | business | `{ channels: [{ channel, isEnabled }] }` (all 4, each once) | 200 same shape | 422 `settings.channel_required` · 422 `validation.failed` |
+| GET / PUT `settings/payment-methods` | business | `{ methods: [{ method, isEnabled }] }` (all 6, each once) | 200 same shape | 422 `settings.payment_method_required` · 422 `validation.failed` |
+| GET `/health` | anonymous | — | 200 `Healthy` | — |
+
+`AccountDto` = `{ id, fullName, email, isOnboarded, business: null | { id, name, businessType, trialEndsAt, trialDaysRemaining, plan } }`. `trialDaysRemaining` counts whole days in Asia/Amman local dates, and it is display only (D-011).
+
+Notes for the frontend:
+- The settings lists are wrapped in an object (`{ channels: [...] }`) instead of being a bare array. This lets them be validated and extended later.
+- Login lockout returns **423**.
+- Generic codes: `request.malformed` (400), `auth.unauthenticated` (401), `auth.forbidden` (403), `http.404`, `server.error` (500), `security.csrf` / `security.origin_rejected` (400).

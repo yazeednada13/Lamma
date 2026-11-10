@@ -35,8 +35,11 @@ Do **not** use `python -m http.server`, which truncates files over 64 KB on this
   ```
   - Instance choice: the default `localhost`, `localhost\MSSQLSERVER01`, or `(localdb)\MSSQLLocalDB`. The founder decides.
 - **Migrations and database updates are executed by the founder only.** The exact commands are provided at each Backend checkpoint (see DATABASE-DESIGN §13).
-- Run the API with `dotnet run --project src/Lamma.Api`. The port is defined in `launchSettings.json`.
-- Tests: `dotnet test`, using a separate test database (TESTING-STRATEGY §2).
+- The SDK is pinned to 9.0.320 by `global.json` (D-076).
+- Trust the dev HTTPS certificate once (founder action): `dotnet dev-certs https --trust`.
+- Run the API: `dotnet run --project src/Lamma.Api --launch-profile https` → https://localhost:7101 (http 5101). In Development, OpenAPI is at `/openapi/v1.json` and health at `/health`.
+- Password-reset emails: in Development the reset link is written to the console log (`DEV ONLY - password reset link`). Outside Development, forgot-password returns 503 until an email provider is chosen.
+- Tests: `dotnet test Lamma.sln` (TESTING-STRATEGY §2). Requires LocalDB `MSSQLLocalDB` to be running: `sqllocaldb start MSSQLLocalDB`. Override with the env var `LAMMA_TEST_SQL_SERVER`.
 - Recommended database setting (founder action): `ALTER DATABASE Lamma_Dev SET READ_COMMITTED_SNAPSHOT ON;`
 
 ## 4. Frontend setup (after Phase 1 Part B approval) [P]

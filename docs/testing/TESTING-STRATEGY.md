@@ -32,6 +32,12 @@
 - Isolation between tests: each test class gets a fresh business (tenant) where possible, plus a data reset between classes.
 - The connection string comes from user-secrets or an environment variable, never from committed files.
 
+### 2a. As implemented (Phase 1)
+- **Approved (D-083):** fixtures create a throwaway database per fixture on LocalDB (`Lamma_Test_<guid>`, `Lamma_ApiTest_<guid>`) with `EnsureCreated`, and drop it with `EnsureDeleted`. `Lamma_Dev` is never touched.
+- `Lamma.Api.IntegrationTests` runs the real host in environment `Testing` through `WebApplicationFactory<Program>`. It uses an HTTPS base address (secure cookies), a cookie-keeping `ApiSession` that handles the antiforgery token, a capturing email sender, and a controllable clock.
+- Rate limits are raised in the shared factory. `LowRateLimitApiFactory` tests the 429.
+- Mocks are hand-written fakes; no mocking library is used.
+
 ## 3. Architecture tests (Engineering Standards)
 - Domain references no `Microsoft.EntityFrameworkCore`, no `Microsoft.AspNetCore.*`, and no Infrastructure.
 - Application references no Infrastructure and no `DbContext`. No public interface in Application exposes `IQueryable`.
