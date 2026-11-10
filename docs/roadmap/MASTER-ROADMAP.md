@@ -12,14 +12,14 @@ This workflow governs **every** phase. Each gate waits for the founder's explici
 |---|---|---|---|
 | 1 | **Phase branch** from the latest `develop` (e.g. `feature/phase1-foundation`) | Founder | Claude runs **no Git commands**: no branch create, switch, merge, or delete |
 | 2 | **Plan Mode** → approval | Claude drafts, founder approves | Objectives and scope · Backend and Frontend parts · dependencies · numbered task IDs · technical details · acceptance criteria per task · unit and integration tests · security and performance · DB changes · API contracts and frontend integration · documentation updates · risks and open decisions. **No implementation.** Revise until approved |
-| 3 | **Backend** tasks | Claude, after the founder writes **`Backend`** | One task at a time: inspect → implement → build → test → review (correctness, security, performance, maintainability) → fix → docs → report → **STOP** |
+| 3 | **Backend** tasks | Claude, after the founder writes **`Backend`** | **All Backend tasks in one run** (D-087), each one inspect → implement → build → test → review (correctness, security, performance, maintainability) → fix → docs. No stop between tasks; one consolidated report, then **STOP** |
 | 4 | **Backend checkpoint** | Claude reports, founder executes | Completion report · build and test results · issues · API contracts for the frontend · schema changes · migration name and exact `dotnet ef` and DB-update commands · exact Git commands and commit messages. **Wait** for confirmation of the push |
-| 5 | **Frontend** tasks | Claude, after the founder writes **`Frontend`** | Approved React+TS architecture · reuse the Lamma design and assets · real APIs · RTL and responsive. One task at a time: implement → verify → test → fix → report → **STOP** |
+| 5 | **Frontend** tasks | Claude, after the founder writes **`Frontend`** | Approved React+TS architecture · reuse the Lamma design and assets · real APIs · RTL and responsive. **All Frontend tasks in one run** (D-087), each one implement → verify → test → fix. One consolidated report, then **STOP** |
 | 6 | **Frontend checkpoint** | Claude reports, founder executes | Tests and production build · API integration, RTL, and responsive checks · report · exact Git commands. **Wait** for confirmation |
 | 7 | **PR & closure** | Claude drafts the PR text; the founder creates, reviews, and merges | **A ready-to-paste PR title and description are always given before every PR** · Deliverables · tests and results · DB changes and migration status · limitations · checklist against the plan. No `gh`, no automated PRs. Progress docs are updated after the merge **only when authorized** |
 | 8 | **Next phase** | Founder writes **`Next Phase`** after confirming the merge into `develop` | Restart at gate 2 |
 
-**Standing rules:** one phase at a time · one task at a time · backend before frontend · tests are mandatory and results are reported honestly · no scope expansion · no Git, migrations, DB updates, or installs by Claude · docs kept in sync · STOP at every gate.
+**Standing rules:** one phase at a time · all Backend tasks together, then all Frontend tasks together · backend before frontend · tests are mandatory and results are reported honestly · no scope expansion · no Git, migrations, DB updates, or installs by Claude · docs kept in sync · STOP at every gate.
 
 ## 2. Dependency analysis
 ```

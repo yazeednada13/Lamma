@@ -85,6 +85,7 @@ Sources:
 | D-083 | **Scoped exception to the DB rule:** test fixtures may create and drop throwaway `Lamma_Test_<guid>` databases on LocalDB (EnsureCreated/EnsureDeleted). They never touch `Lamma_Dev` or any real database | F |
 | D-084 | Email confirmation is **not required** before login in V1 (until an email provider is chosen) | F |
 | D-085 | Unbuilt modules stay visible in the navigation and open an Arabic "coming soon" page (no fake data) | F |
+| D-087 | **Execution granularity:** after `Backend`, Claude implements all approved Backend tasks of the phase in one continuous run, with no stop between tasks, then gives one consolidated report and stops at gate 4. `Frontend` works the same way up to gate 6. Each task is still built, tested, and reviewed. This replaces "one task at a time, STOP after each" | F |
 | D-086 | Phase 1 plan approved (2026-11-10). It also approves P-001, P-003, P-005, P-013, P-014, P-016, P-017, P-020 and the Phase 1 package list | F |
 
 ### A5. Visual identity (from REF; preserve)
@@ -148,4 +149,5 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | 2026-11-10 | D-075 added (PR title and description before every PR) |
 | 2026-11-10 | D-076–D-082 added from the founder's P0 answers before Phase 1 |
 | 2026-11-10 | D-083–D-086 added; Phase 1 plan approved |
+| 2026-11-10 | D-087 added: all Backend tasks run together, then all Frontend tasks together |
 | 2026-11-10 | Initial log created in Phase 0 from MP, REF, and the founder's review instructions (workflow, engineering standards, status-label discipline, LTR toggle exclusion) |
