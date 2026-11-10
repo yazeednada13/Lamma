@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>هيكلة لمّة ورحلاتها</title>
+<link rel="preload" href="../assets/fonts/ibm-plex-sans-arabic-arabic-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../assets/logo/favicon.svg">
+<link rel="stylesheet" href="../design-system/lamma.css">
+<style>
+  .doc { max-width: 1280px; margin: 0 auto; padding: 32px 24px 96px; display: flex; flex-direction: column; gap: 28px; }
+  .mods { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .mod { display: flex; flex-direction: column; gap: 6px; }
+  .mod__h { background: var(--lamma-action-primary); color: var(--lamma-text-on-olive); border-radius: 12px; padding: 10px 12px; }
+  .mod a, .mod span.s { background: var(--lamma-surface-card); border: 1px solid var(--lamma-surface-border); border-radius: 10px; padding: 8px 12px; font: var(--lamma-type-body); text-decoration: none; color: inherit; }
+  .mod a:hover { border-color: var(--lamma-surface-border-strong); }
+  .mod .t { background: var(--lamma-apricot-100); border-color: var(--lamma-apricot-500); } .mod .sub { background: var(--lamma-brick-100); border-color: #E3B4A6; }
+  .flow { background: var(--lamma-surface-card); border: 1px solid var(--lamma-surface-border); border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .steps { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .st { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--lamma-surface-border); font: var(--lamma-type-body); max-width: 180px; }
+  .st.s { background: var(--lamma-surface-muted); border-color: #C9CDB4; } .st.s::before { content: "تلقائي · "; font: var(--lamma-type-label-sm); color: var(--lamma-olive-500); }
+  .st.d { background: var(--lamma-apricot-100); border-color: var(--lamma-apricot-500); border-radius: 18px; }
+  .st.e { background: var(--lamma-action-primary); color: var(--lamma-text-on-olive); border-color: transparent; }
+  .arr { color: var(--lamma-apricot-500); font-weight: 600; }
+  .branch { padding-inline-start: 24px; }
+</style>
+</head>
+<body>
+<div class="doc">
+  <header class="row"><img src="../assets/logo/lamma-lockup-ar-horizontal.svg" alt="لمّة" height="40"><div><h1>هيكلة المعلومات ورحلات المستخدم</h1><p class="muted">المرحلة 1 · 59 شاشة · 16 رحلة · عربي أساسي، مستخدم واحد، تجربة مجانية 30 يوم</p></div><a class="btn btn--outline end" href="../app/index.html#/screens">فهرس الشاشات الحيّة</a></header>
+  <div class="legend"><span><i style="background:var(--lamma-surface-card);border:1px solid var(--lamma-surface-border)"></i>شاشة</span><span><i style="background:var(--lamma-apricot-100)"></i>حسب نوع المشروع</span><span><i style="background:var(--lamma-brick-100)"></i>الاشتراك</span><span><i style="background:var(--lamma-action-primary)"></i>قسم</span></div>
+  <section class="col"><h2>خريطة الموقع</h2><div class="mods" id="mods"></div>
+    <div class="card"><b>موجود بكل الشاشات:</b> <span class="muted">الشريط الجانبي · الشريط العلوي · بحث وأوامر (Ctrl K) · قائمة «+ جديد» · الإشعارات · قائمة الحساب · رسائل التنبيه · نافذة التأكيد · شريط أيام التجربة · 404 وخطأ · انقطاع الاتصال · الشريط السفلي (موبايل)</span></div></section>
+  <section class="col"><h2>رحلات المستخدم</h2><p class="muted">تقرأ من اليمين لليسار · أبيض = المستخدم · مريمي = تلقائي · مشمشي = قرار · زيتوني = النهاية</p><div class="col" id="flows"></div></section>
+</div>
+<script>
+const T = "t", S = "sub";
+const MODS = [
+  ["البداية والدخول", [["تسجيل الدخول", "login"], ["إنشاء حساب", "signup"], ["استعادة كلمة السر", "forgot"], ["التهيئة: نوع المشروع والقنوات", "onboarding", T]]],
+  ["الرئيسية", [["لوحة التحكم + «لمّة اليوم»", "dashboard"], ["«يحتاج انتباهك»", "dashboard"], ["مستخدم جديد: «ابدأ هون»", "dashboard-new"]]],
+  ["الطلبات", [["قائمة الطلبات", "orders"], ["لوحة الحالات", "orders/board"], ["إنشاء طلب", "orders/new"], ["تفاصيل الطلب + الخيط", "orders/1042"], ["تعديل الطلب", "orders/new"], ["إلغاء / إرجاع (نافذة)", "orders/1042"], ["هدية: رسالة ومستلم", "orders/1046", T], ["الطلبات المسبقة", "preorders", T]]],
+  ["المنتجات", [["قائمة المنتجات", "products"], ["تفاصيل المنتج", "products/p1"], ["إضافة / تعديل منتج", "products/new"], ["قالب المنتج", "products/new", T], ["المقاسات والألوان", "products/new", T], ["جدول المقاسات", "products/new", T], ["منشئ البوكسات", "products/p4", T], ["حقول خاصة", "settings", T], ["التصنيفات", "categories"]]],
+  ["المخزون", [["مستوى المخزون: متوفر · محجوز", "inventory"], ["استلام بضاعة", "inventory/receive"], ["تعديل المخزون (نافذة)", "inventory"], ["سجل الحركات", "inventory/movements"], ["حد «قرب يخلص»", "settings"], ["تواريخ الانتهاء", "inventory/expiry", T]]],
+  ["العملاء", [["قائمة العملاء", "customers"], ["ملف العميل", "customers/c1"], ["إضافة / تعديل (لوحة جانبية)", "customers"]]],
+  ["المالية", [["نظرة مالية", "finance"], ["المدفوعات والذمم", "finance/payments"], ["تسجيل دفعة (لوحة جانبية)", "finance/payments"], ["المصاريف", "finance/expenses"], ["إضافة مصروف (لوحة جانبية)", "finance/expenses"], ["العربون", "preorders", T], ["مستحقات شركة التوصيل", "finance/courier"]]],
+  ["التقارير", [["مركز التقارير", "reports"], ["المبيعات", "reports/sales"], ["الأرباح", "reports/pnl"], ["الأرباح والخسائر (P&L)", "reports/pnl"], ["أداء المنتجات", "reports/sales"], ["العملاء", "customers"], ["قيمة المخزون", "inventory"]]],
+  ["إعدادات المشروع", [["الملف التعريفي ونوع المشروع", "settings"], ["قنوات البيع", "settings"], ["طرق الدفع", "settings"], ["تصنيفات المصاريف", "settings"], ["قوالب المنتجات والحقول", "settings", T]]],
+  ["الحساب والاشتراك", [["الملف الشخصي", "account"], ["كلمة السر والأمان", "account"], ["اللغة", "account"], ["الإشعارات", "account"], ["الخطط والاشتراك", "subscription", S], ["الدفع والفواتير", "subscription", S], ["انتهت التجربة", "trial-expired", S]]],
+];
+document.getElementById("mods").innerHTML = MODS.map(([n, items]) => `<div class="mod"><div class="mod__h"><b>${n}</b><br><span class="caption" style="color:#DCE0CC">${items.length} شاشات</span></div>${items.map(([l, r, k]) => `<a class="${k || ""}" href="../app/index.html#/${r}">${l}</a>`).join("")}</div>`).join("");
+const F = [
+  ["1 · أول تجربة", "الهدف: أول طلب خلال أقل من 5 دقايق", [["a", "إنشاء حساب"], ["a", "نوع المشروع"], ["a", "العملة والقنوات"], ["s", "قالب منتج افتراضي + تبدأ تجربة 30 يوم"], ["a", "لوحة «ابدأ هون»"], ["a", "أول منتج"], ["a", "أول طلب"], ["e", "«اللمّة» ✓"]]],
+  ["2 · إضافة منتج", "", [["a", "+ منتج"], ["d", "القالب؟ (افتراضي حسب النوع)"], ["a", "الاسم، السعر، التكلفة، التصنيف"], ["a", "الكمية وحد «قرب يخلص»"], ["a", "حفظ"], ["s", "حركة مخزون افتتاحية"], ["e", "✓ «أضف منتج ثاني»"]]],
+  ["3 · منتج بمقاسات وألوان", "نفس الفكرة للعطور (الحجم) والتجميل (الدرجة)", [["a", "+ منتج بقالب ملابس"], ["a", "الخامة، الفئة، القصّة"], ["a", "المقاسات"], ["a", "الألوان"], ["s", "توليد كل التركيبات"], ["a", "كمية وسعر لكل نسخة"], ["e", "حفظ ✓"]]],
+  ["4 · استلام بضاعة", "", [["a", "المخزون ← استلام"], ["a", "اختيار المنتجات والنسخ"], ["a", "الكمية والتكلفة"], ["a", "تأكيد"], ["s", "زيادة المخزون + سجل حركة"], ["e", "✓"]]],
+  ["5 · تعديل المخزون", "السبب إلزامي", [["a", "المنتج ← تعديل"], ["a", "+/− والسبب"], ["d", "أقل من المحجوز؟"], ["a", "لا: تأكيد"], ["s", "سجل حركة"], ["e", "✓"]], [["d", "نعم"], ["a", "رسالة منع مع الكمية المحجوزة"]]],
+  ["6 · إنشاء طلب", "من «+ جديد» أو Ctrl K", [["a", "+ طلب"], ["a", "العميل: بحث أو إضافة سريعة"], ["a", "المنتجات والنسخ"], ["d", "الكمية متوفرة؟"], ["a", "التوصيل والخصم"], ["a", "هدية، تاريخ تسليم، عربون"], ["a", "الدفع"], ["e", "حفظ «جديد» أو «مؤكد»"]], [["d", "لا"], ["a", "تنبيه + اقتراح نسخة متوفرة"]]],
+  ["7 · دورة حياة الطلب والمخزون", "الحجز والخصم تلقائيين", [["a", "جديد"], ["a", "مؤكد"], ["s", "حجز الكمية"], ["a", "قيد التجهيز"], ["a", "مع المندوب"], ["a", "تم التوصيل"], ["s", "خصم من المخزون + تنحسب المبيعة"], ["e", "✓"]], [["a", "ملغي"], ["s", "فك الحجز"]], [["a", "مرتجع"], ["s", "رجوع للمخزون"]]],
+  ["8 · إلغاء أو إرجاع", "", [["a", "تفاصيل الطلب"], ["a", "إلغاء / إرجاع"], ["a", "تأكيد + السبب"], ["s", "فك الحجز أو رجوع للمخزون"], ["e", "✓ مع «تراجع»"]]],
+  ["9 · إدارة عميل", "", [["a", "العملاء"], ["a", "ملف العميل"], ["a", "تعديل · طلبات · رصيد"], ["a", "دفعة أو طلب جديد"], ["e", "✓"]]],
+  ["10 · تسجيل دفعة", "", [["a", "من الطلب أو العميل"], ["a", "المبلغ (المتبقي)"], ["a", "الطريقة"], ["a", "حفظ"], ["s", "تحديث الرصيد والشارة"], ["e", "✓ «مدفوع»"]]],
+  ["11 · تسجيل مصروف", "3 حقول", [["a", "+ مصروف"], ["a", "المبلغ"], ["a", "التصنيف"], ["a", "حفظ"], ["e", "✓"]]],
+  ["12 · مراجعة الأداء", "", [["a", "الرئيسية"], ["a", "الفترة"], ["a", "التقارير"], ["a", "الأرباح والخسائر"], ["s", "جملة بتشرح الرقم"], ["e", "التفاصيل"]]],
+  ["13 · بوكس هدايا", "", [["a", "+ منتج بقالب بوكس"], ["a", "المكونات"], ["s", "المتوفر = أقل مكوّن"], ["a", "بالطلب: الإهداء والمستلم"], ["s", "عند التوصيل: خصم المكونات"], ["e", "✓"]]],
+  ["14 · طلب مسبق", "", [["a", "+ طلب"], ["a", "تاريخ ووقت التسليم"], ["d", "وصلنا الحد اليومي؟"], ["a", "عربون"], ["s", "يظهر بالتقويم"], ["e", "✓"]], [["d", "نعم"], ["a", "اقتراح أقرب يوم متاح"]]],
+  ["15 · التجربة والاشتراك", "بعد الانتهاء: البيانات محفوظة وبتنشاف، بدون إضافة", [["s", "تبدأ تجربة 30 يوم"], ["a", "شريط الأيام"], ["s", "آخر 3 أيام: تذكير مشمشي"], ["d", "اشترك؟"], ["a", "الخطط"], ["a", "الدفع"], ["e", "✓ مشترك"]], [["d", "لا"], ["s", "عرض فقط"], ["a", "«اشترك» بكل مكان"]]],
+  ["16 · تسوية شركة التوصيل", "المبيعة عند التوصيل، والمصاري لما الشركة تحوّل", [["a", "طلب «عند الاستلام» يتوصّل"], ["s", "يزيد «إلك عند الشركة»"], ["a", "الشركة بتحوّل"], ["a", "تسجيل التحويل"], ["d", "مطابق؟"], ["s", "الطلبات «مدفوع»"], ["e", "✓ تسوية"]], [["d", "ناقص"], ["a", "الفرق كمصروف توصيل"]]],
+];
+const row = (r, br) => `<div class="steps ${br ? "branch" : ""}">${r.map(([k, l], i) => `${i ? '<span class="arr">←</span>' : ""}<span class="st ${k === "a" ? "" : k}">${l}</span>`).join("")}</div>`;
+document.getElementById("flows").innerHTML = F.map(([t, n, main, ...br]) => `<div class="flow"><h3>${t}</h3>${n ? `<p class="caption">${n}</p>` : ""}${row(main)}${br.map((b) => row(b, true)).join("")}</div>`).join("");
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+/* =====================================================================
+   Lamma v2 · People & money — customer profile, segments, aging, ledger hero, waterfall, cash position
+   ===================================================================== */
+
+/* segments rail reuses .sopt; tags */
+.tag { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding-inline: 10px; border-radius: 99px; font: var(--lamma-type-label-sm); background: var(--lamma-olive-50); color: var(--lamma-olive-600); }
+.tag--vip { background: linear-gradient(90deg, #FDEBDB, #FBE3CB); color: var(--lamma-apricot-700); }
+.tag--new { background: var(--lamma-blue-100); color: var(--lamma-blue-700); }
+.tag--sleep { background: #F1EFE8; color: var(--lamma-stone-600); }
+.tag--due { background: var(--lamma-brick-100); color: var(--lamma-brick-700); }
+
+/* customer hero */
+.chero { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px; align-items: center; padding: 24px; border-radius: 24px; overflow: hidden; isolation: isolate;
+  background: linear-gradient(120deg, #fff 0%, #FBF9F3 60%, #F4F1E7 100%); border: 1px solid #E4E2D3; box-shadow: var(--lamma-elevation-card); }
+.chero::after { content: ""; position: absolute; z-index: -1; inset-inline-end: -60px; top: -80px; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, rgb(244 162 97 / .18), transparent 70%); }
+.chero .ring-av { width: 96px; height: 96px; padding: 5px; } .chero .ring-av span { font: 700 26px var(--lamma-font); box-shadow: 0 0 0 4px #fff; }
+.chero h1 { font: var(--lamma-type-display); }
+.chero__meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; font: var(--lamma-type-caption); color: var(--lamma-text-secondary); }
+.chero__meta span { display: inline-flex; gap: 6px; align-items: center; }
+.chero__tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.chero__acts { display: flex; flex-direction: column; gap: 8px; }
+.favs { display: flex; flex-direction: column; gap: 12px; }
+.fav { display: flex; align-items: center; gap: 12px; }
+.fav .lowrow__thumb { width: 44px; height: 44px; }
+.fav__bar { flex: 1; } .fav__bar .flowbar { height: 6px; margin-top: 6px; }
+
+/* aging (dues) */
+.duecard { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 16px; background: #fff; border: 1px solid #E4E2D3; box-shadow: var(--lamma-elevation-card); margin-bottom: 10px; animation: fade-up 450ms var(--lamma-ease-enter) both; animation-delay: calc(var(--i) * 50ms); }
+.age { display: inline-flex; align-items: center; gap: 4px; font: var(--lamma-type-label-sm); padding: 2px 8px; border-radius: 99px; }
+.age--ok { background: var(--lamma-green-100); color: var(--lamma-green-700); } .age--warn { background: var(--lamma-apricot-100); color: var(--lamma-apricot-700); } .age--late { background: var(--lamma-brick-100); color: var(--lamma-brick-700); }
+.agebar { display: flex; height: 12px; border-radius: 12px; overflow: hidden; background: var(--lamma-olive-50); }
+.agebar span { height: 100%; animation: grow-x 900ms var(--lamma-ease-enter) both; transform-origin: right; }
+[dir="ltr"] .agebar span { transform-origin: left; }
+
+/* ledger hero (finance) */
+.lhero { position: relative; overflow: hidden; border-radius: 24px; padding: 24px 26px; color: var(--lamma-text-on-olive); background: var(--lamma-surface-olive-glow); isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 28px; align-items: center; box-shadow: 0 24px 48px -28px rgb(31 38 23 / .7); }
+.lhero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: repeating-linear-gradient(180deg, transparent 0 33px, rgb(255 255 255 / .04) 33px 34px); }
+.lhero .overline { color: #B9BDA8; }
+.lhero__net { font: var(--lamma-type-number-hero); margin-top: 6px; letter-spacing: var(--lamma-tracking-number); } .lhero__net small { font: var(--lamma-type-label); color: #DCE0CC; }
+.lhero p { color: #DCE0CC; margin-top: 8px; font: var(--lamma-type-body); } .lhero p b { color: var(--lamma-apricot-500); font-weight: 600; }
+.flowsteps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.fstep { position: relative; padding: 12px; border-radius: 14px; background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .08); animation: fade-up 500ms var(--lamma-ease-enter) both; animation-delay: calc(var(--i) * 110ms + 200ms); }
+.fstep span { font: var(--lamma-type-caption); color: #B9BDA8; display: block; } .fstep b { font: var(--lamma-type-number-md); display: block; margin-top: 4px; color: #fff; }
+.fstep.minus b { color: #FFB4A8; } .fstep.result { background: var(--lamma-apricot-500); border-color: transparent; } .fstep.result span { color: var(--lamma-olive-800); } .fstep.result b { color: var(--lamma-olive-900); }
+.fstep:not(:last-child)::after { content: ""; position: absolute; top: 50%; inset-inline-end: -8px; width: 8px; height: 2px; background: rgb(244 162 97 / .6); }
+
+/* cash position stacked bar */
+.cashbar { display: flex; height: 18px; border-radius: 10px; overflow: hidden; gap: 3px; }
+.cashbar span { height: 100%; border-radius: 6px; animation: grow-x 1000ms var(--lamma-ease-enter) both; transform-origin: right; }
+[dir="ltr"] .cashbar span { transform-origin: left; }
+
+/* waterfall */
+.wf svg { width: 100%; height: 280px; display: block; overflow: visible; }
+.wf .bar { animation: wf-in 700ms var(--lamma-ease-enter) both; transform-box: fill-box; transform-origin: bottom; }
+@keyframes wf-in { from { transform: scaleY(0); } }
+.wf .lbl { font: 500 11px var(--lamma-font); fill: var(--lamma-text-secondary); }
+.wf .val { font: 600 11.5px var(--lamma-font); fill: var(--lamma-text-primary); direction: ltr; unicode-bidi: bidi-override; }
+.wf .link { stroke: #C9CDB4; stroke-dasharray: 3 3; }
+
+/* weekday bars */
+.wbars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; align-items: end; height: 150px; }
+.wbars div { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%; }
+.wbars i { width: 100%; max-width: 34px; border-radius: 8px 8px 4px 4px; background: var(--lamma-olive-200); animation: grow 700ms var(--lamma-ease-enter) both; transform-origin: bottom; }
+.wbars .is-best i { background: var(--lamma-apricot-500); box-shadow: 0 8px 16px -8px var(--lamma-apricot-500); }
+.wbars span { font: var(--lamma-type-caption); color: var(--lamma-text-secondary); }
+
+/* report hub cards with previews */
+.rcard { display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 18px; background: #fff; border: 1px solid #E4E2D3; box-shadow: var(--lamma-elevation-card); text-decoration: none; color: inherit; transition: transform var(--lamma-motion-duration-base) var(--lamma-ease-enter), box-shadow var(--lamma-motion-duration-base); }
+.rcard:hover { transform: translateY(-3px); box-shadow: var(--lamma-elevation-raise); }
+.rcard__prev { height: 70px; border-radius: 12px; background: var(--lamma-olive-50); padding: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.rcard__prev svg { width: 100%; height: 100%; }
+.rcard b.big { font: var(--lamma-type-number-md); }
+
+/* expenses */
+.xcat { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.xcat .flowbar { height: 8px; margin-top: 6px; }
+
+@media (max-width: 1023px) { .lhero { grid-template-columns: minmax(0, 1fr); } .chero { grid-template-columns: auto minmax(0, 1fr); } .chero__acts { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; } }
+@media (max-width: 767px) { .flowsteps { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fstep::after { display: none; } .chero { grid-template-columns: minmax(0, 1fr); text-align: start; } .chero .ring-av { width: 72px; height: 72px; } .duecard { grid-template-columns: auto minmax(0, 1fr) auto; } .duecard > :nth-child(3) { display: none; } }
+@media (prefers-reduced-motion: reduce) { .duecard, .fstep, .agebar span, .cashbar span, .wf .bar, .wbars i { animation: none !important; } }

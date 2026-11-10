@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مكونات لمّة</title>
+<link rel="preload" href="../assets/fonts/ibm-plex-sans-arabic-arabic-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../assets/logo/favicon.svg">
+<link rel="stylesheet" href="lamma.css">
+<link rel="stylesheet" href="cards.css">
+<style>
+  .lib { max-width: 1200px; margin: 0 auto; padding: 32px 24px 96px; display: flex; flex-direction: column; gap: 28px; }
+  .lib header { display: flex; align-items: center; gap: 16px; }
+  .sec { display: flex; flex-direction: column; gap: 14px; }
+  .sec > h2 { display: flex; align-items: baseline; gap: 10px; } .sec > h2 small { font: var(--lamma-type-caption); color: var(--lamma-text-secondary); direction: ltr; }
+  .spec { display: grid; grid-template-columns: 150px minmax(0,1fr); gap: 12px 20px; align-items: center; background: var(--lamma-surface-card); border: 1px solid var(--lamma-surface-border); border-radius: var(--lamma-radius-md); padding: 20px; }
+  .spec > .k { font: var(--lamma-type-label-sm); color: var(--lamma-text-secondary); }
+  .demo { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .note { font: var(--lamma-type-caption); color: var(--lamma-text-secondary); }
+  .toc { display: flex; flex-wrap: wrap; gap: 6px; } .toc a { font: var(--lamma-type-label-sm); text-decoration: none; padding: 4px 10px; border-radius: 99px; background: var(--lamma-surface-muted); color: var(--lamma-text-primary); }
+  .frame { position: relative; height: 360px; border: 1px solid var(--lamma-surface-border); border-radius: var(--lamma-radius-md); overflow: hidden; background: var(--lamma-surface-page); }
+  @media (max-width: 700px) { .spec { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="lib">
+  <header>
+    <img src="../assets/logo/lamma-lockup-ar-horizontal.svg" alt="لمّة" height="44">
+    <div><h1>مكتبة المكونات</h1><p class="muted">المرحلة 3 · كل المكونات بكل حالاتها · مربوطة بـ tokens.css · عربي RTL</p></div>
+    <a class="btn btn--outline end" href="../app/index.html">افتح البروتوتايب <i data-ic="arrow-left" data-cls="ic--16"></i></a>
+  </header>
+  <nav class="toc">
+    <a href="#buttons">الأزرار</a><a href="#fields">الحقول</a><a href="#selection">الاختيار</a><a href="#badges">الشارات والحالات</a><a href="#tabs">التبويبات</a><a href="#swatch">المقاسات والألوان</a>
+    <a href="#money">المبالغ</a><a href="#stock">المخزون</a><a href="#cards">البطاقات</a><a href="#table">الجدول</a><a href="#timeline">الخيط الزمني</a><a href="#charts">الرسوم</a>
+    <a href="#overlays">النوافذ والتنبيهات</a><a href="#nav">التنقّل</a><a href="#states">الحالات الفاضية والتحميل</a><a href="#motion">الحركة</a>
+  </nav>
+
+  <section class="sec" id="buttons"><h2>الأزرار <small>Button · Icon Button</small></h2>
+    <div class="spec">
+      <span class="k">Primary</span><div class="demo"><button class="btn btn--primary btn--lg">حفظ الطلب</button><button class="btn btn--primary"><i data-ic="plus"></i> طلب جديد</button><button class="btn btn--primary btn--sm">تأكيد</button><button class="btn btn--primary is-loading">حفظ</button><button class="btn btn--primary" disabled>معطّل</button></div>
+      <span class="k">Secondary · Outline · Ghost</span><div class="demo"><button class="btn btn--secondary">إلغاء</button><button class="btn btn--outline"><i data-ic="filter"></i> فلترة</button><button class="btn btn--ghost">عرض الكل</button><button class="btn btn--secondary is-loading">تحميل</button></div>
+      <span class="k">Accent · Danger</span><div class="demo"><button class="btn btn--accent">اشترك الآن</button><button class="btn btn--danger"><i data-ic="trash"></i> حذف</button></div>
+      <span class="k">Icon Button</span><div class="demo"><button class="btn btn--ghost icon-btn" aria-label="الإشعارات"><i data-ic="bell"></i></button><button class="btn btn--outline icon-btn" aria-label="تعديل"><i data-ic="pencil"></i></button><button class="btn btn--secondary icon-btn btn--sm" aria-label="المزيد"><i data-ic="dots-vertical"></i></button></div>
+      <span class="k">قواعد</span><p class="note">زر أساسي واحد بالشاشة. المشمشي (Accent) للاشتراك والدعوات بس. الأحجام: S 32 · M 40 · L 48 (موبايل). الضغط بيصغّر الزر لـ 98%.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="fields"><h2>الحقول <small>Text Field · Search · Textarea · Select · Stepper</small></h2>
+    <div class="spec">
+      <span class="k">عادي · مع مساعدة</span><div class="demo" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));width:100%">
+        <label class="field"><span class="field__label">اسم المنتج <span class="req">*</span></span><span class="control"><input placeholder="فستان كتان صيفي"></span><span class="field__help">الاسم اللي بتشوفه زباينك</span></label>
+        <label class="field"><span class="field__label">سعر البيع</span><span class="control"><input inputmode="decimal" class="ltr" value="38.00"><span class="control__affix">د.أ</span></span></label>
+        <label class="field"><span class="field__label">رقم الهاتف</span><span class="control ltr"><span class="control__affix">+962</span><input inputmode="tel" value="7 9123 4567"></span></label>
+        <label class="field"><span class="field__label">تاريخ التسليم</span><span class="control"><i data-ic="calendar"></i><input value="12 نوفمبر 2026"></span></label>
+      </div>
+      <span class="k">خطأ · معطّل</span><div class="demo" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));width:100%">
+        <label class="field"><span class="field__label">الكمية</span><span class="control is-error"><input value="5" class="ltr"></span><span class="field__error"><i data-ic="alert-triangle" data-cls="ic--16"></i> متوفر 3 بس من مقاس M</span></label>
+        <label class="field"><span class="field__label">الرمز (SKU)</span><span class="control is-disabled"><input value="DRS-LIN-M-OLV" disabled class="ltr"></span><span class="field__help">بيتولّد تلقائي</span></label>
+      </div>
+      <span class="k">بحث</span><div class="demo"><span class="control control--search" style="width:360px"><i data-ic="search"></i><input placeholder="دوّر على طلب، عميل، أو منتج"><span class="kbd">Ctrl K</span></span></div>
+      <span class="k">ملاحظات</span><div class="demo" style="width:100%"><label class="field" style="width:100%"><span class="field__label">ملاحظة على الطلب</span><span class="control control--textarea"><textarea placeholder="مثلًا: التوصيل بعد الساعة 5"></textarea></span></label></div>
+      <span class="k">Select مع إضافة سريعة</span><div class="demo"><div style="width:300px" class="col"><span class="control"><i data-ic="users"></i><input value="رن" aria-label="العميل"><i data-ic="chevron-down"></i></span>
+        <div class="select-list"><div class="select-list__item is-active"><span class="avatar avatar--sm">رخ</span>رنا الخطيب <span class="caption end ltr">0791234567</span></div><div class="select-list__item"><span class="avatar avatar--sm">رع</span>ريم العلي</div><div class="select-list__item select-list__item--create"><i data-ic="plus" data-cls="ic--16"></i> إضافة «رن» كعميل جديد</div></div></div></div>
+      <span class="k">Quantity Stepper</span><div class="demo"><span class="stepper"><button aria-label="زيادة">+</button><input value="2" class="ltr" aria-label="الكمية"><button aria-label="نقص">−</button></span><span class="stepper"><button disabled>+</button><input value="3" class="ltr"><button>−</button></span><span class="caption">الحد الأعلى = المتوفر</span></div>
+    </div>
+  </section>
+
+  <section class="sec" id="selection"><h2>الاختيار <small>Checkbox · Radio · Toggle</small></h2>
+    <div class="spec"><span class="k">الحالات</span><div class="demo">
+      <label class="check"><input type="checkbox" checked> مدفوع</label><label class="check"><input type="checkbox"> هدية</label><label class="check"><input type="checkbox" disabled> معطّل</label>
+      <label class="check"><input type="radio" name="p" checked> كاش</label><label class="check"><input type="radio" name="p"> CliQ</label><label class="check"><input type="radio" name="p"> عند الاستلام</label>
+      <label class="check"><input type="checkbox" class="toggle" checked> تنبيه «قرب يخلص»</label></div></div>
+  </section>
+
+  <section class="sec" id="badges"><h2>الشارات والحالات <small>Badge · Order Status · Payment Status · Count</small></h2>
+    <div class="spec">
+      <span class="k">Badge (6 ألوان)</span><div class="demo"><span class="badge">عادي</span><span class="badge badge--success">نجاح</span><span class="badge badge--warning">تحذير</span><span class="badge badge--danger">خطر</span><span class="badge badge--info">معلومة</span><span class="badge badge--attention">انتباه</span></div>
+      <span class="k">حالة الطلب (7)</span><div class="demo"><span class="badge badge--info badge--dot">جديد</span><span class="badge badge--dot">مؤكد</span><span class="badge badge--warning badge--dot">قيد التجهيز</span><span class="badge badge--info badge--dot">مع المندوب</span><span class="badge badge--success badge--dot">تم التوصيل</span><span class="badge badge--danger badge--dot">ملغي</span><span class="badge badge--dot" style="background:var(--lamma-brick-100);color:var(--lamma-brick-700)">مرتجع</span></div>
+      <span class="k">حالة الدفع</span><div class="demo"><span class="badge badge--success">مدفوع</span><span class="badge badge--warning">جزئي</span><span class="badge badge--danger badge--outline">غير مدفوع</span><span class="badge badge--info">عند الشركة</span></div>
+      <span class="k">Count</span><div class="demo"><span class="count">3</span><span class="count">12</span></div>
+    </div>
+  </section>
+
+  <section class="sec" id="tabs"><h2>التبويبات والفلاتر <small>Tabs · Segmented · Chip</small></h2>
+    <div class="spec">
+      <span class="k">Tabs</span><div class="tabs" style="width:100%"><button class="tab is-active">الكل <span class="num">48</span></button><button class="tab">جديد <span class="num">6</span></button><button class="tab">مؤكد <span class="num">9</span></button><button class="tab">قيد التجهيز <span class="num">2</span></button><button class="tab">مع المندوب</button></div>
+      <span class="k">Segmented</span><div class="demo"><div class="segmented" data-seg><button>اليوم</button><button>الأسبوع</button><button class="is-active">الشهر</button><button>مخصص</button></div></div>
+      <span class="k">Chip</span><div class="demo"><button class="chip is-selected"><i data-ic="brand-instagram" data-cls="ic--16"></i> إنستغرام</button><button class="chip"><i data-ic="brand-whatsapp" data-cls="ic--16"></i> واتساب</button><button class="chip">غير مدفوع <i data-ic="x" data-cls="ic--16"></i></button></div>
+    </div>
+  </section>
+
+  <section class="sec" id="swatch"><h2>المقاسات والألوان <small>Variant Swatch · Avatar</small></h2>
+    <div class="spec">
+      <span class="k">مقاس</span><div class="demo"><span class="swatch">S</span><span class="swatch is-selected">M</span><span class="swatch">L</span><span class="swatch is-out" title="نفد">XL</span></div>
+      <span class="k">لون</span><div class="demo"><span class="swatch swatch--color is-selected"><i style="background:#3F4F2A"></i></span><span class="swatch swatch--color"><i style="background:#F7F3EA"></i></span><span class="swatch swatch--color"><i style="background:#C8553D"></i></span><span class="swatch swatch--color is-out"><i style="background:#1F2617"></i></span></div>
+      <span class="k">حجم العطر</span><div class="demo"><span class="swatch">10 مل</span><span class="swatch is-selected">50 مل</span><span class="swatch">100 مل</span></div>
+      <span class="k">Avatar</span><div class="demo"><span class="avatar avatar--sm">رخ</span><span class="avatar">عس</span><span class="avatar avatar--lg">لم</span></div>
+    </div>
+  </section>
+
+  <section class="sec" id="money"><h2>المبالغ <small>Money</small></h2>
+    <div class="spec"><span class="k">الأنواع</span><div class="demo"><span data-money="1260"></span><span data-money="320" data-colored data-plus></span><span data-money="-45" data-colored></span><span data-money="380" data-tone="exp"></span></div>
+      <span class="k">قاعدة</span><p class="note">أرقام لاتينية، خانتين عشريتين، «د.أ» بعد الرقم. الإشارة السالبة محبوسة مع الرقم (&lt;bdi&gt;) فما بتنقلب. بالجداول المبلغ دايمًا بنهاية الخلية لأن أرقام Readex Pro مش بعرض ثابت.</p></div>
+  </section>
+
+  <section class="sec" id="stock"><h2>مؤشر المخزون <small>Stock Meter</small></h2>
+    <div class="spec"><span class="k">الحالات</span><div class="demo" style="gap:28px">
+      <div class="stock"><div class="stock__bar"><span class="stock__avail" style="width:62%"></span><span class="stock__res" style="width:14%"></span></div><span class="stock__txt"><b>18</b> متوفر · 4 محجوز</span></div>
+      <div class="stock stock--low"><div class="stock__bar"><span class="stock__avail" style="width:12%"></span><span class="stock__res" style="width:8%"></span></div><span class="stock__txt"><b>3</b> متوفر · قرب يخلص</span></div>
+      <div class="stock stock--out"><div class="stock__bar"><span class="stock__avail" style="width:0"></span><span class="stock__res" style="width:10%"></span></div><span class="stock__txt"><b>نفد</b> · 2 محجوز</span></div>
+      <button class="btn btn--outline btn--sm" id="stockDemo">جرّب البيع ↓</button></div></div>
+  </section>
+
+  <section class="sec" id="cards"><h2>البطاقات <small>KPI · Attention · Lamma Today · Product · Order</small></h2>
+    <div class="today"><span class="today__mark"><i data-mark="#F4A261" data-size="52"></i></span><p class="today__text">لمّة اليوم: <a href="#">6 طلبات جديدة</a>، <a href="#">2 بدها تجهيز</a>، <a href="#"><bdi>45.00</bdi> د.أ ذمم مستحقة</a>، و<a href="#">منتج واحد قرب يخلص</a>.</p></div>
+    <div class="grid g-4">
+      <div class="card"><div class="kpi__label"><i data-ic="cash" data-cls="ic--16"></i> مبيعات اليوم</div><div class="kpi__value"><span data-count="320" data-suffix=" د.أ">0</span></div><div class="kpi__trend trend-up">↑ 12% عن أمس</div></div>
+      <div class="card"><div class="kpi__label"><i data-ic="receipt" data-cls="ic--16"></i> طلبات جديدة</div><div class="kpi__value" data-count="14">0</div><div class="kpi__trend trend-up">+3</div></div>
+      <div class="card"><div class="kpi__label"><i data-ic="wallet" data-cls="ic--16"></i> صافي ربح الشهر</div><div class="kpi__value"><span data-count="1260" data-dec="2" data-suffix=" د.أ">0</span></div><div class="kpi__trend trend-down">↓ 8% بسبب الإعلانات</div></div>
+      <div class="card"><div class="kpi__label"><i data-ic="building-warehouse" data-cls="ic--16"></i> قيمة المخزون</div><div class="kpi__value"><span data-count="4380" data-suffix=" د.أ">0</span></div><div class="kpi__trend muted">142 قطعة</div></div>
+    </div>
+    <div class="grid g-3">
+      <a class="attention" href="#"><span class="attention__icon"><i data-ic="receipt"></i></span><span><b>2 طلبات بدها تجهيز</b><br><span class="caption">أقدمها من أمس</span></span><i data-ic="chevron-left" data-cls="end"></i></a>
+      <a class="attention" href="#"><span class="attention__icon"><i data-ic="package"></i></span><span><b>فستان كتان · M زيتي</b><br><span class="caption">ضل 3 قطع</span></span><i data-ic="chevron-left" data-cls="end"></i></a>
+      <a class="attention attention--calm" href="#"><span class="attention__icon"><i data-ic="truck"></i></span><span><b>85.00 د.أ عند شركة التوصيل</b><br><span class="caption">3 طلبات بانتظار التحويل</span></span><i data-ic="chevron-left" data-cls="end"></i></a>
+    </div>
+    <div class="grid g-4">
+      <div class="card card--hover"><div class="thumb thumb--lg" style="width:100%;height:120px"><i data-ic="photo" data-cls="ic--24"></i></div><div style="margin-top:10px" class="col"><b>فستان كتان صيفي</b><span class="caption">4 مقاسات · 3 ألوان</span><div class="row between"><span data-money="38"></span><span class="badge badge--attention">قرب يخلص</span></div></div></div>
+      <div class="order-card"><div class="row between"><b class="ltr">#1042</b><span class="badge badge--warning">جزئي</span></div><span>رنا الخطيب</span><div class="row between"><span class="caption">فستان كتان × 2</span><span data-money="76"></span></div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="table"><h2>الجدول <small>Toolbar · Header · Cells · Row · Pagination</small></h2>
+    <div class="table-wrap">
+      <div class="toolbar"><span class="control control--search" style="height:38px;width:260px"><i data-ic="search"></i><input placeholder="بحث بالطلبات"></span><button class="chip is-selected">هذا الشهر</button><button class="chip"><i data-ic="filter" data-cls="ic--16"></i> القناة</button><div class="segmented end"><button class="is-active" aria-label="جدول"><i data-ic="list" data-cls="ic--16"></i></button><button aria-label="أعمدة"><i data-ic="layout-kanban" data-cls="ic--16"></i></button></div></div>
+      <table class="tbl"><thead><tr><th><label class="check"><input type="checkbox"></label></th><th class="sortable">الطلب</th><th>العميل</th><th class="hide-md">المنتجات</th><th>الحالة</th><th>الدفع</th><th class="num sortable">المجموع</th></tr></thead>
+        <tbody>
+          <tr><td><label class="check"><input type="checkbox"></label></td><td class="ltr"><b>#1042</b></td><td><div class="row"><span class="avatar avatar--sm">رخ</span>رنا الخطيب</div></td><td class="hide-md"><div class="cell-product"><span class="thumb"><i data-ic="photo" data-cls="ic--16"></i></span><span>فستان كتان<br><span class="caption">M · زيتي × 2</span></span></div></td><td><span class="badge badge--info badge--dot">جديد</span></td><td><span class="badge badge--warning">جزئي</span></td><td class="num"><span data-money="76"></span></td></tr>
+          <tr class="is-selected"><td><label class="check"><input type="checkbox" checked></label></td><td class="ltr"><b>#1041</b></td><td><div class="row"><span class="avatar avatar--sm">عس</span>عمر سعيد</div></td><td class="hide-md"><div class="cell-product"><span class="thumb"><i data-ic="photo" data-cls="ic--16"></i></span><span>عطر عود<br><span class="caption">50 مل</span></span></div></td><td><span class="badge badge--warning badge--dot">قيد التجهيز</span></td><td><span class="badge badge--success">مدفوع</span></td><td class="num"><span data-money="24"></span></td></tr>
+        </tbody></table>
+      <div class="pagination"><span>عرض 1–2 من 48</span><div class="row"><button class="btn btn--outline btn--sm icon-btn" aria-label="السابق"><i data-ic="chevron-right" data-cls="ic--16"></i></button><button class="btn btn--outline btn--sm icon-btn" aria-label="التالي"><i data-ic="chevron-left" data-cls="ic--16"></i></button></div></div>
+    </div>
+    <p class="note">بالموبايل الجدول بيتحوّل لقائمة بطاقات تلقائيًا (جرّب تصغير الشاشة).</p>
+  </section>
+
+  <section class="sec" id="timeline"><h2>الخيط الزمني <small>Timeline Item — «الخيط»</small></h2>
+    <div class="card" style="max-width:520px"><ul class="timeline">
+      <li class="is-done"><span class="timeline__dot"><i data-ic="check" data-cls="ic--16"></i></span><b>تم إنشاء الطلب</b><div class="caption">من إنستغرام · 9 نوفمبر، 10:20</div></li>
+      <li class="is-auto"><span class="timeline__dot"><i data-ic="lock" data-cls="ic--16"></i></span><b>تلقائي: انحجزت قطعتين من M زيتي</b><div class="caption">عند التأكيد</div></li>
+      <li class="is-done"><span class="timeline__dot"><i data-ic="cash" data-cls="ic--16"></i></span><b>دفعة <bdi>40.00</bdi> د.أ · CliQ</b><div class="caption">المتبقي <bdi>36.00</bdi> د.أ</div></li>
+      <li><span class="timeline__dot"><i data-ic="truck" data-cls="ic--16"></i></span><b>مع المندوب</b><div class="caption">بانتظار التوصيل</div></li></ul></div>
+  </section>
+
+  <section class="sec" id="charts"><h2>الرسوم البيانية <small>Bars · Donut · Legend</small></h2>
+    <div class="grid g-2">
+      <div class="card"><div class="card__head"><span class="card__title">المبيعات · آخر 7 أيام</span><span class="legend"><span><i style="background:var(--lamma-chart-1)"></i>مبيعات</span><span><i style="background:var(--lamma-chart-2)"></i>اليوم</span></span></div>
+        <div class="bars"><div class="bars__b"><i style="height:42%"></i><span>سبت</span></div><div class="bars__b"><i style="height:58%;animation-delay:30ms"></i><span>أحد</span></div><div class="bars__b"><i style="height:36%;animation-delay:60ms"></i><span>اثنين</span></div><div class="bars__b"><i style="height:70%;animation-delay:90ms"></i><span>ثلاثاء</span></div><div class="bars__b"><i style="height:64%;animation-delay:120ms"></i><span>أربعاء</span></div><div class="bars__b"><i style="height:50%;animation-delay:150ms"></i><span>خميس</span></div><div class="bars__b is-today"><i style="height:82%;animation-delay:180ms"></i><span>اليوم</span></div></div></div>
+      <div class="card"><div class="card__head"><span class="card__title">المصاريف حسب التصنيف</span></div><div class="row" style="gap:24px">
+        <svg width="140" height="140" viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--lamma-surface-muted)" stroke-width="6"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--lamma-chart-1)" stroke-width="6" stroke-dasharray="45 55" stroke-dashoffset="25"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--lamma-chart-2)" stroke-width="6" stroke-dasharray="30 70" stroke-dashoffset="80"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--lamma-chart-3)" stroke-width="6" stroke-dasharray="15 85" stroke-dashoffset="50"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--lamma-chart-4)" stroke-width="6" stroke-dasharray="10 90" stroke-dashoffset="35"/></svg>
+        <div class="col" style="gap:8px"><span class="legend"><span><i style="background:var(--lamma-chart-1)"></i>إعلانات 45%</span></span><span class="legend"><span><i style="background:var(--lamma-chart-2)"></i>توصيل 30%</span></span><span class="legend"><span><i style="background:var(--lamma-chart-3)"></i>تغليف 15%</span></span><span class="legend"><span><i style="background:var(--lamma-chart-4)"></i>أخرى 10%</span></span></div></div>
+        <p class="note" style="margin-top:10px">أقصى 4 سلاسل، ودايمًا مع تسمية مكتوبة (لعمى الألوان).</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="overlays"><h2>النوافذ والتنبيهات <small>Toast · Dialog · Drawer · Menu · Command Palette · Trial Banner</small></h2>
+    <div class="spec">
+      <span class="k">Toast</span><div class="demo"><button class="btn btn--outline" data-toast="ok">نجاح (الشدّة بتنرسم)</button><button class="btn btn--outline" data-toast="undo">مع «تراجع»</button><button class="btn btn--outline" data-toast="err">خطأ</button></div>
+      <span class="k">Dialog · Drawer</span><div class="demo"><button class="btn btn--outline" onclick="Lamma.open('#dlg')">نافذة تأكيد</button><button class="btn btn--outline" onclick="Lamma.open('#drw')">لوحة جانبية</button><button class="btn btn--outline" onclick="Lamma.open('#pal')">البحث والأوامر</button></div>
+      <span class="k">Menu</span><div class="demo" style="position:relative"><button class="btn btn--primary" data-menu onclick="Lamma.toggleMenu(this,'#newMenu')"><i data-ic="plus"></i> جديد</button>
+        <div class="menu" id="newMenu" style="top:46px;inset-inline-start:0"><a class="menu__item"><i data-ic="receipt"></i> طلب</a><a class="menu__item"><i data-ic="package"></i> منتج</a><a class="menu__item"><i data-ic="users"></i> عميل</a><div class="menu__sep"></div><a class="menu__item"><i data-ic="cash"></i> دفعة</a><a class="menu__item"><i data-ic="wallet"></i> مصروف</a><a class="menu__item"><i data-ic="truck"></i> استلام بضاعة</a></div></div>
+      <span class="k">Trial Banner</span><div class="col" style="width:100%"><div class="trial"><i data-ic="clock" data-cls="ic--16"></i> ضل 18 يوم من تجربتك المجانية <a href="#">شوف الخطط</a></div><div class="trial trial--late"><i data-ic="clock" data-cls="ic--16"></i> ضل 2 يوم بس من التجربة <a href="#">اشترك الآن</a></div><div class="trial trial--expired"><i data-ic="lock" data-cls="ic--16"></i> انتهت التجربة. بياناتك محفوظة وبتقدر تشوفها، والإضافة بترجع لما تشترك. <a href="#">اشترك</a></div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="nav"><h2>التنقّل <small>Nav Item · Sidebar · Top Bar · Bottom Bar</small></h2>
+    <p class="note">الشريط الجانبي والعلوي والسفلي حيّين داخل البروتوتايب — <a href="../app/index.html">افتحه</a> وصغّر الشاشة لتشوف الموبايل.</p>
+    <div class="row wrap" style="align-items:flex-start;gap:16px">
+      <div class="sidebar" style="height:auto;position:static;width:240px;border-radius:12px"><a class="nav is-active"><i data-ic="home"></i><span class="nav__label">الرئيسية</span></a><a class="nav"><i data-ic="receipt"></i><span class="nav__label">الطلبات</span><span class="count">6</span></a><a class="nav"><i data-ic="package"></i><span class="nav__label">المنتجات</span></a></div>
+      <div class="sidebar" style="height:auto;position:static;width:72px;border-radius:12px"><a class="nav is-active" title="الرئيسية"><i data-ic="home"></i></a><a class="nav" title="الطلبات"><i data-ic="receipt"></i></a><a class="nav" title="المنتجات"><i data-ic="package"></i></a></div>
+    </div>
+  </section>
+
+  <section class="sec" id="states"><h2>الحالات الفاضية والتحميل <small>Empty State · Skeleton</small></h2>
+    <div class="grid g-2">
+      <div class="card empty"><div class="gather"><div class="gather__card"></div><div class="gather__piece"><i data-ic="brand-whatsapp" data-cls="ic--16"></i></div><div class="gather__piece"><i data-ic="receipt" data-cls="ic--16"></i></div><div class="gather__piece"><i data-ic="package" data-cls="ic--16"></i></div></div>
+        <div class="empty__title">لمّ أول طلب إلك هون</div><p class="muted">كل طلباتك من واتساب وإنستغرام بمكان واحد.</p><button class="btn btn--primary"><i data-ic="plus"></i> سجّل أول طلب</button><button class="btn btn--ghost btn--sm" onclick="replayGather(this)">أعد الحركة</button></div>
+      <div class="card col"><div class="skel" style="height:18px;width:40%"></div><div class="grid g-2"><div class="skel" style="height:84px"></div><div class="skel" style="height:84px"></div></div><div class="skel" style="height:14px"></div><div class="skel" style="height:14px;width:80%"></div><div class="skel" style="height:14px;width:60%"></div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="cards2"><h2>نظام البطاقات v2 <small>Metric · Row metric · Area · Donut · Quick action · Attention · Insight</small></h2>
+    <p class="note">كل نوع بيانات إله شكله. البطاقات الكاملة للطلب (ملصق شحن) والمنتج والعميل حيّة بالبروتوتايب: <a href="../app/index.html#/dashboard">الرئيسية</a> · <a href="../app/index.html#/orders/board">لوحة الحالات</a> · <a href="../app/index.html#/products">المنتجات</a> · <a href="../app/index.html#/customers">العملاء</a>.</p>
+    <div class="grid g-3" id="c2Metrics"></div>
+    <div class="grid g-main"><div class="card" style="padding:20px"><div class="shead"><div class="shead__t"><span class="overline">مثال</span><h2>المبيعات والربح</h2></div></div><div id="c2Area"></div></div><div class="col" style="gap:14px" id="c2Rows"></div></div>
+    <div class="grid g-3"><div class="card row" style="gap:20px;padding:20px" id="c2Donut"></div>
+      <div class="col" style="gap:12px"><div class="quick"><a class="qa"><span class="chipi tone-olive"><i data-ic="receipt"></i></span>طلب جديد<kbd>N</kbd></a><a class="qa"><span class="chipi tone-brick"><i data-ic="wallet"></i></span>مصروف</a></div>
+        <div class="card alist" style="padding:8px 16px"><a class="aitem"><span class="prio prio--high"></span><span class="chipi tone-brick"><i data-ic="gift"></i></span><span class="aitem__t"><b>2 طلبات بدها تجهيز</b><span>أولوية عالية</span></span></a><a class="aitem"><span class="prio prio--mid"></span><span class="chipi tone-apricot"><i data-ic="package"></i></span><span class="aitem__t"><b>منتج قرب يخلص</b><span>أولوية متوسطة</span></span></a></div></div>
+      <div class="insight"><span class="overline">ملاحظة لمّة</span><p>بطاقة الملاحظات بتطلع جملة محسوبة من بياناتك، مثل <b>أقوى يوم</b> و<b>أكثر قناة</b>.</p></div></div>
+  </section>
+
+  <section class="sec" id="art"><h2>الرسومات وقصة الطلب <small>Illustrations · v2</small></h2>
+    <p class="note">رسومات SVG خاصة بلمّة: منتج ← تغليف ← ملصق ← توصيل ← زبون. الحركة بتشتغل بس لما الإجراء يصير فعلًا (هون بزر «تشغيل» للعرض).</p>
+    <div class="grid g-3">
+      <div class="card col"><b>صور المنتجات البديلة</b><div class="row wrap" id="artProducts"></div><span class="caption">بدل المربع الرمادي لما ما في صورة — حسب قالب المنتج</span></div>
+      <div class="card col"><b>التغليف · «قيد التجهيز»</b><div id="artPack" style="max-width:240px;margin-inline:auto"></div><button class="btn btn--outline btn--sm" onclick="playArt('artPack')">تشغيل</button></div>
+      <div class="card col"><b>التوصيل · «مع المندوب» ← «تم التوصيل»</b><div id="artVan"></div><div class="row"><button class="btn btn--outline btn--sm" onclick="vanState('courier')">مع المندوب</button><button class="btn btn--primary btn--sm" onclick="vanState('delivered')">تم التوصيل</button></div></div>
+      <div class="card col"><b>اللمّة · الحالات الفاضية والتهيئة</b><div id="artGather" style="max-width:240px;margin-inline:auto"></div><button class="btn btn--outline btn--sm" onclick="playArt('artGather')">تشغيل</button></div>
+      <div class="card col"><b>طرد مسكّر</b><div style="max-width:140px;margin-inline:auto" id="artParcel"></div></div>
+      <div class="card col motif-dots motif-drift" style="background-color:var(--lamma-bg-sidebar);color:var(--lamma-text-on-olive)"><b>نقاط التنظيم + مسار لمّة</b><div id="artRoute" style="margin-top:20px"></div><span class="caption" style="color:#B9BDA8">خلفية البطل والأقسام الغامقة</span></div>
+    </div>
+    <div class="card col" style="gap:6px"><b>الخط الجديد: Lamma Sans</b><p style="font:var(--lamma-type-display)">كل شغلك بمكان واحد</p><p class="muted">IBM Plex Sans Arabic للعربي · Inter للأرقام والإنجليزي (تلقائي) — Order #1042 · <span class="money"><bdi>1,260.00</bdi> د.أ</span></p>
+      <div class="row" style="gap:32px;align-items:flex-start"><div class="num" style="font:var(--lamma-type-number-table);text-align:end">1,260.00<br>38.00<br>411.11<br>7.50</div><span class="caption">الأرقام بعرض ثابت — بتنصفّ تحت بعض بالزبط</span></div></div>
+  </section>
+
+  <section class="sec" id="motion"><h2>الحركة <small>Motion spec</small></h2>
+    <div class="table-wrap"><table class="tbl"><thead><tr><th>الحركة</th><th>بتشتغل لما</th><th>شو بيشوف المستخدم</th><th>المدة</th><th>الهدف</th></tr></thead><tbody>
+      <tr><td><b>اللمّة</b></td><td>حفظ طلب، منتج، دفعة</td><td>رسالة نجاح والشدّة بتنرسم</td><td>320ms</td><td>تأكيد واضح بلغة الهوية</td></tr>
+      <tr><td><b>انتقال الحالة</b></td><td>تغيير حالة الطلب</td><td>البطاقة بتنزلق لعمودها، والشارة بيتغيّر لونها</td><td>320ms</td><td>تعرف وين راح الطلب</td></tr>
+      <tr><td><b>المخزون</b></td><td>تغيّر الكمية</td><td>الشريط بيعبى أو بينقص، ونبضة وحدة عند «قرب يخلص»</td><td>320ms</td><td>تنبيه قبل النفاد</td></tr>
+      <tr><td><b>الأرقام والرسوم</b></td><td>فتح الرئيسية والتقارير</td><td>عدّاد للأرقام، والأعمدة بتطلع ورا بعض بفرق 30ms</td><td>480ms</td><td>لفت النظر للتغيير</td></tr>
+      <tr><td><b>اللوحة الجانبية</b></td><td>إنشاء أو تعديل</td><td>بتنزلق من طرف الشاشة (من تحت بالموبايل)</td><td>320ms</td><td>بتحافظ على مكانك</td></tr>
+      <tr><td><b>القوائم</b></td><td>«+ جديد»، الحساب</td><td>العناصر بتظهر ورا بعض</td><td>200ms</td><td>وضوح الخيارات</td></tr>
+      <tr><td><b>تجمّع الفاضي</b></td><td>قائمة فاضية</td><td>3 أشكال متفرقة بتتجمّع لبطاقة، مرة وحدة</td><td>900ms</td><td>دعوة لأول خطوة</td></tr>
+    </tbody></table></div>
+    <p class="note">مع خيار «تقليل الحركة» بالجهاز: كل المدد بتصير 0، العدّادات بتطلع الرقم مباشرة، والشدّة بتظهر مرسومة.</p>
+  </section>
+</div>
+
+<div class="dialog" id="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgT" aria-hidden="true"><h3 id="dlgT">إلغاء الطلب #1042؟</h3><p class="muted" style="margin-top:8px">القطعتين المحجوزات من «فستان كتان · M زيتي» رح يرجعوا للمتوفر.</p>
+  <label class="field" style="margin-top:14px"><span class="field__label">السبب</span><span class="control"><select><option>الزبون غيّر رأيه</option><option>ما رد على التلفون</option><option>أخرى</option></select></span></label>
+  <div class="dialog__actions"><button class="btn btn--secondary" onclick="Lamma.closeAll()">رجوع</button><button class="btn btn--danger" onclick="Lamma.closeAll();Lamma.toast('انلغى الطلب ورجعت القطع للمخزون',{action:'تراجع'})">إلغاء الطلب</button></div></div>
+<aside class="drawer" id="drw" aria-hidden="true"><div class="drawer__head"><h3>مصروف جديد</h3><button class="btn btn--ghost icon-btn" onclick="Lamma.closeAll()" aria-label="إغلاق"><i data-ic="x"></i></button></div>
+  <div class="drawer__body"><label class="field"><span class="field__label">المبلغ</span><span class="control"><input class="ltr" placeholder="0.00"><span class="control__affix">د.أ</span></span></label><label class="field"><span class="field__label">التصنيف</span><span class="control"><select><option>إعلانات</option><option>توصيل</option><option>تغليف</option></select></span></label></div>
+  <div class="drawer__foot"><button class="btn btn--primary" onclick="Lamma.closeAll();Lamma.toast('انسجّل المصروف')">حفظ</button><button class="btn btn--ghost" onclick="Lamma.closeAll()">إلغاء</button></div></aside>
+<div class="palette" id="pal" role="dialog" aria-hidden="true"><input placeholder="دوّر أو اكتب أمر… مثلًا «طلب جديد»"><div class="palette__group"><div class="palette__label">أوامر</div><a class="menu__item" style="opacity:1;transform:none"><i data-ic="plus"></i> طلب جديد</a><a class="menu__item" style="opacity:1;transform:none"><i data-ic="wallet"></i> تسجيل مصروف</a><div class="palette__label">طلبات</div><a class="menu__item" style="opacity:1;transform:none"><b class="ltr">#1042</b> رنا الخطيب</a></div></div>
+
+<script src="icons.js"></script>
+<script src="lamma.js"></script>
+<script src="illustrations.js"></script>
+<script src="cards.js"></script>
+<script>
+  Lamma.hydrate(); Lamma.countUp();
+  document.querySelectorAll("[data-seg]").forEach(s => s.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; s.querySelectorAll("button").forEach(x => x.classList.toggle("is-active", x === b)); }));
+  document.querySelectorAll("[data-toast]").forEach(b => b.onclick = () => {
+    const t = b.dataset.toast;
+    if (t === "ok") Lamma.toast("انحفظ الطلب #1043 — كل شي بمكانه");
+    if (t === "undo") Lamma.toast("الطلب صار «مؤكد» وانحجزت القطع", { action: "تراجع", onAction: () => Lamma.toast("رجع الطلب «جديد»", { type: "info" }) });
+    if (t === "err") Lamma.toast("ما قدرنا نحفظ. تأكد من الإنترنت وجرّب كمان مرة", { type: "error" });
+  });
+  let left = 18; document.getElementById("stockDemo").onclick = () => {
+    left = left > 3 ? left - 5 : left; const s = document.querySelector("#stock .stock");
+    s.querySelector(".stock__avail").style.width = Math.max(0, left / 30 * 100) + "%";
+    s.querySelector(".stock__txt").innerHTML = `<b>${left}</b> متوفر · 4 محجوز`;
+    if (left <= 3) { s.classList.add("stock--low"); s.querySelector(".stock__bar").classList.add("pulse-once"); }
+  };
+  const LC = window.LammaCards, demo = [12, 18, 15, 22, 19, 28, 24, 31, 27, 35, 30, 38];
+  document.getElementById("c2Metrics").innerHTML = LC.metric({ tone: "olive", icon: "cash", label: "بطاقة رقم · زيتي", value: 1260.5, dec: 2, unit: "د.أ", delta: 12, spark: demo, foot: "مقارنة بالفترة السابقة" }) + LC.metric({ tone: "apricot", icon: "package", label: "بطاقة رقم · مشمشي", value: 7, delta: -8, invert: true, spark: demo.slice().reverse() }) + LC.metric({ tone: "blue", icon: "receipt", label: "بدون مقارنة", value: 14, delta: null, spark: demo.map((v) => v % 9) });
+  document.getElementById("c2Rows").innerHTML = LC.metric({ row: true, tone: "green", icon: "building-bank", label: "بطاقة صف", value: 328, dec: 2, unit: "د.أ", delta: 6, spark: demo }) + LC.metric({ row: true, tone: "brick", icon: "wallet", label: "بطاقة صف", value: 198, dec: 2, unit: "د.أ", spark: demo.slice(3) });
+  document.getElementById("c2Area").innerHTML = LC.area(demo.map((v, i) => ({ label: String(i + 1), a: v * 10, b: v * 4 })));
+  const segs = [{ label: "إنستغرام", value: 49, color: "var(--lamma-chart-1)" }, { label: "فيسبوك", value: 33, color: "var(--lamma-chart-2)" }, { label: "واتساب", value: 18, color: "var(--lamma-chart-3)" }];
+  document.getElementById("c2Donut").innerHTML = LC.donut(segs, "434", "د.أ") + LC.legend(segs, 100);
+  Lamma.hydrate(document.getElementById("cards2")); Lamma.countUp(document.getElementById("cards2")); LC.bindArea(document.getElementById("cards2")); LC.bindTabs();
+  const A = window.LammaArt;
+  document.getElementById("artProducts").innerHTML = ["clothing", "perfume", "gift", "jewelry", "beauty", "other"].map(t => `<span class="thumb thumb--lg" style="background:var(--lamma-olive-50)">${A.product(t)}</span>`).join("");
+  document.getElementById("artPack").innerHTML = A.packing("clothing");
+  document.getElementById("artVan").innerHTML = A.delivery("courier");
+  document.getElementById("artGather").innerHTML = A.gather(false);
+  document.getElementById("artParcel").innerHTML = A.parcel();
+  document.getElementById("artRoute").innerHTML = A.route(6);
+  function playArt(id) { const box = document.getElementById(id); const s = box.querySelector("svg"); s.classList.remove("is-playing"); void s.getBoundingClientRect(); s.classList.add("is-playing"); }
+  function vanState(st) { document.getElementById("artVan").innerHTML = A.delivery(st, st === "delivered"); }
+  function replayGather(btn) { const g = btn.closest(".empty").querySelector(".gather"); const c = g.cloneNode(true); g.replaceWith(c); }
+</script>
+</body>
+</html>
