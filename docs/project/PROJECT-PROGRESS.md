@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 0: Discovery & Master Planning** |
-| Current gate | Phase 0 deliverables complete. **Awaiting founder review and approval** |
-| Git (founder-reported state) | Branch `develop`, one commit `11d874e`; `frontend-reference/` untracked; Phase 0 docs untracked and not committed |
+| Current phase | **Phase 1: Foundation** |
+| Current gate | **Gate 2 done: Phase 1 plan approved (2026-11-10).** Waiting for the founder to write `Backend` (gate 3) |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Branch `feature/phase1-foundation` created from the latest `develop` (2026-11-10) |
 | Migrations | None exist. None applied |
-| Next expected founder action | Review the Phase 0 report, answer the P0 open questions, run the Phase 0 Git checkpoint |
+| Next expected founder action | Commit and push the docs, then write `Backend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -21,13 +21,13 @@
 | 0.5 | Database planning | Done (proposal) | `DATABASE-DESIGN.md` |
 | 0.6 | Master roadmap | Done (draft) | `MASTER-ROADMAP.md`, `PHASE-PLANS.md` |
 | 0.7 | Project documentation | Done | `CLAUDE.md`, `docs/**` |
-| 0.8 | Open decisions | Done | `OPEN-QUESTIONS.md` (P0: OQ-001…007) |
+| 0.8 | Open decisions | Done | `OPEN-QUESTIONS.md` |
 
 ## Phase overview
 | Phase | Status |
 |---|---|
-| 0 Discovery & planning | Deliverables complete; awaiting approval |
-| 1 Foundation | Pending (blocked by P0 open questions and approval of the proposals) |
+| 0 Discovery & planning | **Merged into develop (founder-reported 2026-11-10)** |
+| 1 Foundation | Plan approved (gate 2); Backend (gate 3) next |
 | 2 Catalog | Pending |
 | 3 Inventory | Pending |
 | 4 Customers | Pending |
@@ -40,11 +40,17 @@
 | 11 Subscription (display) | Pending |
 | 12 Hardening & launch | Pending |
 
-## Blockers / pending founder decisions
-- P0 questions OQ-001 … OQ-007 (OPEN-QUESTIONS.md).
-- Approval of the Proposed items P-001 … P-022 (DECISIONS.md §B), at least those needed by Phase 1.
-- Test-database strategy: whether test fixtures may create throwaway test databases (TESTING-STRATEGY.md §2).
-- Package installation approval for the Phase 1 stack (NuGet and npm), and possibly the .NET 10 SDK.
+## Resolved for Phase 1 (2026-11-10)
+- .NET 9 (D-076)
+- Identity cookie auth (D-077)
+- Email-only sign-up and recovery (D-078)
+- BusinessMembership (D-079)
+- 2-decimal money display (D-080)
+- Spec onboarding order with a single business type (D-081)
+- FluentValidation (D-082)
+
+## Still open during Phase 1
+- Email provider for password recovery (until it is chosen, a dev-only log sender is used).
 
 ## Test results log
 | Date | Scope | Result |
@@ -55,3 +61,6 @@
 | Date | Entry |
 |---|---|
 | 2026-11-10 | Phase 0 documentation created (docs only; no code, Git, migrations, or installs) |
+| 2026-11-10 | Founder reported the Phase 0 merge; P0 decisions recorded; Phase 1 at gate 1 |
+| 2026-11-10 | Founder created `feature/phase1-foundation`; Phase 1 at gate 2 |
+| 2026-11-10 | Phase 1 plan approved (D-086); decisions D-083–D-085 recorded |

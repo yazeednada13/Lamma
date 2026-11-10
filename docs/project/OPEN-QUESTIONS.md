@@ -14,15 +14,18 @@ Entry format: **ID · Priority · Blocks**, then the context, the options, and t
 ## P0 — before Phase 1 (Foundation)
 
 **OQ-001 · P0 · Blocks Phase 1: target .NET version**
+- **Resolved (2026-11-10): .NET 9** (installed SDK 9.0.320; dotnet-ef 9.0.6 matches). Founder chose this over the 10 LTS recommendation. → D-076
 - Context: installed SDKs are 7, 8, and 9 (9.0.320). .NET 9 is STS. .NET 10 is the current LTS (Nov 2025, supported until Nov 2028) and is not installed.
 - Options: (a) .NET 10 LTS, after the founder installs the SDK; (b) .NET 9 on the installed SDK, with an upgrade later.
 - Recommendation: **(a) .NET 10 LTS**. A commercial product should start on LTS. Installing the SDK is the founder's action.
 
 **OQ-002 · P0 · Blocks Phase 1: authentication mechanism**
+- **Resolved (2026-11-10): Option A, Identity cookie + antiforgery.** → D-077
 - Options: (A) ASP.NET Core Identity cookie auth, with the SPA served from the same site; (B) JWT access token plus a rotating refresh-token cookie. MASTER-ARCHITECTURE §7 sets out the details and security trade-offs.
 - Recommendation: **(A)**. It is simpler, it relies on built-in Identity security, it needs no token storage in JS, and CSRF is handled with SameSite plus an antiforgery header. Option B is worth it only if a native mobile app is planned soon.
 
 **OQ-003 · P0 · Blocks Phase 1: sign-up and login identifier, verification, password recovery**
+- **Resolved (2026-11-10): email only for V1** (email + password, recovery by email link). Mobile/SMS deferred. The email provider is still to be chosen (a dev log sender is used until then). → D-078
 - Context: the spec says "mobile number **or** email". The prototype's sign-up asks only for name plus phone (+962) and says "we'll send you a verification code". Forgot-password says "we'll send a link to your phone". Login accepts a phone number or an email.
 - Options:
   - (a) Email plus password in V1, with email recovery (needs an email provider).
@@ -33,19 +36,23 @@ Entry format: **ID · Priority · Blocks**, then the context, the options, and t
 - Recommendation: (c), with each recovery channel built only once a provider has been chosen. A provider decision is required either way.
 
 **OQ-004 · P0 · Blocks Phase 1: User–Business relationship**
+- **Resolved (2026-11-10): BusinessMembership table**, unique UserId in V1. → D-079
 - Options: (a) a `BusinessMembership(UserId, BusinessId, Role)` table, unique on UserId in V1; (b) a `Business.OwnerUserId` foreign key.
 - Recommendation: **(a)**. Future multi-user support then needs no schema change. V1 exposes no membership features.
 
 **OQ-005 · P0 · Blocks Phase 1: money input and display precision**
+- **Resolved (2026-11-10): 2 decimals for input and display**; storage and API stay at 3. → D-080
 - Context: JOD has 3 decimals (fils). Storage will be `decimal(19,3)` either way. The prototype displays 2 decimals (`38.00`).
 - Options: (a) input and display with 2 decimals, rejecting a third decimal (simplest for merchants); (b) the full 3 decimals everywhere; (c) display 2 and allow 3 on input.
 - Recommendation: **(a) for V1 input and display**, keeping 3 dp in storage and the API so that rounding results such as averages stay exact.
 
 **OQ-006 · P0 · Blocks the Phase 0 Git checkpoint: commit `frontend-reference/` to the repo?**
+- **Partly resolved (2026-11-10):** the founder reports that the Phase 0 PR was merged into `develop`. Whether `frontend-reference/` was included is still to be confirmed.
 - Context: it is currently untracked, at about 1.2 MB with fonts.
 - Recommendation: **commit it**, so that every session and reviewer sees the same reference. It stays read-only.
 
 **OQ-007 · P0 · Blocks Phase 1: onboarding steps and business-type multiplicity**
+- **Resolved (2026-11-10): spec order, single business type** (name → type → channels). → D-081
 - Context: the spec lists step 1 business name, step 2 business type, step 3 sales channels. The prototype instead runs step 1 business types (**multi-select**: "you can pick more than one type"), step 2 channels plus business name plus currency, step 3 done. Settings also shows two types selected.
 - Options: (a) a single business type, with the step order from the spec; (b) multiple types, where the first chosen is the "primary" that drives the default template.
 - Recommendation: **(a) single type, in the spec's order**. A product can already use any template, so multiple types add complexity for little gain.

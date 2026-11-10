@@ -70,6 +70,22 @@ Sources:
 | D-072 | The founder performs **all EF Core migrations and DB updates**. Claude provides the exact commands only | MP, F |
 | D-073 | No package or tool installation without approval | MP |
 | D-074 | Backend work is completed and reviewed before the matching frontend work | MP |
+| D-075 | Before every PR, Claude provides a ready-to-paste **PR title and description**, plus the source and target branches | F |
+
+### A6. Phase 1 prerequisite decisions (founder answers, 2026-11-10)
+| ID | Decision | Source |
+|---|---|---|
+| D-076 | Target **.NET 9** (supersedes the P-019 recommendation of .NET 10) | F, OQ-001 |
+| D-077 | Authentication: **ASP.NET Core Identity cookie + antiforgery** (option A of P-004) | F, OQ-002 |
+| D-078 | V1 sign-up and login use **email + password**; password recovery by email link. Mobile/SMS is deferred. Provider TBD | F, OQ-003 |
+| D-079 | User–Business link: **BusinessMembership** table, unique UserId in V1 (approves P-002) | F, OQ-004 |
+| D-080 | Money **input and display at 2 decimals**; storage and API at 3 (`decimal(19,3)`) | F, OQ-005 |
+| D-081 | Onboarding: **spec order** (name → single business type → channels) | F, OQ-007 |
+| D-082 | Backend request validation with **FluentValidation** (approves P-015; installing the package is approved as part of Phase 1) | F |
+| D-083 | **Scoped exception to the DB rule:** test fixtures may create and drop throwaway `Lamma_Test_<guid>` databases on LocalDB (EnsureCreated/EnsureDeleted). They never touch `Lamma_Dev` or any real database | F |
+| D-084 | Email confirmation is **not required** before login in V1 (until an email provider is chosen) | F |
+| D-085 | Unbuilt modules stay visible in the navigation and open an Arabic "coming soon" page (no fake data) | F |
+| D-086 | Phase 1 plan approved (2026-11-10). It also approves P-001, P-003, P-005, P-013, P-014, P-016, P-017, P-020 and the Phase 1 package list | F |
 
 ### A5. Visual identity (from REF; preserve)
 | ID | Decision |
@@ -129,4 +145,7 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 ## D. Change log
 | Date | Change |
 |---|---|
+| 2026-11-10 | D-075 added (PR title and description before every PR) |
+| 2026-11-10 | D-076–D-082 added from the founder's P0 answers before Phase 1 |
+| 2026-11-10 | D-083–D-086 added; Phase 1 plan approved |
 | 2026-11-10 | Initial log created in Phase 0 from MP, REF, and the founder's review instructions (workflow, engineering standards, status-label discipline, LTR toggle exclusion) |

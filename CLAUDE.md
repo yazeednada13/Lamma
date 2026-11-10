@@ -20,7 +20,7 @@ Every phase follows these gates in order. Each gate waits for the founder's expl
 | 4 | **Backend checkpoint** | Claude reports → founder executes | Deliver the Backend completion report: features, architecture, build and test results, remaining issues, API contracts for the frontend, schema changes, recommended migration name, the exact `dotnet ef` and database-update commands, and the exact Git commands with commit messages. **Wait** until the founder confirms the push to the remote. |
 | 5 | **Frontend tasks** | Claude | Starts only when the founder writes **`Frontend`**. Use the approved React + TS architecture. Preserve the Lamma design and reuse its tokens, CSS, fonts, icons, and assets. Integrate with the real APIs; no mock data in product functionality. Arabic RTL and responsive. Work on one task at a time: implement → verify → test → fix → report → **STOP**. |
 | 6 | **Frontend checkpoint** | Claude reports → founder executes | Run the frontend tests and a production build. Verify the API integration, RTL, and responsive layouts. Report the results and remaining issues. Provide the exact Git commands. **Wait** for the founder's confirmation. |
-| 7 | **PR & closure** | Claude drafts → founder creates/merges | Draft the PR description: deliverables, tests and their results, DB changes and migration status, known limitations, and a checklist against the plan. Claude **never** creates or merges PRs (no `gh`, no Git). Update progress docs after the merge **only when authorized**. |
+| 7 | **PR & closure** | Claude drafts → founder creates/merges | **Before every PR, always provide a ready-to-paste PR title and PR description**, plus the source and target branches. The description covers: deliverables, tests and their results, DB changes and migration status, known limitations, and a checklist against the plan. Claude **never** creates or merges PRs (no `gh`, no Git). Update progress docs after the merge **only when authorized**. |
 | 8 | **Next phase** | Founder | Only after the founder confirms the merge into `develop` and writes **`Next Phase`**. Planning then restarts at gate 2. |
 
 ### Non-negotiable working principles
@@ -39,6 +39,7 @@ Every phase follows these gates in order. Each gate waits for the founder's expl
 ## 2. Database & migration governance
 - **Allowed:** write approved entity, configuration, and DbContext source code. Inspect database code and schemas by read-only methods. Recommend migration names and exact commands.
 - **Never:** run `dotnet ef migrations add`, `dotnet ef migrations remove`, `dotnet ef database update`, any equivalent, or any schema script.
+- **Single approved exception (D-083):** automated test fixtures may create and drop throwaway `Lamma_Test_<guid>` databases on LocalDB. They never touch `Lamma_Dev` or any real database.
 - At the end of every backend task that changes the model, report:
   1. the schema changes
   2. the migration name
