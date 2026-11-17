@@ -1,0 +1,10 @@
+/* Design system copied from frontend-reference (P-017), in the prototype's index.html order. */
+@import "./design-system/lamma.css";
+@import "./design-system/cards.css";
+@import "./design-system/orders.css";
+@import "./design-system/catalog.css";
+@import "./design-system/money.css";
+@import "./design-system/shell.css";
+@import "./design-system/extras.css";
+@import "./design-system/prototype-app.css";
+@import "./app-additions.css";

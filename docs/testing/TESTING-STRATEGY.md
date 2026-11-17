@@ -38,6 +38,19 @@
 - Rate limits are raised in the shared factory. `LowRateLimitApiFactory` tests the 429.
 - Mocks are hand-written fakes; no mocking library is used.
 
+### 2b. Frontend as implemented (Phase 1)
+- Vitest + jsdom + React Testing Library + user-event. Every app-level test mounts the **real routes, guards and providers** in `StrictMode` (`src/test/renderApp.tsx`).
+- MSW 3 (`src/test/fakeApi.ts`, test-only) implements the Phase 1 contracts, including the antiforgery rule and ProblemDetails. Unhandled requests fail the test.
+- Tests sit **next to their subjects** (17 files, 50 tests after the D-089 restructure):
+  - `services/api/apiClient.test.ts`, `shared/lib/money.test.ts`
+  - `shared/ui/` Button, Icon, Money, form, Drawer, ToastProvider
+  - `features/subscription/trial.test.ts`
+  - `features/auth/{auth,session}.test.tsx`, `features/onboarding/onboarding.test.tsx`, `features/dashboard/dashboard.test.tsx`, `features/settings/{AccountPage,BusinessSettingsPage}.test.tsx`
+  - `app/router/routing.test.tsx` (guards, 404, all coming-soon routes), `app/layouts/app-shell/AppShell.test.tsx` (shell, logout, collapse, banners)
+- Timeouts: `testTimeout` 15s and `asyncUtilTimeout` 3s, because full-app renders run in parallel files (FRONTEND-ARCHITECTURE §11 E-9).
+- `npm run check:architecture` and `npm run lint` are part of every frontend checkpoint.
+- Manual: a real-API browser pass and a 4-width RTL check at each Frontend checkpoint.
+
 ## 3. Architecture tests (Engineering Standards)
 - Domain references no `Microsoft.EntityFrameworkCore`, no `Microsoft.AspNetCore.*`, and no Infrastructure.
 - Application references no Infrastructure and no `DbContext`. No public interface in Application exposes `IQueryable`.

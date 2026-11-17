@@ -224,4 +224,8 @@ Recommendation:
 
 **OQ-088 · P2 · Phase 1: account extras in the prototype.** These appear in the prototype but not in the spec: "registered devices" management in Account, a profile photo, and a business logo upload. In scope? Recommendation: business logo only, or defer all three.
 
+**OQ-090 · P2 · Design: double focus ring on inputs.** In the reference CSS, a focused input inside `.control` shows its own `:focus-visible` ring plus the control's ring. Fixing it means changing a reference style. Recommendation: remove the input's own ring (`.control input:focus-visible { box-shadow: none }`). Waiting for founder approval.
+
 **OQ-089 · P2 · Legal: terms and privacy.** The prototype says "by creating an account you agree to the terms and privacy policy". Content and pages are needed before launch.
+
+**OQ-091 · P2 · Phase 2: business-type labels are defined twice.** The API returns `labelAr` for each business type (used by onboarding). The client also keeps its own labels and illustrations in `features/settings/domain/businessTypes.ts` (used by settings). Recommendation: the API stays the source of the label, and the client keeps only the illustration mapping. This changes behaviour, so it waits for founder approval.

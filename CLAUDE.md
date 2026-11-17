@@ -67,6 +67,7 @@ Never implement a Proposed or Open item as if it were decided. Never silently ch
 - A **status change and its inventory effects** happen in one DB transaction. Every stock change writes a StockMovement.
 - **OrderItem** stores the unit price and unit cost at the time of sale.
 - **Architecture:** follow `docs/architecture/MASTER-ARCHITECTURE.md` §Backend Engineering Standards. Controllers stay thin. No DbContext outside Infrastructure. Focused repositories (no generic repository). **No MediatR, no CQRS, no microservices.**
+- **Frontend architecture (D-089):** all frontend work must follow `docs/architecture/FRONTEND-ARCHITECTURE.md` (feature-based layers, public `index.ts` per feature, no deep cross-feature imports, layout-only AppShell, business-agnostic `shared/`). `npm run lint` and `npm run check:architecture` must report 0 issues. Any deviation is recorded in its Justified Exceptions register.
 - **Frontend reference:** `frontend-reference/` is the original HTML/CSS/JS prototype and design system. **Never modify or delete it.** The React app lives in a separate folder.
 - **No mock data** replaces real backend integration. Test-only mocks such as MSW are allowed only in tests, once approved.
 - **Out of scope for V1:** multiple users or employees, WhatsApp order sharing, data export, expense receipt photos, dark mode, customer invoices, the English LTR UI (the prototype's LTR-preview toggle is **not** ported), subscription enforcement (not approved), and invented prices.
@@ -87,7 +88,7 @@ Never implement a Proposed or Open item as if it were decided. Never silently ch
 | `docs/architecture/DATABASE-DESIGN.md` | Entities, constraints, indexes, money, inventory rules, concurrency |
 | `docs/architecture/API-DESIGN.md` | REST conventions and API contracts |
 | `docs/architecture/FRONTEND-AUDIT.md` | Prototype inventory and its mapping to React |
-| `docs/architecture/FRONTEND-ARCHITECTURE.md` | React architecture proposal |
+| `docs/architecture/FRONTEND-ARCHITECTURE.md` | **Authoritative** React architecture: folders, layers, naming, exceptions (D-089) |
 | `docs/roadmap/MASTER-ROADMAP.md` | Phase order, dependencies, and the workflow |
 | `docs/roadmap/PHASE-PLANS.md` | Per-phase tasks, acceptance criteria, tests, gate status |
 | `docs/project/PROJECT-PROGRESS.md` | Current status (single source of truth for progress) |

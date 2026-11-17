@@ -1,6 +1,6 @@
-# Frontend Architecture — Lamma (Proposal)
+# Frontend Architecture — Lamma
 
-**Status:** [P] in full. **No package has been installed.** Each library below needs founder approval in DECISIONS.md (P-016, P-017) before Phase 1 Part B.
+**Status:** **Approved (D-089).** This file is the **authoritative reference** for all frontend work. Every new or changed frontend file must follow it. A deviation is allowed only when it is recorded in §11 (Justified exceptions) with its reason.
 **Approved constraints:** React + TypeScript · Arabic RTL first · responsive · preserve the visual identity · real APIs (no mock data) · `frontend-reference/` untouched.
 
 ---
@@ -9,71 +9,158 @@
 | Requirement (source) | Implication |
 |---|---|
 | ~36 pages, nested shell, mobile hubs | Client-side router with nested layouts |
-| Server-computed figures; frequent refetch after mutations (status change updates counts, stock, dashboard) | Server-state cache with invalidation |
-| Many forms (sign-up, 4-step order, product with variant matrix, receive, settings) with Arabic errors | Form library + schema validation |
+| Server-computed figures; frequent refetch after mutations | Server-state cache with invalidation |
+| Many forms with Arabic errors | Form library + schema validation |
 | Money exactness | Typed money strings, integer-fils math |
-| RTL, existing CSS with logical properties | Keep the existing CSS. No CSS-in-JS framework needed |
-| Solo founder, maintainability | Small, mainstream, well-documented libraries only |
+| RTL, existing CSS with logical properties | Keep the existing CSS. No CSS-in-JS framework |
+| Solo founder, maintainability | Small, mainstream libraries; feature-based structure with enforced boundaries |
 
-## 2. Proposed stack
-| Concern | Proposal | Why | Alternatives considered |
-|---|---|---|---|
-| Build tool | **Vite** (React + TS template) | The standard choice for a React SPA: fast, minimal config, first-class TS | Next.js: SSR/SEO not needed for an authenticated SPA, and it adds server complexity. CRA: deprecated |
-| Language | **TypeScript strict** | Catches errors early. API DTO types | — |
-| Routing | **React Router** (data/declarative mode) | Nested layouts (AuthLayout, AppShell), route guards, lazy routes | TanStack Router: good, but a smaller ecosystem |
-| Server state | **TanStack Query** | Caching, invalidation after mutations, loading and error states, retries | Plain fetch + context: re-implements caching. RTK Query: needs Redux |
-| HTTP | **Thin `fetch` wrapper** (`apiClient`) | No dependency. Handles the base URL, credentials, antiforgery header, the `Idempotency-Key`, and ProblemDetails parsing into a typed `ApiError` | Axios: unnecessary for these needs |
-| Forms | **React Hook Form** | Performant, works well with dynamic arrays (order lines, variant matrix) | Formik: heavier, less active |
-| Validation | **Zod** (+ `@hookform/resolvers`) | Typed schemas, Arabic messages, reused for parsing API responses where useful | Yup |
-| Client state | React state/context only | Server state lives in TanStack Query. Little global UI state (sidebar collapse, toasts) | Redux/Zustand: not needed |
-| Styling | **Existing CSS** (`tokens.css` + prototype CSS) then CSS Modules gradually | Preserves the design exactly, with no new framework (§5) | Tailwind: would mean rewriting the design system |
-| Charts | **Port the prototype's SVG charts** (bars, curve, donut, waterfall) as React components | Matches the design, no dependency, small data sizes | Recharts: adds weight and needs restyling |
-| Icons | Local Tabler SVGs → `<Icon>` component | Already in the reference (MIT) | An icon package |
-| Testing | **Vitest + React Testing Library + user-event**; **MSW** in tests only | Fast, Vite-native. MSW mocks the network in tests without touching product code | Jest: slower with Vite |
-| E2E (later) | Playwright | [O] Phase 12, needs approval | Cypress |
-| Lint/format | ESLint (typescript-eslint, react-hooks) + Prettier | Standard | — |
+## 2. Stack (Approved, installed in Phase 1)
+| Concern | Choice |
+|---|---|
+| Build tool | Vite 8.3.7 |
+| Language | TypeScript 6.0.3, strict |
+| Routing | React Router 7.18.5 (data router) |
+| Server state | TanStack Query 5.107.1 |
+| HTTP | Thin `fetch` wrapper (`services/api/apiClient.ts`): base URL, credentials, antiforgery header, `Idempotency-Key`, ProblemDetails → typed `ApiError` |
+| Forms / validation | React Hook Form 7.91.0 + Zod 4.6.7 + @hookform/resolvers 7.0.5 |
+| Client state | React state/context only (no Redux/Zustand) |
+| Styling | Existing design-system CSS copied unchanged into `styles/design-system/` + `styles/app-additions.css` |
+| Charts | Port the prototype's SVG charts as React components (later phases) |
+| Icons / illustrations | Generated ES modules in `assets/` from `frontend-reference/` (`npm run sync:design`) |
+| Testing | Vitest 5.1.0 + jsdom 27.4.0 + Testing Library + user-event; **MSW 3.0.4 in tests only** |
+| Lint / format | ESLint 10 + typescript-eslint + react-hooks; Prettier |
+| E2E (later) | Playwright [Open], Phase 12, needs approval |
 
-## 3. Folder structure
+## 3. Folder structure (final, as implemented)
 ```
 frontend/
-  public/                    fonts/, logo/ (copied from frontend-reference/assets)
+  public/                      fonts/, logo/, favicon.svg (served by URL from CSS and <img>)
+  scripts/
+    sync-design-assets.mjs     regenerates src/styles/design-system and src/assets from frontend-reference/
+    check-architecture.mjs     layer / public-API / cycle check (npm run check:architecture)
   src/
-    app/                     App.tsx, router.tsx, providers.tsx (QueryClient, Toasts), guards (RequireAuth, RequireBusiness)
-    layouts/                 AuthLayout, OnboardingLayout, AppShell/ (Sidebar, Topbar, BottomBar, TrialBanner)
-    components/              shared UI: Button, TextField, MoneyInput, Badge, DataTable, Dialog, Drawer, Toast, EmptyState, Skeleton, charts/, art/
-    features/
-      auth/  onboarding/  settings/  catalog/  inventory/  customers/  orders/  finance/  reports/  dashboard/  subscription/
-        api.ts               typed endpoint functions + query keys
-        hooks.ts             useOrders(), useChangeOrderStatus() (TanStack Query)
-        schemas.ts           Zod schemas
-        pages/               route components
-        components/          feature components
-    lib/
-      apiClient.ts           fetch wrapper, ApiError, ProblemDetails parsing, idempotency helper
-      money.ts               parse/format/integer-fils helpers
-      dates.ts               business-timezone display helpers
-      i18n/ar.ts             Arabic labels: statuses, payment statuses, channels, methods, errors
-    styles/                  tokens.css, lamma.css, cards.css, ... (copied), global.css
-    types/                   API DTO types (hand-written from API-DESIGN; codegen from OpenAPI is an option [O])
-  index.html                 lang="ar" dir="rtl"
+    main.tsx
+    app/                       application setup: may import every layer below
+      providers/AppProviders.tsx
+      router/                  routes.tsx (composition only), guards.tsx, RouteErrorPage.tsx,
+                               plannedRoutes.ts (coming-soon paths), pages/{ComingSoonPage,NotFoundPage}.tsx
+      layouts/
+        AuthenticatedLayout.tsx  container: fills the AppShell slots with feature widgets
+        app-shell/             AppShell, Sidebar, Topbar, BottomBar, OfflineBanner,
+                               useSidebarCollapse, useSlidingPill, useOnlineStatus  (layout only)
+      navigation/              navigation.ts (nav model, QUICK_ADD, sectionOf), NavTiles.tsx,
+                               navigationRoutes.tsx, pages/{MoreHubPage,QuickAddHubPage}.tsx
+    features/                  business modules
+      auth/                    sign-in/up, password reset, session (useAccount, CurrentAccountContext), AccountMenu, SidebarUserCard
+      subscription/            trial display only (trialStatus, trial card/banner, business card); no enforcement (D-011)
+      onboarding/              onboarding wizard (steps, layout, API)
+      dashboard/               dashboard page
+      settings/                account page, business settings page, domain code lists (sales channels, payment methods, business types)
+    shared/                    reusable, business-agnostic code
+      ui/                      Button, Icon, Menu, Badge, Chip, Money, PageHeader
+        brand/  form/  feedback/  overlay/  toast/
+      lib/                     money, personName, formErrors
+      validation/              fieldSchemas (emailSchema, personNameSchema)
+    services/                  infrastructure: api/apiClient.ts, query/queryClient.ts
+    assets/                    generated modules: icons/iconData, illustrations/lammaArt
+    styles/                    index.css, app-additions.css, design-system/* (generated, never edited by hand)
+    test/                      setup.ts, renderApp.tsx, fakeApi.ts (MSW)
 ```
 
-## 4. Key patterns
-- **Auth:** `RequireAuth` redirects to `/login`, and `RequireBusiness` redirects to `/onboarding`. The session comes from `GET /account` (cookie option A) or from the in-memory access token with silent refresh (option B).
-- **Mutations:** each mutation sends an `Idempotency-Key` generated when the action starts, so a retry or double-click reuses the same key. On success the client invalidates the related queries (order, order lists, status counts, sidebar indicators, inventory) and shows a toast. An undo toast calls the undo endpoint.
-- **Loading, error, and empty states:** every page uses `Skeleton` (the prototype's `.skel`), a typed `ErrorState` (with retry), and an `EmptyState` (the prototype's art).
-- **Forms:** Zod schemas mirror the server rules for fast feedback. Server `errors` from ProblemDetails map back onto the fields.
-- **Money:** amounts are typed as `MoneyString`. The live receipt computes in integer fils, and the display uses `formatMoney()`. The server's response replaces the previews.
-- **RTL:** `dir="rtl"` on `<html>`, logical CSS properties only, directional icons flipped through a CSS class, numbers and phone numbers wrapped in `<bdi class="ltr">`. No LTR toggle (D-006).
-- **Responsive:** the prototype's breakpoints (1280, 1024, 768). Tables become cards below 768, and drawers become bottom sheets.
-- **Accessibility:** focus trap and Esc on dialogs and drawers, `aria-label` on icon buttons, focus ring tokens, `prefers-reduced-motion` respected (the prototype's rules are kept).
-- **No mock data in product code.** MSW handlers live under `src/test/` only.
+### Inside a feature
+```
+features/<name>/
+  index.ts          public API: the only file other folders may import
+  routes.tsx        route objects for this feature's pages (composed by app/router/routes.tsx)
+  api/              <area>Api.ts: query/mutation hooks, query keys, DTO types
+  schemas/          Zod schemas (<thing>Schema)
+  domain/           code lists and pure rules owned by the feature
+  components/       feature components (presentational where possible)
+  pages/            <Name>Page.tsx route components
+  <Subject>.test.tsx  tests next to their subject
+```
+Create only the sub-folders a feature needs.
 
-## 5. CSS reuse strategy [P-017]
-1. Copy `tokens.css` and the 7 prototype CSS files into `src/styles/` unchanged, and import them globally in a fixed order (the same as `index.html`).
-2. Components render the **same class names** as the prototype, so the visual output matches it from day one.
-3. When a component's styles are fully isolated, they may move to a co-located `*.module.css` file, with tokens still referenced through CSS variables. This is optional and gradual, and never changes the visuals without approval.
-4. Fonts are loaded via `@font-face` from `public/fonts`, using the prototype's `unicode-range` split (IBM Plex Sans Arabic and Inter).
+## 4. Layers and dependency rules
+| Layer | May import |
+|---|---|
+| `assets/` | nothing |
+| `services/` | nothing from `app`, `features`, `shared` |
+| `shared/` | `services/`, `assets/` |
+| `features/<x>` | `shared/`, `services/`, `assets/`, other features **only via `@/features/<y>`** |
+| `app/` | everything (features only via their `index.ts`) |
+| `app/layouts/app-shell/` | `shared/`, `services/`, `assets/`, its own folder — **never `@/features`** |
+| `test/`, `*.test.ts(x)` | anything |
 
-## 6. Testing (see TESTING-STRATEGY.md)
-Component tests for the primitives (MoneyInput, StockMeter, badges). Page and workflow tests with MSW cover new order, status change with undo, record payment, and form validation errors from ProblemDetails. There are also tests for the `apiClient` (idempotency header, error parsing) and the `money.ts` helpers.
+- **Alias:** `@/` → `src/` (`tsconfig.app.json` `paths` + `vite.config.ts` `resolve.alias`). Inside one folder use relative imports (`./`, `../`); across top-level folders always use `@/…`. **`../../` is banned.**
+- **Cross-feature edges (current):** `settings → auth`, `onboarding → auth, settings`, `dashboard → auth, settings`, `subscription → auth`. All point one way; **no cycles** are allowed.
+- **Enforcement:** ESLint `no-restricted-imports` per folder (`eslint.config.js`) and `npm run check:architecture` (layer violations, deep feature imports, feature imports in the AppShell, `../../`, unresolved imports, import cycles). Both must report 0 before any frontend checkpoint.
+
+## 5. Public-API rule
+- Every feature has an `index.ts`. Other folders import `@/features/<name>` only; deep imports such as `@/features/auth/api/sessionApi` are banned.
+- Export only what another folder actually uses. Internal helpers stay unexported from `index.ts`.
+- `shared/` has **no barrel files**: import each module by its path (`@/shared/ui/form/TextField`).
+
+## 6. The AppShell rule
+`app/layouts/app-shell/AppShell.tsx` does **layout composition only**. It takes the nav model and slots (`sidebarHeader`, `sidebarFooter`, `topbarEnd`, `banners`) and renders Sidebar, Topbar, BottomBar and the outlet. Its only hooks are layout hooks (collapse, sliding pill, online status). It contains no auth, session, subscription or business logic.
+`app/layouts/AuthenticatedLayout.tsx` is the one container that reads the session and passes feature widgets into the slots (`SidebarBusinessCard`, `SidebarTrialCard`, `SidebarUserCard`, `TrialBanner`, `AccountMenu`).
+
+## 7. What belongs in `shared/`
+Only code that is reusable and **business-agnostic**: UI primitives, brand art, overlays, toasts, generic utilities (`personName`, `formErrors`), generic field formats (email, person name), and money formatting (see §11).
+Business code lists, policies and rules live in the feature that owns them (for example, the sales channels in `features/settings/domain/`, the password policy in `features/auth/schemas/passwordSchema.ts`, and the trial rules in `features/subscription/trial.ts`).
+
+## 8. Split rules
+Split a file only along a real responsibility boundary, never just to cut lines:
+- **Page:** data loading, form state, orchestration, submit.
+- **Section / step component:** one presentational concern, which receives `register`, `errors` and values as props.
+- **`schemas/`:** validation only. **`api/`:** server communication only (UI never calls `apiRequest` directly; it uses hooks).
+- **Hook:** one reusable behaviour.
+- **Size guide:** components under about 200 lines and pages under about 250. A larger file is split along a boundary, or else listed in §11 with its reason.
+
+## 9. Naming conventions
+| Item | Rule | Example |
+|---|---|---|
+| Folders | lowercase; kebab-case for several words | `app-shell/` |
+| Component files | PascalCase, one main component per file, file = component | `TextField.tsx` |
+| Pages | `<Name>Page.tsx` under `pages/` | `BusinessSettingsPage.tsx` |
+| Hooks | `use<Thing>`; queries `use<Resource>`, mutations `use<Verb><Resource>` | `useSaveSettings` |
+| API modules | `<area>Api.ts` under `api/`; keys `<area>Keys` / `<thing>Key` | `settingsKeys`, `accountKey` |
+| Non-component modules | camelCase | `apiClient.ts` |
+| Types | PascalCase, no `I` prefix; bodies `<Action>Body`; form values `<Form>Values` | `LoginBody` |
+| Schemas | `<thing>Schema` in `schemas/` | `signUpSchema` |
+| Constants | UPPER_SNAKE for fixed lists | `SALES_CHANNELS` |
+| CSS | kebab-case files; design-system class names unchanged | `app-additions.css` |
+| Tests | `<Subject>.test.tsx` next to the subject | `AccountPage.test.tsx` |
+
+## 10. Key patterns
+- **Routing:** each feature exports route objects from `routes.tsx`. `app/router/routes.tsx` only composes them under the guards (`RequireAuth`, `RequireBusiness`, `RequireNotOnboarded`, `RedirectIfAuthenticated`) and `AuthenticatedLayout`.
+- **Session:** `RequireAuth` loads `GET /account` and provides `CurrentAccountContext`; pages read it with `useCurrentAccount()`, so they never render after the session ends.
+- **Mutations:** send an `Idempotency-Key` generated when the action starts; on success invalidate the related queries and show a toast.
+- **Loading / error / empty states:** `Skeleton`/`PageSkeleton`, `ErrorState` (with retry), `EmptyState`.
+- **Forms:** Zod schemas mirror the server rules; ProblemDetails `errors` map back onto the fields (`applyServerErrors`).
+- **Money:** `MoneyString` (3-dp string from the API); integer-fils math in `shared/lib/money.ts`; display with `<Money>`.
+- **RTL:** `dir="rtl"` on `<html>`, logical CSS only, numbers in `<bdi class="ltr">`. No LTR toggle (D-006).
+- **Responsive:** the prototype's breakpoints (1280, 1024, 768); bottom bar on mobile.
+- **Icons and illustrations** are generated modules rendered with `dangerouslySetInnerHTML`, from static brand code only (never user input).
+- **No mock data in product code.** MSW handlers live in `src/test/` only.
+- **CSS:** the design-system files stay unchanged and in the same import order. Components render the prototype's class names. Optional co-located `*.module.css` files are allowed later, but they must never change the visuals without approval.
+
+## 11. Justified exceptions register (post-restructure audit, R6)
+| # | Exception | Reason |
+|---|---|---|
+| E-1 | `app/router/guards.tsx` decides redirects from `isOnboarded` / business presence | Routing is an app concern. It reads the session through `@/features/auth` and holds no business rule |
+| E-2 | `shared/ui/form/PasswordStrength.tsx` contains the strength meter's scoring | A display meter only. The password **policy** (what is accepted) is `newPasswordSchema` in auth |
+| E-3 | Money formatting in `shared/` (`lib/money.ts`, `ui/Money.tsx`) | V1 has a single currency (D-007). It holds no business rules, and every money-showing feature needs it |
+| E-4 | `services/api/apiClient.ts` is 194 lines, left whole | One responsibility (the HTTP client); splitting it would only scatter its internals |
+| E-5 | Hand-built `button` markup for the menu trigger (AccountMenu) and the `is-soon` nav buttons | Their markup and classes differ from `Button`; they reproduce the prototype exactly |
+| E-6 | Unused primitives kept: `Chip`, `Dialog`, `Money` and the money helpers (used only in tests today) | Approved primitives (plan 1.B3) needed from Phase 2 onward |
+| E-7 | Some exported types are used only inside their own module | They are the module's contract (for example DTO and props types) |
+| E-8 | Business-type labels exist both in the API (`labelAr`) and the client (`features/settings/domain/businessTypes.ts`) | Unifying them would change behaviour; tracked as **OQ-091** |
+| E-9 | Vitest `testTimeout: 15_000` and `asyncUtilTimeout: 3000` | 17 test files mount the full app in parallel in jsdom; the default 5s/1s flaked under CPU load. Each file passes alone with the defaults |
+| E-10 | `public/logo/favicon.svg` duplicates `public/favicon.svg` | Keeps the logo folder a mirror of the reference set; removal only on founder request |
+
+**Audit results (2026-11-17):** 0 layer or public-API violations, 0 import cycles (`check:architecture`, 125 files). No UI file calls the API client directly. There are no duplicate type names. No business rule lives in `app/`, `shared/` or the app-shell. The largest files are `apiClient.ts` (194 lines) and `BusinessSettingsPage.tsx` (131 lines).
+
+## 12. Testing (see TESTING-STRATEGY.md)
+Tests sit next to their subjects: shared primitives (Button, Icon, Money, form, Drawer, Toast), `apiClient`, `money`, `trial`; one test file per feature page area; routing and AppShell tests in `app/`. Every test file uses MSW (`src/test/fakeApi.ts`) and `renderApp` (`src/test/renderApp.tsx`, under StrictMode).

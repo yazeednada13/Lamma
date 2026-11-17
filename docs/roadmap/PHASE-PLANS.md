@@ -60,8 +60,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 1. Branch created by founder | ☑ | 2026-11-10 | `feature/phase1-foundation` |
 | 2. Plan approved | ☑ | 2026-11-10 | D-086 (approved plan supersedes the draft task list below) |
 | 3. `Backend` started | ☑ | 2026-11-10 | All backend tasks run in one batch (D-087) |
-| 4. Backend pushed (founder confirmed) | ☐ | | migration `InitialIdentityAndBusiness` applied by the founder: ☐ |
-| 5. `Frontend` started | ☐ | | |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-10 | migration `InitialIdentityAndBusiness` applied by the founder: ☑ (verified read-only in `Lamma_Dev`) |
+| 5. `Frontend` started | ☑ | 2026-11-10 | All frontend tasks run in one batch (D-087) |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |
@@ -91,6 +91,41 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 4. The security stamp is validated on **every** request, which costs one user lookup per request. This is what makes "other sessions end immediately" possible.
 5. The test that drift between `EnsureCreated` and the migrations (`HasPendingModelChanges`) is not added yet. It needs the founder's migration first, and will be added once it is confirmed.
 6. There is no expired-reset-token test. Identity's token lifetime (1 hour) can't be controlled from the test clock. Invalid and reused tokens are tested.
+
+### Phase 1 Part B: implementation status (approved plan tasks)
+| ID | Task | Status |
+|---|---|---|
+| 1.B1 | Vite + React 19 + TS (strict) scaffold, ESLint, Prettier, Vitest, `lang="ar" dir="rtl"`, Vite proxy `/api` → API | Done (verified) |
+| 1.B2 | Design foundations copied (never moved) by `scripts/sync-design-assets.mjs`: fonts, logos, tokens and the 7 CSS files, icons, illustrations | Done (verified) |
+| 1.B3 | Primitives: Button, IconButton, TextField, PasswordField + strength meter, Select, Checkbox, Toggle, Chip, Badge, Money, Drawer, Dialog (focus trap, Esc), Toasts, Skeleton, Empty and Error states | Done (verified) |
+| 1.B4 | `apiClient` (antiforgery header with one automatic retry, ProblemDetails → ApiError, 401 → session reset), `money.ts` (integer fils, 2-dp display), Arabic labels | Done (verified) |
+| 1.B5 | Router and guards (RequireAuth, RequireBusiness, RequireNotOnboarded, RedirectIfAuthenticated), query provider, error page, 404, offline banner | Done (verified) |
+| 1.B6 | Login, Signup (email), Forgot, Reset password, wired to the real API | Done (verified against the real API) |
+| 1.B7 | Onboarding: name → one type (13) → channels → done | Done (verified against the real API) |
+| 1.B8 | App shell: sidebar (collapse, sliding pill, real trial card), topbar (new menu, disabled search and bell, account menu), bottom bar, More and New hubs, late-trial banner | Done (verified) |
+| 1.B9 | Coming-soon page for all 21 unbuilt routes | Done (verified) |
+| 1.B10 | New-user dashboard with real data | Done (verified) |
+| 1.B11 | Account (name, change password in a drawer) and Settings (profile, channels, payment methods, threshold; dirty bar) | Done (verified against the real API) |
+| 1.B12 | Tests, build, real-API end-to-end check, RTL and 4-width check, docs | Done. **Waiting for the founder: push** |
+
+**Frontend deviations and notes (for founder review):**
+1. The sign-up field is **email** instead of phone (D-078). Onboarding is reordered: name → single type → channels (D-081).
+2. The search bar and bell are shown but disabled ("قريبًا") (OQ-082/083). The language and LTR items are removed (D-006). The account page has no devices or notification sections (OQ-088/082).
+3. The sidebar user card shows the owner's **email** instead of a gendered role label ("صاحبة المشروع").
+4. Quick-add menu entries and getting-started steps open coming-soon pages (D-085). No drawers with fake saves.
+5. The reset-password page is new. The prototype had no page for it, so it uses the auth-card styling.
+6. Observed in the reference CSS, not changed: a focused input inside `.control` shows two focus rings (OQ-090).
+7. Bundle: 555 kB JS (170 kB gzip). Route-level code splitting is deferred to Phase 12.
+
+### Phase 1 frontend restructure (approved 2026-11-17, D-089)
+| ID | Task | Status |
+|---|---|---|
+| 1.R1 | `@/` alias; `services/` (apiClient, queryClient) and `assets/` (generated icon and illustration modules); sync script updated | Done (verified) |
+| 1.R2 | `shared/` split one component per file (ui, brand, form, feedback, overlay, toast, lib, validation) | Done (verified) |
+| 1.R3 | Features `auth`, `subscription`, `onboarding`, `dashboard`, `settings` with `index.ts`, `routes.tsx`, api/schemas/components/pages | Done (verified) |
+| 1.R4 | App layer: providers, router composition, guards, planned routes, navigation; AppShell split into layout-only parts plus `AuthenticatedLayout` | Done (verified) |
+| 1.R5 | Tests colocated (17 files, 50 tests); ESLint boundary rules; `npm run check:architecture` | Done (verified) |
+| 1.R6 | Post-restructure audit; FRONTEND-ARCHITECTURE.md rewritten as the authoritative reference | Done. Exceptions E-1–E-10 recorded |
 
 ### Part A — Backend (Phase 0 draft, superseded by the approved plan above)
 | ID | Task | Acceptance criteria | Tests |

@@ -187,6 +187,8 @@ Route naming is **Proposed**. The `:id` in the prototype is the order number (`#
 
 **Not ported:** the `#/screens` developer index and the decorative "peek" stickers. The stickers are brand flavour, and keeping them is a founder choice. **Proposed:** keep them as an optional component, off under reduced motion.
 
+> **Note (2026-11-17):** the React app now follows the feature-based structure in `FRONTEND-ARCHITECTURE.md` (D-089). Map the component names in §3 and §5 to their homes as follows. Primitives → `src/shared/ui/…`. The shell → `src/app/layouts/app-shell/`. Auth and onboarding layouts → `src/features/auth/components/` and `src/features/onboarding/components/`. Screens → `src/features/<feature>/pages/`. Icons and illustrations → `src/assets/`.
+
 ## 9. React migration strategy (Proposed; no work before Phase 1 Frontend approval)
 1. **Copy, don't move.** Copy fonts, logos, icon SVGs, and `tokens.css` into the React app's `src/styles` and `public` folders. The reference stays untouched.
 2. **Styles first.** Import `tokens.css` and the existing component CSS files globally at first, so the visual identity is identical from day one. Migrate a file to co-located CSS Modules only when a component is converted and its styles are fully isolated. Class names are kept, so the visual output matches the prototype pixel for pixel.
