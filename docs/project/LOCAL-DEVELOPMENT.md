@@ -42,6 +42,12 @@ Do **not** use `python -m http.server`, which truncates files over 64 KB on this
 - Tests: `dotnet test Lamma.sln` (TESTING-STRATEGY §2). Requires LocalDB `MSSQLLocalDB` to be running: `sqllocaldb start MSSQLLocalDB`. Override with the env var `LAMMA_TEST_SQL_SERVER`.
 - Recommended database setting (founder action): `ALTER DATABASE Lamma_Dev SET READ_COMMITTED_SNAPSHOT ON;`
 
+### 3a. File storage (Phase 2, D-094)
+- Product images are stored under `Storage:RootPath`. When it is empty (the default), the path is `%LOCALAPPDATA%\Lamma\uploads`, outside the repository.
+- File names are random. Files are served only through `GET /api/v1/products/{id}/image` after the tenant check.
+- Integration tests use a temporary folder per test host and delete it afterwards.
+- The production store is decided with OQ-086.
+
 ## 4. Frontend setup (Phase 1, implemented)
 - Node ≥ 22.12 is required. Package versions are pinned exactly (`save-exact`) to builds that run on the installed Node 22.17. The newest React Router 8 and jsdom 31 need Node 22.22, so they weren't used.
 - The dev server runs at http://localhost:5173 and proxies `/api` to https://localhost:7101, so cookies are first-party (D-077). Start the API first.

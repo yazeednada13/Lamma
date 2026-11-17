@@ -84,12 +84,12 @@ Arabic labels: جديد · مؤكد · قيد التجهيز · مع المند�
 | Req | Status |
 |---|---|
 | List: search, category filter, stock indicator | [A] |
-| Create: name, category, price, cost, image, low-stock threshold (default 5), template | [A]; [O] image storage (OQ-013) |
-| Templates with descriptive fields; a product may use a different template from the business type | [A]; [O] catalogue and editability (OQ-011, OQ-012) |
-| Variants (size × colour etc.), each with its own stock | [A]; [P] default-variant rule (OQ-010) |
-| Template behaviours: expiry, gift box, pre-order, deposit | [A] to evaluate; [O] details (OQ-011, OQ-074) |
+| Create: name, category (optional, D-098), price, cost (required, D-097), image, low-stock threshold (default 5), template | [A]; image per D-094 |
+| Templates with descriptive fields; a product may use a different template from the business type | [A]; catalogue D-091, custom fields D-092 |
+| Variants (size × colour etc.), each with its own stock | [A]; default variant D-090, axes D-093 |
+| Template behaviours: expiry, gift box, pre-order, deposit | [A] to evaluate; expiry D-101; gift box, pre-order and deposit not in Phase 2 (D-102, OQ-074) |
 | Details: sales, profit margin, stock by variant, movement history, adjustment with reason | [A] |
-| Categories: create, edit, delete, product count | [A]; [O] delete rule (OQ-014) |
+| Categories: create, edit, delete, product count | [A]; delete rule D-095 |
 
 ### M5 — Inventory
 | Req | Status |

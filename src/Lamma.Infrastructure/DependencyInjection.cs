@@ -1,5 +1,6 @@
 using Lamma.Application.Accounts;
 using Lamma.Application.Businesses;
+using Lamma.Application.Catalog;
 using Lamma.Application.Common;
 using Lamma.Application.Identity;
 using Lamma.Infrastructure.Identity;
@@ -37,6 +38,8 @@ public static class DependencyInjection
         services.AddLammaIdentity();
 
         services.AddSingleton<IAppLinks, AppLinks>();
+        services.AddOptions<StorageOptions>().Bind(configuration.GetSection(StorageOptions.SectionName));
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
         if (isDevelopment)
         {
             services.AddSingleton<IEmailSender, LoggingEmailSender>();
@@ -73,6 +76,13 @@ public static class DependencyInjection
         services.AddScoped<IBusinessRepository, BusinessRepository>();
         services.AddScoped<IMembershipRepository, MembershipRepository>();
         services.AddScoped<IBusinessSettingsQueries, BusinessSettingsQueries>();
+
+        // Catalog module
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ICategoryQueries, CategoryQueries>();
+        services.AddScoped<ITemplateFieldRepository, TemplateFieldRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductQueries, ProductQueries>();
 
         // Accounts module
         services.AddScoped<IAccountQueries, AccountQueries>();

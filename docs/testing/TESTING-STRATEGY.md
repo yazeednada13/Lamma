@@ -38,6 +38,36 @@
 - Rate limits are raised in the shared factory. `LowRateLimitApiFactory` tests the 429.
 - Mocks are hand-written fakes; no mocking library is used.
 
+### 2a-2. Catalog suites (Phase 2)
+- **Domain** (`CatalogTests.cs`):
+  - template map for all 13 types
+  - default variant, matrix rules and limits (2 axes, 20 values, 100 variants)
+  - duplicate combinations
+  - price and cost rules
+  - the opening movement (D-096)
+  - last-variant archive, conversion at zero stock only, axis rename vs. count
+  - stock-status boundaries
+- **Application** (`CatalogValidationTests.cs`):
+  - attribute normalization and errors per field type, required custom fields
+  - create-request consistency, 2-dp money input, paging and sort bounds
+  - image signatures (jpg, png and webp accepted; exe and gif rejected)
+  - nullable money JSON
+- **Infrastructure** (`CatalogPersistenceTests.cs`):
+  - round trip with codes and `decimal(19,3)`
+  - tenant isolation of all 5 tables, cross-tenant write rejected
+  - filtered unique category names, the CHECK on negative stock
+  - **atomic rollback** of a failed save (no product, variant or movement)
+  - rowversion conflict → `concurrency.conflict`
+  - the product list runs in **2 SQL commands** (no N+1), with status, search and sort
+- **API** (`CatalogTests.cs`):
+  - categories CRUD and the three delete outcomes
+  - templates and custom fields, including isolation
+  - simple and matrix products, field errors, expiry
+  - list filters and paging
+  - cross-business 404s
+  - update, variants, conversion, archive
+  - image upload, serve, replace, delete, content-type check and the 5 MB limit; images use a temp storage folder per test host
+
 ### 2b. Frontend as implemented (Phase 1)
 - Vitest + jsdom + React Testing Library + user-event. Every app-level test mounts the **real routes, guards and providers** in `StrictMode` (`src/test/renderApp.tsx`).
 - MSW 3 (`src/test/fakeApi.ts`, test-only) implements the Phase 1 contracts, including the antiforgery rule and ProblemDetails. Unhandled requests fail the test.

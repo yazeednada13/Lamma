@@ -88,6 +88,22 @@ Sources:
 | D-087 | **Execution granularity:** after `Backend`, Claude implements all approved Backend tasks of the phase in one continuous run, with no stop between tasks, then gives one consolidated report and stops at gate 4. `Frontend` works the same way up to gate 6. Each task is still built, tested, and reviewed. This replaces "one task at a time, STOP after each" | F |
 | D-089 | **Frontend architecture:** feature-based structure `app/ · features/ · shared/ · services/ · assets/ · styles/`. Strict layer rules, a public `index.ts` per feature (no deep cross-feature imports), a layout-only AppShell with slots, and a business-agnostic `shared/`. Enforced by ESLint and `npm run check:architecture`. `docs/architecture/FRONTEND-ARCHITECTURE.md` is the authoritative reference for all frontend work (approved 2026-11-17) | F |
 | D-088 | **API response shape:** success responses return the DTO directly (no `ApiResponse<T>` envelope); errors use RFC 9457 ProblemDetails with `code`, Arabic `detail`, `traceId`, `errors`. An envelope was considered and rejected (2026-11-10). An `X-Request-Id` header on success responses was offered and is not added unless requested | F |
+| D-090 | **Default variant:** every product has at least one ProductVariant. A simple product gets one hidden default variant with no option values. Stock, movements and order items always reference a variant (approves P-006) | F (2026-11-17, Phase 2 plan) |
+| D-091 | **Six system product templates:** `clothing` ملابس, `perfume` عطور, `beauty` تجميل, `jewelry` إكسسوارات, `gift` بوكس هدايا, `other` عام. Default axes and fields per PHASE-PLANS Phase 2 §2.1. Business type → template: clothing, kids → clothing; perfume → perfume; beauty → beauty; accessories → jewelry; gifts → gift; all other types → other | F (2026-11-17, Phase 2 plan) |
+| D-092 | **Templates are system-defined and fixed (defined in code).** A business may add up to 20 custom fields per template. All templates are always available (no enable/disable) | F (2026-11-17, Phase 2 plan) |
+| D-093 | **Option axes:** 0–2 per product. Names default from the template and are editable. Values are free text with suggestions. Limits: 20 values per axis, 100 variants per product. Variants are any subset of the combinations. Options are stored as columns, not JSON | F (2026-11-17, Phase 2 plan) |
+| D-094 | **Product image:** one per product via `IFileStorage`. Local disk in Development (outside the repo). jpg/png/webp checked by content, max 5 MB, no thumbnails. Served only by an authenticated, tenant-checked endpoint. The production store follows OQ-086 | F (2026-11-17, Phase 2 plan) |
+| D-095 | **Category delete:** blocked (409, with the count) while active products use it. Archived if only archived products use it. Hard-deleted otherwise | F (2026-11-17, Phase 2 plan) |
+| D-096 | **Opening stock** is a `receive` movement (D-028 unchanged) with reference kind `opening`, automatic, at the variant's effective cost | F (2026-11-17, Phase 2 plan) |
+| D-097 | **Price and cost:** selling price > 0 required. Cost >= 0 required (explicit 0 allowed). Per-variant price and cost overrides allowed. Input uses 2 decimals (D-080) | F (2026-11-17, Phase 2 plan) |
+| D-098 | **Category is optional**; products without one show as "بدون تصنيف" | F (2026-11-17, Phase 2 plan) |
+| D-099 | **Stock status:** product available = sum of the available stock of its active variants. Status: out (<= 0), low (<= the product's threshold), in. Each variant has its own status as well (implementation: variant `low` at 1 piece, the prototype heatmap rule) | F (2026-11-17, Phase 2 plan) |
+| D-100 | **Products and variants are never hard-deleted.** They are archived and can be restored. The last active variant cannot be archived | F (2026-11-17, Phase 2 plan) |
+| D-101 | **Expiry** is stored on the variant. Templates that support expiry get one optional date in the product form, applied to all variants. Batches remain OQ-021 (Phase 3) | F (2026-11-17, Phase 2 plan) |
+| D-102 | **No pre-order, made-to-order, deposit or gift-box product columns in Phase 2.** Template capability flags are data only | F (2026-11-17, Phase 2 plan) |
+| D-103 | **Business-type labels come from the API only.** `GET onboarding/business-types` adds `defaultTemplateCode`. The client keeps only the type → illustration map (resolves OQ-091) | F (2026-11-17, Phase 2 plan) |
+| D-104 | **SKU and barcode** are out of scope for V1 | F (2026-11-17, Phase 2 plan) |
+| D-105 | **Paging:** offset paging, default page size 20, max 100 (approves P-021). The product's descriptive attributes are stored as a JSON column validated against the template fields | F (2026-11-17, Phase 2 plan) |
 | D-086 | Phase 1 plan approved (2026-11-10). It also approves P-001, P-003, P-005, P-013, P-014, P-016, P-017, P-020 and the Phase 1 package list | F |
 
 ### A5. Visual identity (from REF; preserve)
@@ -110,7 +126,7 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | P-003 | Tenant isolation through `ICurrentBusiness`, EF global query filters, a SaveChanges interceptor, and same-business reference validation | MASTER-ARCHITECTURE §6 |
 | P-004 | Authentication: option A (Identity cookie) or option B (JWT plus rotating refresh cookie). **Recommendation: A** | MASTER-ARCHITECTURE §7 |
 | P-005 | Money stored as `decimal(19,3)`, rounded AwayFromZero to 3 dp, sent over the API as a 3-dp string | DATABASE-DESIGN §3 |
-| P-006 | **Default-variant rule:** every product has at least one ProductVariant, and stock always lives on variants | DATABASE-DESIGN §5 |
+| P-006 | **→ Approved as D-090.** **Default-variant rule:** every product has at least one ProductVariant, and stock always lives on variants | DATABASE-DESIGN §5 |
 | P-007 | Optimistic concurrency with `rowversion` on ProductVariant and Order | DATABASE-DESIGN §9 |
 | P-008 | `Idempotency-Key` header on status-change, payment, settlement, and receive-stock POSTs | API-DESIGN §6 |
 | P-009 | Undo as a compensating reversal, allowed only within a window and only if nothing later touched the order | DATABASE-DESIGN §7 |
@@ -125,7 +141,7 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | P-018 | Business timezone `Asia/Amman` for "today" and period boundaries. Store timestamps in UTC | API-DESIGN §8 |
 | P-019 | Target .NET: .NET 10 LTS (needs an SDK install) versus .NET 9 (installed). **Recommendation: .NET 10 LTS** | OPEN-QUESTIONS OQ-001 |
 | P-020 | Architecture tests: reflection-based xUnit (no package) or NetArchTest (needs a package) | TESTING-STRATEGY §3 |
-| P-021 | Offset pagination with a maximum page size of 100; keyset pagination as an option for the movement log | API-DESIGN §4 |
+| P-021 | **→ Approved as D-105.** Offset pagination with a maximum page size of 100; keyset pagination as an option for the movement log | API-DESIGN §4 |
 | P-022 | Order number: a sequential integer per business, starting at 1001 | DATABASE-DESIGN §5 |
 
 ---
@@ -155,4 +171,5 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | 2026-11-10 | D-087 added: all Backend tasks run together, then all Frontend tasks together |
 | 2026-11-10 | D-088 added: keep DTO + ProblemDetails, no response envelope |
 | 2026-11-17 | D-089 added: feature-based frontend architecture; FRONTEND-ARCHITECTURE.md is authoritative |
+| 2026-11-17 | D-090–D-105 added: Phase 2 (Catalog) decisions; the founder accepted the recommended answers and approved the Phase 2 plan |
 | 2026-11-10 | Initial log created in Phase 0 from MP, REF, and the founder's review instructions (workflow, engineering standards, status-label discipline, LTR toggle exclusion) |
