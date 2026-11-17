@@ -16,13 +16,13 @@
 ## 2. Conventions [P]
 | Item | Convention |
 |---|---|
-| Keys | `Guid` PKs generated sequentially (`NEWSEQUENTIALID()` or EF sequential GUIDs) to avoid index fragmentation. User-facing numbers (order number) are separate ints |
+| Keys | `Guid` PKs, time-ordered **v7** (`Guid.CreateVersion7()`), generated in the domain to avoid index fragmentation. Implemented in Phase 1. User-facing numbers (order number) are separate ints |
 | Tenancy | `BusinessId uniqueidentifier NOT NULL` + FK to `Businesses`, and every index starts with `BusinessId` |
 | Money | `decimal(19,3)` (§3) |
 | Quantities | `int`. Stock quantities are whole pieces |
 | Timestamps | `CreatedAt`, `UpdatedAt` as `datetime2(3)` in UTC, set by an interceptor |
 | Business dates | `date` (`DateOnly`): expense date, payment date, expiry, expected delivery |
-| Enums | Stored as `nvarchar(32)` strings (`"confirmed"`) for readability and stable codes matching the spec |
+| Enums | Stored as `varchar(32)` snake_case codes (`"confirmed"`, `"bank_transfer"`), readable and stable, matching the API codes. **Implemented in Phase 1** through a model-wide convention (`LammaModelConventions`) |
 | Text | `nvarchar` with explicit max lengths (Arabic). The collation is the default server collation [O]: confirm Arabic-friendly case and accent insensitivity for search |
 | Concurrency | `rowversion` column `RowVersion` on `ProductVariant`, `Order` (§9) |
 | Soft-archive | `IsArchived bit` + `ArchivedAt` (§10) |
@@ -295,9 +295,19 @@ Indexes are reviewed against the actual query plans in each phase.
 - `CreatedAt`/`UpdatedAt` are on all tables. There is no generic audit-log table in V1 unless the founder requests one.
 - With one user per business, the actor is implicitly the owner. `CreatedByUserId` is added to operational tables anyway, for future multi-user support [P].
 
+## 12a. Implemented in Phase 1 (code only; migration pending founder)
+| Table | Notes |
+|---|---|
+| `AspNetUsers` (+ the Identity tables) | Guid keys; `FullName nvarchar(100)`, `CreatedAt`; email unique (UserName = Email) |
+| `Businesses` | `Name nvarchar(100)`, `BusinessType varchar(32)`, `Currency char(3)` = JOD, `DefaultLowStockThreshold int` (CHECK 0–1000), `TimeZoneId varchar(64)` = Asia/Amman, `TrialStartsAt`/`TrialEndsAt`/`CreatedAt`/`UpdatedAt` `datetime2(3)` UTC, `SubscriptionPlan varchar(32)` |
+| `BusinessMemberships` | `UserId` FK → AspNetUsers (**unique** `UX_BusinessMemberships_UserId`), `BusinessId` FK → Businesses, `Role varchar(32)`; FKs are Restrict |
+| `BusinessSalesChannels` | PK (BusinessId, Channel); `IsEnabled`; tenant-filtered; cascades from Business |
+| `BusinessPaymentMethods` | PK (BusinessId, Method); `IsEnabled`; tenant-filtered; cascades from Business |
+
 ## 13. Migration guidance
-- The first migration is created in Phase 1. Recommended name: `InitialIdentityAndBusiness`. The founder runs:
-  - `dotnet ef migrations add <Name> --project src/Lamma.Infrastructure --startup-project src/Lamma.Api --output-dir Persistence/Migrations`
-  - `dotnet ef database update --project src/Lamma.Infrastructure --startup-project src/Lamma.Api`
+- The first migration is created in Phase 1 and is named `InitialIdentityAndBusiness`. The founder runs these from the repo root, after setting the connection string with user-secrets (LOCAL-DEVELOPMENT §3):
+  - `dotnet ef migrations add <Name> --project src/Lamma.Infrastructure --startup-project src/Lamma.Api --output-dir Persistence/Migrations -- --environment Development`
+  - `dotnet ef database update --project src/Lamma.Infrastructure --startup-project src/Lamma.Api -- --environment Development`
+- `-- --environment Development` is required because user-secrets (which hold the connection string) load only in Development.
 - `dotnet-ef` **9.0.6** is installed globally (checked 2026-11-10). If .NET 10 is chosen (OQ-001), the founder should update it to the matching version (`dotnet tool update -g dotnet-ef`). That command is the founder's action.
 - Each phase report gives the exact commands, migration names, and verification steps.

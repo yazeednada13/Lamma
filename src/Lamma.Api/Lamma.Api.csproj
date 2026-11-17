@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Lamma.Api</RootNamespace>
+    <UserSecretsId>lamma-api-6f1c2b7e-3d4a-4b8e-9a51-2c7d0e9f4a10</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Lamma.Application\Lamma.Application.csproj" />
+    <!-- Referenced ONLY by the composition root (Program.cs / DependencyInjection.cs). -->
+    <ProjectReference Include="..\Lamma.Infrastructure\Lamma.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

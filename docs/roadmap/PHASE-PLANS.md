@@ -54,7 +54,80 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 
 **Dependencies:** Phase 0 approved. **Blocking:** OQ-001 .NET version, OQ-002 auth option, OQ-003 identifier and recovery, OQ-004 membership model, OQ-005 money display, OQ-007 onboarding. Also requires approval of P-001…P-005, P-013…P-015, P-016…P-017 (frontend stack), and P-020.
 
-### Part A — Backend
+### Phase 1 gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-10 | `feature/phase1-foundation` |
+| 2. Plan approved | ☑ | 2026-11-10 | D-086 (approved plan supersedes the draft task list below) |
+| 3. `Backend` started | ☑ | 2026-11-10 | All backend tasks run in one batch (D-087) |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-10 | migration `InitialIdentityAndBusiness` applied by the founder: ☑ (verified read-only in `Lamma_Dev`) |
+| 5. `Frontend` started | ☑ | 2026-11-10 | All frontend tasks run in one batch (D-087) |
+| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
+
+### Phase 1 Part A: implementation status (approved plan tasks)
+| ID | Task | Status |
+|---|---|---|
+| 1.A1 | Solution skeleton (.NET 9, central package versions, global.json, .gitignore, .editorconfig) | Done (verified) |
+| 1.A2 | DI composition per layer, ValidateOnBuild/ValidateScopes outside Production | Done (verified) |
+| 1.A3 | Domain foundation: Entity, IBusinessOwned, DomainException, MoneyMath, EnumCode, BusinessTime, MoneyJsonConverter | Done (verified) |
+| 1.A4 | LammaDbContext + IUnitOfWork, conventions (decimal 19,3 · enum codes · UTC), timestamps interceptor, configurations | Done (verified) |
+| 1.A5 | Global exception handler → ProblemDetails (code, Arabic detail, traceId, errors) | Done (verified) |
+| 1.A6 | FluentValidation through a global action filter, Arabic messages, camelCase keys | Done (verified) |
+| 1.A7 | Request logging (no PII), rate limiting, CORS, OpenAPI (Development), /health | Done (verified) |
+| 1.A8 | Identity + cookie auth (no redirects), password policy, lockout | Done (verified) |
+| 1.A9 | Antiforgery on every unsafe method (including login and sign-up) + Origin check | Done (verified) |
+| 1.A10 | Auth service and endpoints, reset tokens, dev log email sender / 503 elsewhere | Done (verified) |
+| 1.A11 | ICurrentUser, ICurrentBusiness (server-resolved), RequireBusiness policy, query filters, tenancy interceptor | Done (verified) |
+| 1.A12 | Onboarding (atomic; double submit → exactly one business) | Done (verified) |
+| 1.A13 | Account and business settings endpoints | Done (verified) |
+| 1.A14 | Full build and tests, docs, checkpoint report | Done. **Waiting for the founder: migration and push** |
+
+**Deviations from the plan (for founder review):**
+1. The settings PUT/GET bodies are wrapped: `{ channels: [...] }` and `{ methods: [...] }`, not bare arrays.
+2. Login lockout returns **423** `auth.locked_out`.
+3. Enum columns are `varchar(32)`, not `nvarchar`, because the codes are ASCII.
+4. The security stamp is validated on **every** request, which costs one user lookup per request. This is what makes "other sessions end immediately" possible.
+5. The test that drift between `EnsureCreated` and the migrations (`HasPendingModelChanges`) is not added yet. It needs the founder's migration first, and will be added once it is confirmed.
+6. There is no expired-reset-token test. Identity's token lifetime (1 hour) can't be controlled from the test clock. Invalid and reused tokens are tested.
+
+### Phase 1 Part B: implementation status (approved plan tasks)
+| ID | Task | Status |
+|---|---|---|
+| 1.B1 | Vite + React 19 + TS (strict) scaffold, ESLint, Prettier, Vitest, `lang="ar" dir="rtl"`, Vite proxy `/api` → API | Done (verified) |
+| 1.B2 | Design foundations copied (never moved) by `scripts/sync-design-assets.mjs`: fonts, logos, tokens and the 7 CSS files, icons, illustrations | Done (verified) |
+| 1.B3 | Primitives: Button, IconButton, TextField, PasswordField + strength meter, Select, Checkbox, Toggle, Chip, Badge, Money, Drawer, Dialog (focus trap, Esc), Toasts, Skeleton, Empty and Error states | Done (verified) |
+| 1.B4 | `apiClient` (antiforgery header with one automatic retry, ProblemDetails → ApiError, 401 → session reset), `money.ts` (integer fils, 2-dp display), Arabic labels | Done (verified) |
+| 1.B5 | Router and guards (RequireAuth, RequireBusiness, RequireNotOnboarded, RedirectIfAuthenticated), query provider, error page, 404, offline banner | Done (verified) |
+| 1.B6 | Login, Signup (email), Forgot, Reset password, wired to the real API | Done (verified against the real API) |
+| 1.B7 | Onboarding: name → one type (13) → channels → done | Done (verified against the real API) |
+| 1.B8 | App shell: sidebar (collapse, sliding pill, real trial card), topbar (new menu, disabled search and bell, account menu), bottom bar, More and New hubs, late-trial banner | Done (verified) |
+| 1.B9 | Coming-soon page for all 21 unbuilt routes | Done (verified) |
+| 1.B10 | New-user dashboard with real data | Done (verified) |
+| 1.B11 | Account (name, change password in a drawer) and Settings (profile, channels, payment methods, threshold; dirty bar) | Done (verified against the real API) |
+| 1.B12 | Tests, build, real-API end-to-end check, RTL and 4-width check, docs | Done. **Waiting for the founder: push** |
+
+**Frontend deviations and notes (for founder review):**
+1. The sign-up field is **email** instead of phone (D-078). Onboarding is reordered: name → single type → channels (D-081).
+2. The search bar and bell are shown but disabled ("قريبًا") (OQ-082/083). The language and LTR items are removed (D-006). The account page has no devices or notification sections (OQ-088/082).
+3. The sidebar user card shows the owner's **email** instead of a gendered role label ("صاحبة المشروع").
+4. Quick-add menu entries and getting-started steps open coming-soon pages (D-085). No drawers with fake saves.
+5. The reset-password page is new. The prototype had no page for it, so it uses the auth-card styling.
+6. Observed in the reference CSS, not changed: a focused input inside `.control` shows two focus rings (OQ-090).
+7. Bundle: 555 kB JS (170 kB gzip). Route-level code splitting is deferred to Phase 12.
+
+### Phase 1 frontend restructure (approved 2026-11-17, D-089)
+| ID | Task | Status |
+|---|---|---|
+| 1.R1 | `@/` alias; `services/` (apiClient, queryClient) and `assets/` (generated icon and illustration modules); sync script updated | Done (verified) |
+| 1.R2 | `shared/` split one component per file (ui, brand, form, feedback, overlay, toast, lib, validation) | Done (verified) |
+| 1.R3 | Features `auth`, `subscription`, `onboarding`, `dashboard`, `settings` with `index.ts`, `routes.tsx`, api/schemas/components/pages | Done (verified) |
+| 1.R4 | App layer: providers, router composition, guards, planned routes, navigation; AppShell split into layout-only parts plus `AuthenticatedLayout` | Done (verified) |
+| 1.R5 | Tests colocated (17 files, 50 tests); ESLint boundary rules; `npm run check:architecture` | Done (verified) |
+| 1.R6 | Post-restructure audit; FRONTEND-ARCHITECTURE.md rewritten as the authoritative reference | Done. Exceptions E-1–E-10 recorded |
+
+### Part A — Backend (Phase 0 draft, superseded by the approved plan above)
 | ID | Task | Acceptance criteria | Tests |
 |---|---|---|---|
 | 1.A1 | Create the solution and projects (`Lamma.Domain`, `Application`, `Infrastructure`, `Api`, five test projects) with the reference rules in MASTER-ARCHITECTURE §3/§4.1. Add `Directory.Build.props` (nullable, warnings, analyzers) | `dotnet build` succeeds; references match the allowed graph | Architecture tests: Domain has no references to EF or ASP.NET; Application doesn't reference Infrastructure; Api doesn't use DbContext |

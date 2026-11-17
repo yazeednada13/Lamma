@@ -70,6 +70,25 @@ Sources:
 | D-072 | The founder performs **all EF Core migrations and DB updates**. Claude provides the exact commands only | MP, F |
 | D-073 | No package or tool installation without approval | MP |
 | D-074 | Backend work is completed and reviewed before the matching frontend work | MP |
+| D-075 | Before every PR, Claude provides a ready-to-paste **PR title and description**, plus the source and target branches | F |
+
+### A6. Phase 1 prerequisite decisions (founder answers, 2026-11-10)
+| ID | Decision | Source |
+|---|---|---|
+| D-076 | Target **.NET 9** (supersedes the P-019 recommendation of .NET 10) | F, OQ-001 |
+| D-077 | Authentication: **ASP.NET Core Identity cookie + antiforgery** (option A of P-004) | F, OQ-002 |
+| D-078 | V1 sign-up and login use **email + password**; password recovery by email link. Mobile/SMS is deferred. Provider TBD | F, OQ-003 |
+| D-079 | User–Business link: **BusinessMembership** table, unique UserId in V1 (approves P-002) | F, OQ-004 |
+| D-080 | Money **input and display at 2 decimals**; storage and API at 3 (`decimal(19,3)`) | F, OQ-005 |
+| D-081 | Onboarding: **spec order** (name → single business type → channels) | F, OQ-007 |
+| D-082 | Backend request validation with **FluentValidation** (approves P-015; installing the package is approved as part of Phase 1) | F |
+| D-083 | **Scoped exception to the DB rule:** test fixtures may create and drop throwaway `Lamma_Test_<guid>` databases on LocalDB (EnsureCreated/EnsureDeleted). They never touch `Lamma_Dev` or any real database | F |
+| D-084 | Email confirmation is **not required** before login in V1 (until an email provider is chosen) | F |
+| D-085 | Unbuilt modules stay visible in the navigation and open an Arabic "coming soon" page (no fake data) | F |
+| D-087 | **Execution granularity:** after `Backend`, Claude implements all approved Backend tasks of the phase in one continuous run, with no stop between tasks, then gives one consolidated report and stops at gate 4. `Frontend` works the same way up to gate 6. Each task is still built, tested, and reviewed. This replaces "one task at a time, STOP after each" | F |
+| D-089 | **Frontend architecture:** feature-based structure `app/ · features/ · shared/ · services/ · assets/ · styles/`. Strict layer rules, a public `index.ts` per feature (no deep cross-feature imports), a layout-only AppShell with slots, and a business-agnostic `shared/`. Enforced by ESLint and `npm run check:architecture`. `docs/architecture/FRONTEND-ARCHITECTURE.md` is the authoritative reference for all frontend work (approved 2026-11-17) | F |
+| D-088 | **API response shape:** success responses return the DTO directly (no `ApiResponse<T>` envelope); errors use RFC 9457 ProblemDetails with `code`, Arabic `detail`, `traceId`, `errors`. An envelope was considered and rejected (2026-11-10). An `X-Request-Id` header on success responses was offered and is not added unless requested | F |
+| D-086 | Phase 1 plan approved (2026-11-10). It also approves P-001, P-003, P-005, P-013, P-014, P-016, P-017, P-020 and the Phase 1 package list | F |
 
 ### A5. Visual identity (from REF; preserve)
 | ID | Decision |
@@ -123,10 +142,17 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | R-007 | Multiple users, employees, permissions | Out of scope (V1) | MP |
 | R-008 | MediatR, CQRS, microservices, generic repositories | Rejected | MP, F |
 | R-009 | A separate Unit of Work object layered over DbContext (beyond the thin interface in P-013) | Rejected by default | F |
+| R-010 | `ApiResponse<T>` envelope (success flag + data + meta + errors) for every response | Rejected (D-088) | F |
 
 ---
 
 ## D. Change log
 | Date | Change |
 |---|---|
+| 2026-11-10 | D-075 added (PR title and description before every PR) |
+| 2026-11-10 | D-076–D-082 added from the founder's P0 answers before Phase 1 |
+| 2026-11-10 | D-083–D-086 added; Phase 1 plan approved |
+| 2026-11-10 | D-087 added: all Backend tasks run together, then all Frontend tasks together |
+| 2026-11-10 | D-088 added: keep DTO + ProblemDetails, no response envelope |
+| 2026-11-17 | D-089 added: feature-based frontend architecture; FRONTEND-ARCHITECTURE.md is authoritative |
 | 2026-11-10 | Initial log created in Phase 0 from MP, REF, and the founder's review instructions (workflow, engineering standards, status-label discipline, LTR toggle exclusion) |

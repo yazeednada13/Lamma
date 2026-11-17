@@ -35,11 +35,20 @@ Do **not** use `python -m http.server`, which truncates files over 64 KB on this
   ```
   - Instance choice: the default `localhost`, `localhost\MSSQLSERVER01`, or `(localdb)\MSSQLLocalDB`. The founder decides.
 - **Migrations and database updates are executed by the founder only.** The exact commands are provided at each Backend checkpoint (see DATABASE-DESIGN §13).
-- Run the API with `dotnet run --project src/Lamma.Api`. The port is defined in `launchSettings.json`.
-- Tests: `dotnet test`, using a separate test database (TESTING-STRATEGY §2).
+- The SDK is pinned to 9.0.320 by `global.json` (D-076).
+- Trust the dev HTTPS certificate once (founder action): `dotnet dev-certs https --trust`.
+- Run the API: `dotnet run --project src/Lamma.Api --launch-profile https` → https://localhost:7101 (http 5101). In Development, OpenAPI is at `/openapi/v1.json` and health at `/health`.
+- Password-reset emails: in Development the reset link is written to the console log (`DEV ONLY - password reset link`). Outside Development, forgot-password returns 503 until an email provider is chosen.
+- Tests: `dotnet test Lamma.sln` (TESTING-STRATEGY §2). Requires LocalDB `MSSQLLocalDB` to be running: `sqllocaldb start MSSQLLocalDB`. Override with the env var `LAMMA_TEST_SQL_SERVER`.
 - Recommended database setting (founder action): `ALTER DATABASE Lamma_Dev SET READ_COMMITTED_SNAPSHOT ON;`
 
-## 4. Frontend setup (after Phase 1 Part B approval) [P]
+## 4. Frontend setup (Phase 1, implemented)
+- Node ≥ 22.12 is required. Package versions are pinned exactly (`save-exact`) to builds that run on the installed Node 22.17. The newest React Router 8 and jsdom 31 need Node 22.22, so they weren't used.
+- The dev server runs at http://localhost:5173 and proxies `/api` to https://localhost:7101, so cookies are first-party (D-077). Start the API first.
+- `.claude/launch.json` defines `lamma-api` and `lamma-web` for the Claude Code browser preview.
+- Commands: `npm run test` (Vitest + MSW, tests only), `npm run lint`, `npm run check:architecture` (layer, public-API and cycle check; see FRONTEND-ARCHITECTURE.md §4), `npm run build`, and `npm run sync:design`, which re-copies the design system from `frontend-reference/` (read-only; only with founder approval of design changes).
+- In Development the API writes password-reset links to its console (`App:FrontendBaseUrl` = http://localhost:5173 in `appsettings.Development.json`).
+
 ```bash
 cd frontend
 npm install

@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Domain: no package or framework references (BCL only). -->
+  <PropertyGroup>
+    <RootNamespace>Lamma.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

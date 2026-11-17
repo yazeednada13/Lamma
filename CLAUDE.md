@@ -16,15 +16,15 @@ Every phase follows these gates in order. Each gate waits for the founder's expl
 |---|---|---|---|
 | 1 | **Phase branch** | Founder | The founder creates a branch from the latest `develop` (e.g. `feature/phase1-foundation`). Claude **never** creates, switches, merges, or deletes branches, and runs **no Git commands at all**. |
 | 2 | **Plan Mode** | Claude → founder approval | The founder asks for the plan. The plan includes objectives and scope, Backend and Frontend parts, dependencies, numbered task IDs, technical details, acceptance criteria per task, unit and integration tests, security and performance considerations, DB changes, API contracts and frontend integration, documentation updates, risks, and open decisions. **Nothing is implemented during planning.** If changes are requested, revise the plan and wait for approval again. |
-| 3 | **Backend tasks** | Claude | Starts only when the founder writes **`Backend`**. Work on one task at a time: inspect → implement → build → run tests → review (correctness, security, performance, maintainability) → fix → update docs → report → **STOP**. |
+| 3 | **Backend tasks** | Claude | Starts only when the founder writes **`Backend`**. Implement **all** approved Backend tasks of the phase in one continuous run, in task order (D-087). For each task: inspect → implement → build → run tests → review (correctness, security, performance, maintainability) → fix → update docs. Do not stop between tasks. Stop early only for a real blocker or an ambiguous business rule. When all Backend tasks are done, deliver one consolidated report and **STOP** at gate 4. |
 | 4 | **Backend checkpoint** | Claude reports → founder executes | Deliver the Backend completion report: features, architecture, build and test results, remaining issues, API contracts for the frontend, schema changes, recommended migration name, the exact `dotnet ef` and database-update commands, and the exact Git commands with commit messages. **Wait** until the founder confirms the push to the remote. |
-| 5 | **Frontend tasks** | Claude | Starts only when the founder writes **`Frontend`**. Use the approved React + TS architecture. Preserve the Lamma design and reuse its tokens, CSS, fonts, icons, and assets. Integrate with the real APIs; no mock data in product functionality. Arabic RTL and responsive. Work on one task at a time: implement → verify → test → fix → report → **STOP**. |
+| 5 | **Frontend tasks** | Claude | Starts only when the founder writes **`Frontend`**. Use the approved React + TS architecture. Preserve the Lamma design and reuse its tokens, CSS, fonts, icons, and assets. Integrate with the real APIs; no mock data in product functionality. Arabic RTL and responsive. Implement **all** approved Frontend tasks of the phase in one continuous run (D-087). For each task: implement → verify → test → fix. Do not stop between tasks. Stop early only for a real blocker. When all Frontend tasks are done, deliver one consolidated report and **STOP** at gate 6. |
 | 6 | **Frontend checkpoint** | Claude reports → founder executes | Run the frontend tests and a production build. Verify the API integration, RTL, and responsive layouts. Report the results and remaining issues. Provide the exact Git commands. **Wait** for the founder's confirmation. |
-| 7 | **PR & closure** | Claude drafts → founder creates/merges | Draft the PR description: deliverables, tests and their results, DB changes and migration status, known limitations, and a checklist against the plan. Claude **never** creates or merges PRs (no `gh`, no Git). Update progress docs after the merge **only when authorized**. |
+| 7 | **PR & closure** | Claude drafts → founder creates/merges | **Before every PR, always provide a ready-to-paste PR title and PR description**, plus the source and target branches. The description covers: deliverables, tests and their results, DB changes and migration status, known limitations, and a checklist against the plan. Claude **never** creates or merges PRs (no `gh`, no Git). Update progress docs after the merge **only when authorized**. |
 | 8 | **Next phase** | Founder | Only after the founder confirms the merge into `develop` and writes **`Next Phase`**. Planning then restarts at gate 2. |
 
 ### Non-negotiable working principles
-- One phase at a time. One task at a time.
+- One phase at a time. Within a phase, all Backend tasks run together after `Backend`, then all Frontend tasks run together after `Frontend` (D-087). Each part is verified task by task, but there is no stop between tasks.
 - Planning and explicit approval come before implementation.
 - Backend always comes before Frontend.
 - Testing and verification are mandatory. Never claim a test passed unless it was actually executed successfully.
@@ -34,11 +34,12 @@ Every phase follows these gates in order. Each gate waits for the founder's expl
 - **No unapproved package or tool installations.** This covers NuGet, npm, dotnet tools, and SDKs.
 - Keep project documentation synchronized with the actual implementation.
 - Report blockers immediately. Ask focused questions when a business rule is ambiguous.
-- **STOP** whenever a task, checkpoint, or approval gate is reached.
+- **STOP** at every checkpoint or approval gate (end of plan, end of Backend, end of Frontend, PR), and whenever a blocker or an ambiguous business rule appears.
 
 ## 2. Database & migration governance
 - **Allowed:** write approved entity, configuration, and DbContext source code. Inspect database code and schemas by read-only methods. Recommend migration names and exact commands.
 - **Never:** run `dotnet ef migrations add`, `dotnet ef migrations remove`, `dotnet ef database update`, any equivalent, or any schema script.
+- **Single approved exception (D-083):** automated test fixtures may create and drop throwaway `Lamma_Test_<guid>` databases on LocalDB. They never touch `Lamma_Dev` or any real database.
 - At the end of every backend task that changes the model, report:
   1. the schema changes
   2. the migration name
@@ -66,6 +67,7 @@ Never implement a Proposed or Open item as if it were decided. Never silently ch
 - A **status change and its inventory effects** happen in one DB transaction. Every stock change writes a StockMovement.
 - **OrderItem** stores the unit price and unit cost at the time of sale.
 - **Architecture:** follow `docs/architecture/MASTER-ARCHITECTURE.md` §Backend Engineering Standards. Controllers stay thin. No DbContext outside Infrastructure. Focused repositories (no generic repository). **No MediatR, no CQRS, no microservices.**
+- **Frontend architecture (D-089):** all frontend work must follow `docs/architecture/FRONTEND-ARCHITECTURE.md` (feature-based layers, public `index.ts` per feature, no deep cross-feature imports, layout-only AppShell, business-agnostic `shared/`). `npm run lint` and `npm run check:architecture` must report 0 issues. Any deviation is recorded in its Justified Exceptions register.
 - **Frontend reference:** `frontend-reference/` is the original HTML/CSS/JS prototype and design system. **Never modify or delete it.** The React app lives in a separate folder.
 - **No mock data** replaces real backend integration. Test-only mocks such as MSW are allowed only in tests, once approved.
 - **Out of scope for V1:** multiple users or employees, WhatsApp order sharing, data export, expense receipt photos, dark mode, customer invoices, the English LTR UI (the prototype's LTR-preview toggle is **not** ported), subscription enforcement (not approved), and invented prices.
@@ -86,7 +88,7 @@ Never implement a Proposed or Open item as if it were decided. Never silently ch
 | `docs/architecture/DATABASE-DESIGN.md` | Entities, constraints, indexes, money, inventory rules, concurrency |
 | `docs/architecture/API-DESIGN.md` | REST conventions and API contracts |
 | `docs/architecture/FRONTEND-AUDIT.md` | Prototype inventory and its mapping to React |
-| `docs/architecture/FRONTEND-ARCHITECTURE.md` | React architecture proposal |
+| `docs/architecture/FRONTEND-ARCHITECTURE.md` | **Authoritative** React architecture: folders, layers, naming, exceptions (D-089) |
 | `docs/roadmap/MASTER-ROADMAP.md` | Phase order, dependencies, and the workflow |
 | `docs/roadmap/PHASE-PLANS.md` | Per-phase tasks, acceptance criteria, tests, gate status |
 | `docs/project/PROJECT-PROGRESS.md` | Current status (single source of truth for progress) |
