@@ -77,7 +77,7 @@ Entry format: **ID · Priority · Blocks**, then the context, the options, and t
 
 ## P1 — before Phase 3 (Inventory)
 
-**OQ-020 · P1 · Phase 3: receive stock versus the "Purchases" expense (double counting).** ⚠
+**OQ-020 · P1 · Phase 3: receive stock versus the "Purchases" expense (double counting).** ⚠ **Resolved (2026-11-18) → D-107.**
 - Context: the prototype's receive screen has a checkbox "record it as a Purchases expense". The approved P&L (D-034) already deducts **COGS** when goods are sold. Recording purchases as an expense **as well** deducts the same cost twice.
 - Options:
   - (a) Remove the checkbox. Purchases are inventory (an asset), not an expense, and only COGS hits P&L.
@@ -85,13 +85,13 @@ Entry format: **ID · Priority · Blocks**, then the context, the options, and t
   - (c) Treat purchases as expenses and drop COGS. This breaks D-034.
 - Recommendation: **(a)**, or (b) if cash-outflow tracking is wanted. This is a business decision.
 
-**OQ-021 · P1 · Phase 3: expiry granularity.** The spec gives one expiry date per product. The prototype's expiry screen shows **batches/lots** (B-2401: 8 pcs, B-2408: 18 pcs). Options: (a) one expiry per product or variant; (b) batch/lot tracking with an expiry per received batch, which needs FEFO decisions on sale. Recommendation: (a) for V1, unless lot tracking is a must-have.
+**OQ-021 · P1 · Phase 3: expiry granularity.** The spec gives one expiry date per product. The prototype's expiry screen shows **batches/lots** (B-2401: 8 pcs, B-2408: 18 pcs). Options: (a) one expiry per product or variant; (b) batch/lot tracking with an expiry per received batch, which needs FEFO decisions on sale. Recommendation: (a) for V1, unless lot tracking is a must-have. **Resolved (2026-11-18) → D-108.**
 
-**OQ-022 · P1 · Phase 3: cost update on receive.** When stock arrives at a different cost, does the product's cost become (a) the latest cost, (b) a weighted average, or (c) stay unchanged? COGS snapshots (D-032) depend on this. Recommendation: (b) weighted average.
+**OQ-022 · P1 · Phase 3: cost update on receive.** When stock arrives at a different cost, does the product's cost become (a) the latest cost, (b) a weighted average, or (c) stay unchanged? COGS snapshots (D-032) depend on this. Recommendation: (b) weighted average. **Resolved (2026-11-18) → D-109.**
 
-**OQ-023 · P1 · Phase 3: adjustment reasons.** The prototype shows "Adjustment: damage". Proposed fixed list: damage, loss, count correction, other (with a note). Is negative on-hand stock ever allowed? Recommendation: never, and an adjustment cannot push Available below 0.
+**OQ-023 · P1 · Phase 3: adjustment reasons.** The prototype shows "Adjustment: damage". Proposed fixed list: damage, loss, count correction, other (with a note). Is negative on-hand stock ever allowed? Recommendation: never, and an adjustment cannot push Available below 0. **Resolved (2026-11-18) → D-110.**
 
-**OQ-024 · P1 · Phase 3: expiry warning window.** The prototype warns 60 days ahead. Confirm the value and whether it is configurable.
+**OQ-024 · P1 · Phase 3: expiry warning window.** The prototype warns 60 days ahead. Confirm the value and whether it is configurable. **Resolved (2026-11-18) → D-111.**
 
 ## P1 — before Phase 4 (Customers)
 

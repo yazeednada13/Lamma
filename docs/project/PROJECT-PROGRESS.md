@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 2: Catalog** |
-| Current gate | **Gate 7: PR.** Backend and frontend pushed; waiting for the founder to open and merge the Phase 2 PR |
-| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Branch `feature/phase2-catalog` created (2026-11-17) |
+| Current phase | **Phase 3: Inventory** |
+| Current gate | **Gate 3: waiting for `Backend`.** The Phase 3 plan is approved (D-107–D-113) |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Branch `feature/phase3-inventory` created (2026-11-18) |
 | Migrations | `InitialIdentityAndBusiness` (Phase 1) and `AddCatalog` (Phase 2) applied by the founder (verified read-only: `__EFMigrationsHistory` and the 5 catalog tables in `Lamma_Dev`) |
-| Next expected founder action | Open the PR `feature/phase2-catalog` → `develop`, merge, confirm |
+| Next expected founder action | Write `Backend` to start the Phase 3 backend tasks 3.A1–3.A8 |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -28,8 +28,8 @@
 |---|---|
 | 0 Discovery & planning | **Merged into develop (founder-reported 2026-11-10)** |
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
-| 2 Catalog | **Backend and frontend pushed; PR (gate 7)** |
-| 3 Inventory | Pending |
+| 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
+| 3 Inventory | **Plan approved (2026-11-18); waiting for `Backend`** |
 | 4 Customers | Pending |
 | 5 Orders core | Pending |
 | 6 Payments & receivables | Pending |
@@ -90,4 +90,6 @@
 | 2026-11-17 | Phase 2 Backend 2.A1–2.A10 implemented and verified; waiting at gate 4 |
 | 2026-11-17 | Founder applied `AddCatalog` and pushed the backend; `Frontend` given |
 | 2026-11-18 | Phase 2 Frontend 2.B1–2.B7 implemented and verified |
-| 2026-11-18 | Founder pushed the Phase 2 frontend; at gate 7 (PR) |
+| 2026-11-18 | Founder pushed the Phase 2 frontend and merged the Phase 2 PR into `develop`; Phase 2 closed |
+| 2026-11-18 | D-106 recorded (lean verification); founder created `feature/phase3-inventory`; Phase 3 at gate 2 |
+| 2026-11-18 | Phase 3 plan approved (D-107–D-113); waiting at gate 3 |

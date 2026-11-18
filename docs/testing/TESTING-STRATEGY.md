@@ -7,6 +7,12 @@
 - Never claim that a test passed unless it was executed.
 - No production data is ever used.
 
+**Lean verification (Approved, D-106, from Phase 3):**
+- Backend: automated tests only for sensitive business rules (inventory, money, tenant isolation, transactions, status effects). Build per task; the full suite runs once at the end of the Backend part, summary output only.
+- Frontend: `tsc`, `lint`, `check:architecture`, `build`, and unit tests for pure logic. No new full-app page tests by default.
+- Browser verification is done by the founder with Claude's gate-6 checklist; Claude runs browser checks only when asked.
+- Existing suites stay and must keep passing. Sections below describe the full strategy; D-106 limits what is added per phase.
+
 ---
 
 ## 1. Test pyramid
