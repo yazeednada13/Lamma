@@ -174,8 +174,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 1. Branch created by founder | ☑ | 2026-11-17 | `feature/phase2-catalog` |
 | 2. Plan approved | ☑ | 2026-11-17 | D-090–D-105 |
 | 3. `Backend` started | ☑ | 2026-11-17 | All backend tasks in one batch (D-087) |
-| 4. Backend pushed (founder confirmed) | ☐ | | migration `AddCatalog`: waiting for the founder |
-| 5. `Frontend` started | ☐ | | |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-17 | migration `AddCatalog` applied by the founder (verified read-only in `Lamma_Dev`) |
+| 5. `Frontend` started | ☑ | 2026-11-17 | All frontend tasks in one batch (D-087) |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |
@@ -194,15 +194,21 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 2.A9 | Product list (search, filters, paging) and details queries | Done (verified) |
 | 2.A10 | Wiring, configurations, indexes, docs; migration `AddCatalog` (founder) | Done. **Waiting for the founder: migration + push** |
 
-| ID | Frontend task |
-|---|---|
-| 2.B1 | Products list |
-| 2.B2 | Product form (new and edit) with the variant matrix |
-| 2.B3 | Product details |
-| 2.B4 | Categories page |
-| 2.B5 | Settings: templates and custom fields; business-type labels from the API |
-| 2.B6 | Routing wiring (remove the coming-soon catalog routes, links) |
-| 2.B7 | Frontend checkpoint |
+| ID | Frontend task | Status |
+|---|---|---|
+| 2.B1 | Products list | Done (verified against the real API) |
+| 2.B2 | Product form (new and edit) with the variant matrix | Done (verified against the real API) |
+| 2.B3 | Product details | Done (verified against the real API) |
+| 2.B4 | Categories page | Done (verified against the real API) |
+| 2.B5 | Settings: templates and custom fields; business-type labels from the API | Done (verified against the real API) |
+| 2.B6 | Routing wiring (remove the coming-soon catalog routes, links) | Done (verified) |
+| 2.B7 | Frontend checkpoint | Done. **Waiting for the founder: push** |
+
+**Frontend notes (for founder review):**
+1. The prototype's three summary cards on the products page (stock value at cost, expected profit, needs attention) are not built: they need inventory totals across all products, which is Phase 3 (inventory) scope.
+2. Variant archive/restore and per-variant price, cost and expiry live on the product details page (variants table + drawer); the edit form adds new variants and renames axes.
+3. "تعديل المخزون", "استلام" and "طلب فيه" on the details page are disabled with "قريبًا" (Phases 3 and 5); the sales chart is an empty state until orders exist.
+4. Product images are not cached by the browser (the auth cookie is renewed on every request, which marks responses no-store). Performance only; revisit in Phase 12.
 
 **Draft task tables (Phase 0, superseded by the approved plan above):**
 

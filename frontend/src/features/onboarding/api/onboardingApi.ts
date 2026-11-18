@@ -1,27 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { accountKey, type Account } from "@/features/auth";
 import type { SalesChannelCode } from "@/features/settings";
 import { api } from "@/services/api/apiClient";
 
 // Onboarding contracts (API-DESIGN §11).
 
-export interface BusinessTypeOption {
-  code: string;
-  labelAr: string;
-}
-
 export interface OnboardingBody {
   businessName: string;
   businessType: string;
   salesChannels: SalesChannelCode[];
-}
-
-export function useBusinessTypes() {
-  return useQuery({
-    queryKey: ["onboarding", "business-types"],
-    queryFn: () => api.get<BusinessTypeOption[]>("/onboarding/business-types"),
-    staleTime: Infinity,
-  });
 }
 
 /**

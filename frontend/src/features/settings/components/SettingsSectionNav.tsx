@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Icon, type IconName } from "@/shared/ui/Icon";
 
 export interface SettingsSection {
   id: string;
   icon: IconName;
   label: string;
+}
+
+/**
+ * A settings section owned by another feature (e.g. catalog templates). It is composed in by the app layer,
+ * so settings never imports that feature (FRONTEND-ARCHITECTURE §4, no cycles).
+ */
+export interface SettingsExtraSection extends SettingsSection {
+  element: ReactNode;
 }
 
 /** Sticky jump links to the settings sections (prototype `.snav`). */

@@ -1,5 +1,5 @@
 import { useCurrentAccount } from "@/features/auth";
-import { businessTypeLabel, channelLabel, useSalesChannelSettings } from "@/features/settings";
+import { channelLabel, useBusinessTypeLabel, useSalesChannelSettings } from "@/features/settings";
 import { firstName } from "@/shared/lib/personName";
 import { ButtonLink } from "@/shared/ui/Button";
 import { EmptyState } from "@/shared/ui/feedback/EmptyState";
@@ -11,6 +11,7 @@ export function DashboardPage() {
   const account = useCurrentAccount();
   const channels = useSalesChannelSettings();
   const business = account.business!;
+  const businessTypeLabel = useBusinessTypeLabel(business.businessType);
   const enabledChannels = channels.data?.channels.filter((c) => c.isEnabled).map((c) => channelLabel[c.channel]) ?? [];
   const steps = 4;
   const done = 1;
@@ -42,7 +43,7 @@ export function DashboardPage() {
                 <b>جهّز مشروعك</b>
                 <br />
                 <span className="caption">
-                  {businessTypeLabel(business.businessType)}
+                  {businessTypeLabel}
                   {enabledChannels.length > 0 && ` · ${enabledChannels.join(" و")}`}
                 </span>
               </span>

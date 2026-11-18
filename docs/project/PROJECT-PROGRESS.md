@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 2: Catalog** |
-| Current gate | **Gate 4: Backend checkpoint.** All Phase 2 backend tasks 2.A1–2.A10 are done and verified. Waiting for the founder to create and apply `AddCatalog` and push |
+| Current gate | **Gate 6: Frontend checkpoint.** All Phase 2 frontend tasks 2.B1–2.B7 are done and verified. Waiting for the founder to commit and push |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Branch `feature/phase2-catalog` created (2026-11-17) |
-| Migrations | `InitialIdentityAndBusiness` applied (Phase 1). **`AddCatalog` (Phase 2) not created yet: founder action** |
-| Next expected founder action | Create and apply migration `AddCatalog`, commit and push the backend, confirm. Then `Frontend` |
+| Migrations | `InitialIdentityAndBusiness` (Phase 1) and `AddCatalog` (Phase 2) applied by the founder (verified read-only: `__EFMigrationsHistory` and the 5 catalog tables in `Lamma_Dev`) |
+| Next expected founder action | Review the catalog screens, commit and push the frontend, confirm. Then PR (gate 7) |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -28,7 +28,7 @@
 |---|---|
 | 0 Discovery & planning | **Merged into develop (founder-reported 2026-11-10)** |
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
-| 2 Catalog | **Backend done (gate 4 checkpoint)** |
+| 2 Catalog | **Backend pushed; Frontend done (gate 6 checkpoint)** |
 | 3 Inventory | Pending |
 | 4 Customers | Pending |
 | 5 Orders core | Pending |
@@ -67,6 +67,10 @@
 | 2026-11-17 | Frontend restructure: real-API end-to-end check | signup → onboarding → dashboard → settings save → name change → logout → login passed; all 19 sidebar links resolve; 1440 and 390 layouts correct, RTL, no horizontal scroll |
 | 2026-11-17 | Phase 2 backend: `dotnet build Lamma.sln` | 0 warnings, 0 errors |
 | 2026-11-17 | Phase 2 backend: `dotnet test Lamma.sln` (LocalDB) | **222 passed, 0 failed**: Domain 71, Application 58, Infrastructure 19, Architecture 8, API integration 66 (94 new) |
+| 2026-11-18 | Phase 2 frontend: `tsc -b`, `eslint .`, `npm run check:architecture` | all clean; 165 files, 0 violations, 0 cycles |
+| 2026-11-18 | Phase 2 frontend: `vitest run` (jsdom + MSW, StrictMode) | **73 passed, 0 failed** across 23 files (23 new); stable over 3 consecutive full runs |
+| 2026-11-18 | Phase 2 frontend: `vite build` | OK; JS 613 kB (186 kB gzip) |
+| 2026-11-18 | Phase 2 real-API browser check (Vite + API + `Lamma_Dev`) | category create → product with size matrix and opening stock → details (stock map, variants, opening movements) → variant price override → edit adds a size with opening stock → list with price range; settings templates section loads; widths 1440/1024/768/375 without horizontal scroll, RTL |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -84,3 +88,5 @@
 | 2026-11-17 | Founder pushed the Phase 1 frontend and merged the Phase 1 PR into `develop`; Phase 1 closed |
 | 2026-11-17 | Founder created `feature/phase2-catalog`, accepted the recommended answers to the Phase 2 questions, and approved the Phase 2 plan (D-090–D-105) |
 | 2026-11-17 | Phase 2 Backend 2.A1–2.A10 implemented and verified; waiting at gate 4 |
+| 2026-11-17 | Founder applied `AddCatalog` and pushed the backend; `Frontend` given |
+| 2026-11-18 | Phase 2 Frontend 2.B1–2.B7 implemented and verified; waiting at gate 6 |

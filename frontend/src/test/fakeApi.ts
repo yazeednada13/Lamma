@@ -3,6 +3,7 @@
 // It is never bundled into the app: only test files import it.
 import { http, HttpResponse, type JsonBodyType } from "msw";
 import { setupServer } from "msw/node";
+import { createCatalogHandlers, newCatalog, type FakeCatalog } from "./fakeCatalog";
 
 const BASE = "http://localhost:3000/api/v1";
 
@@ -21,13 +22,16 @@ interface FakeBusiness {
   defaultLowStockThreshold: number;
   channels: Record<string, boolean>;
   methods: Record<string, boolean>;
+  catalog: FakeCatalog;
 }
+
+const DEFAULT_TEMPLATE: Record<string, string> = { clothing: "clothing", kids: "clothing", perfume: "perfume", beauty: "beauty", accessories: "jewelry", gifts: "gift" };
 
 export const BUSINESS_TYPES = [
   ["clothing", "ملابس وأزياء"], ["shoes_bags", "أحذية وشنط"], ["perfume", "عطور"], ["beauty", "تجميل وعناية"],
   ["accessories", "إكسسوارات ومجوهرات"], ["gifts", "هدايا وبوكسات"], ["home_food", "أكل وحلويات بيتية"], ["handmade", "شغل يدوي"],
   ["electronics", "إلكترونيات"], ["kids", "أطفال وألعاب"], ["home_decor", "ديكور ومنزل"], ["books", "كتب وقرطاسية"], ["other", "أخرى"],
-].map(([code, labelAr]) => ({ code: code!, labelAr: labelAr! }));
+].map(([code, labelAr]) => ({ code: code!, labelAr: labelAr!, defaultTemplateCode: DEFAULT_TEMPLATE[code!] ?? "other" }));
 
 const CHANNELS = ["instagram", "whatsapp", "facebook", "other"];
 const METHODS = ["cash", "cliq", "bank_transfer", "cod", "zain_cash", "orange_money"];
@@ -75,6 +79,7 @@ class FakeLamma {
       defaultLowStockThreshold: 5,
       channels: { instagram: true, whatsapp: true, facebook: false, other: false },
       methods: { cash: true, cliq: true, bank_transfer: true, cod: true, zain_cash: false, orange_money: false },
+      catalog: newCatalog(),
     };
     this.businesses.set(email, business);
     return business;
@@ -118,7 +123,7 @@ async function guard(request: Request): Promise<{ body: Record<string, unknown>;
   const url = new URL(request.url);
   const csrf = request.headers.get("X-XSRF-TOKEN");
   let body: Record<string, unknown> = {};
-  if (request.method !== "GET") {
+  if (request.method !== "GET" && !(request.headers.get("Content-Type") ?? "").startsWith("multipart/")) {
     const text = await request.text();
     body = text ? (JSON.parse(text) as Record<string, unknown>) : {};
   }
@@ -143,14 +148,14 @@ function settings(business: FakeBusiness) {
   };
 }
 
-function withBusiness(handler: (business: FakeBusiness, body: Record<string, unknown>) => Response) {
-  return async ({ request }: { request: Request }) => {
+function withBusiness(handler: (business: FakeBusiness, body: Record<string, unknown>, request: Request, params: Record<string, string>) => Response) {
+  return async ({ request, params }: { request: Request; params: Record<string, string | readonly string[] | undefined> }) => {
     const { body, error } = await guard(request);
     if (error) return error;
     if (!fake.session) return unauthenticated();
     const business = fake.businesses.get(fake.session);
     if (!business) return problem(403, "business.not_onboarded", "لازم تكمّل تهيئة مشروعك أول.");
-    return handler(business, body);
+    return handler(business, body, request, params as Record<string, string>);
   };
 }
 
@@ -269,5 +274,7 @@ export const handlers = [
     }),
   ),
 ];
+
+handlers.push(...createCatalogHandlers({ base: BASE, withBusiness, problem, json }));
 
 export const server = setupServer(...handlers);

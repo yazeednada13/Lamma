@@ -78,6 +78,15 @@
   - `features/auth/{auth,session}.test.tsx`, `features/onboarding/onboarding.test.tsx`, `features/dashboard/dashboard.test.tsx`, `features/settings/{AccountPage,BusinessSettingsPage}.test.tsx`
   - `app/router/routing.test.tsx` (guards, 404, all coming-soon routes), `app/layouts/app-shell/AppShell.test.tsx` (shell, logout, collapse, banners)
 - Timeouts: `testTimeout` 15s and `asyncUtilTimeout` 3s, because full-app renders run in parallel files (FRONTEND-ARCHITECTURE §11 E-9).
+- **Phase 2 (catalog), 23 files / 73 tests in total:**
+  - `features/catalog/domain/productFormModel.test.ts`: combinations, value toggling, form → create, update and new-variant bodies (including conversion of a simple product)
+  - `features/catalog/products.test.tsx`: empty state, list and filters, simple product with opening stock, size × colour matrix, client validation, image upload, edit adding only new combinations
+  - `features/catalog/productDetails.test.tsx`: stock map, opening movements, archive variant, variant price drawer, archive/restore product, not found
+  - `features/catalog/categories.test.tsx`: add, rename, duplicate name, blocked delete
+  - `features/catalog/ProductTemplatesSection.test.tsx`: custom select field in settings; business-type labels from the API (D-103)
+  - `shared/ui/form/ImagePicker.test.tsx`: type and size pre-check
+- The catalog fake (`src/test/fakeCatalog.ts`, test-only) implements the API-DESIGN §12 contracts; state lives on each fake business.
+- Vitest runs with `maxWorkers: 4` (one per physical core of the dev machine; E-9).
 - `npm run check:architecture` and `npm run lint` are part of every frontend checkpoint.
 - Manual: a real-API browser pass and a 4-width RTL check at each Frontend checkpoint.
 

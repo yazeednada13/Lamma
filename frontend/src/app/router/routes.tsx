@@ -1,8 +1,9 @@
 import type { RouteObject } from "react-router";
 import { authRoutes, resetPasswordRoute } from "@/features/auth";
+import { catalogRoutes, productTemplatesSettingsSection } from "@/features/catalog";
 import { dashboardRoute } from "@/features/dashboard";
 import { onboardingRoute } from "@/features/onboarding";
-import { settingsRoutes } from "@/features/settings";
+import { createSettingsRoutes } from "@/features/settings";
 import { AuthenticatedLayout } from "../layouts/AuthenticatedLayout";
 import { navigationRoutes } from "../navigation/navigationRoutes";
 import { RedirectIfAuthenticated, RequireAuth, RequireBusiness, RequireNotOnboarded } from "./guards";
@@ -10,6 +11,9 @@ import { ComingSoonPage } from "./pages/ComingSoonPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { COMING_SOON_ROUTES } from "./plannedRoutes";
 import { RouteErrorPage } from "./RouteErrorPage";
+
+// Features plug into each other's screens here, so they never import each other in a cycle.
+const settingsRoutes = createSettingsRoutes({ extraSections: [productTemplatesSettingsSection] });
 
 const plannedRoutes: RouteObject[] = COMING_SOON_ROUTES.map((r) => ({
   path: `/${r.path}`,
@@ -35,7 +39,7 @@ export const routes: RouteObject[] = [
             children: [
               {
                 element: <AuthenticatedLayout />,
-                children: [dashboardRoute, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
+                children: [dashboardRoute, ...catalogRoutes, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
               },
             ],
           },
