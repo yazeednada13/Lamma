@@ -9,11 +9,12 @@ import { FormAlert } from "@/shared/ui/form/FormAlert";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
 import { useBusinessSettings, usePaymentMethodSettings, useSalesChannelSettings, useSaveSettings } from "../api/businessSettingsApi";
+import { useBusinessTypes } from "../api/businessTypesApi";
 import { BusinessProfileSection } from "../components/BusinessProfileSection";
 import { InventorySection } from "../components/InventorySection";
 import { PaymentMethodsSection } from "../components/PaymentMethodsSection";
 import { SalesChannelsSection } from "../components/SalesChannelsSection";
-import { SettingsSectionNav, type SettingsSection } from "../components/SettingsSectionNav";
+import { SettingsSectionNav, type SettingsExtraSection, type SettingsSection } from "../components/SettingsSectionNav";
 import { UnsavedChangesBar } from "../components/UnsavedChangesBar";
 import { PAYMENT_METHODS } from "../domain/paymentMethods";
 import { SALES_CHANNELS } from "../domain/salesChannels";
@@ -29,10 +30,12 @@ const SECTIONS: readonly SettingsSection[] = [
 /**
  * Business settings (Phase 1 scope; prototype `#/settings`). This page owns the data: it loads the three
  * settings resources, builds the form, saves only the changed sections and maps server errors.
- * The sections only render their fields.
+ * The sections only render their fields. Sections of other features (`extraSections`) render after the form,
+ * each with its own saving.
  */
-export function BusinessSettingsPage() {
+export function BusinessSettingsPage({ extraSections = [] }: { extraSections?: readonly SettingsExtraSection[] }) {
   const business = useBusinessSettings();
+  const businessTypes = useBusinessTypes();
   const channels = useSalesChannelSettings();
   const methods = usePaymentMethodSettings();
   const save = useSaveSettings();
@@ -90,7 +93,7 @@ export function BusinessSettingsPage() {
     }
   });
 
-  const failed = business.error ?? channels.error ?? methods.error;
+  const failed = business.error ?? channels.error ?? methods.error ?? businessTypes.error;
   if (failed) {
     return (
       <>
@@ -101,13 +104,14 @@ export function BusinessSettingsPage() {
             void business.refetch();
             void channels.refetch();
             void methods.refetch();
+            void businessTypes.refetch();
           }}
         />
       </>
     );
   }
 
-  if (!loaded || !formState.defaultValues) {
+  if (!loaded || !formState.defaultValues || !businessTypes.data) {
     return <PageSkeleton />;
   }
 
@@ -115,17 +119,22 @@ export function BusinessSettingsPage() {
   return (
     <>
       <PageHeader title="إعدادات المشروع" subtitle={`${loaded.name} · كل اللي بيخص طريقة شغلك`} />
-      <form className="settings" onSubmit={onSubmit} noValidate>
-        <SettingsSectionNav sections={SECTIONS} />
+      <div className="settings">
+        <SettingsSectionNav sections={[...SECTIONS, ...extraSections]} />
         <div className="col" style={{ gap: 16 }}>
-          {formError && <FormAlert>{formError}</FormAlert>}
-          <BusinessProfileSection {...sectionProps} />
-          <SalesChannelsSection {...sectionProps} />
-          <PaymentMethodsSection {...sectionProps} />
-          <InventorySection {...sectionProps} />
-          <UnsavedChangesBar visible={formState.isDirty} saving={save.isPending} onDiscard={() => reset(loaded)} />
+          <form className="col" style={{ gap: 16 }} onSubmit={onSubmit} noValidate>
+            {formError && <FormAlert>{formError}</FormAlert>}
+            <BusinessProfileSection {...sectionProps} businessTypes={businessTypes.data} />
+            <SalesChannelsSection {...sectionProps} />
+            <PaymentMethodsSection {...sectionProps} />
+            <InventorySection {...sectionProps} />
+            <UnsavedChangesBar visible={formState.isDirty} saving={save.isPending} onDiscard={() => reset(loaded)} />
+          </form>
+          {extraSections.map((section) => (
+            <div key={section.id}>{section.element}</div>
+          ))}
         </div>
-      </form>
+      </div>
     </>
   );
 }

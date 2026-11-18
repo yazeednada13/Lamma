@@ -131,7 +131,7 @@ All endpoints live under `/api/v1` and use camelCase JSON. Code values (business
 | GET `account` | user | — | 200 `AccountDto` | 401 |
 | PUT `account` | user | `{ fullName }` | 200 `AccountDto` | 422 |
 | POST `account/change-password` | user | `{ currentPassword, newPassword }` | 204 (this session stays, other sessions end) | 422 `auth.wrong_password` (field `currentPassword`) |
-| GET `onboarding/business-types` | user | — | 200 `[{ code, labelAr }]` (13 items) | — |
+| GET `onboarding/business-types` | user | — | 200 `[{ code, labelAr, defaultTemplateCode }]` (13 items; `defaultTemplateCode` added in Phase 2, D-103) | — |
 | POST `onboarding` | user | `{ businessName, businessType, salesChannels: ["instagram", …] }` | 201 `AccountDto` (`isOnboarded: true`) | 409 `onboarding.already_completed` · 422 |
 | GET / PUT `settings/business` | business | `{ name, businessType, defaultLowStockThreshold }` (0–1000) | 200 `{ name, businessType, defaultLowStockThreshold, currency }` | 403 `business.not_onboarded` · 422 |
 | GET / PUT `settings/sales-channels` | business | `{ channels: [{ channel, isEnabled }] }` (all 4, each once) | 200 same shape | 422 `settings.channel_required` · 422 `validation.failed` |
@@ -144,3 +144,54 @@ Notes for the frontend:
 - The settings lists are wrapped in an object (`{ channels: [...] }`) instead of being a bare array. This lets them be validated and extended later.
 - Login lockout returns **423**.
 - Generic codes: `request.malformed` (400), `auth.unauthenticated` (401), `auth.forbidden` (403), `http.404`, `server.error` (500), `security.csrf` / `security.origin_rejected` (400).
+
+## 12. Phase 2 contracts: Catalog (implemented, 2026-11-17)
+All endpoints need an onboarded business (`403 business.not_onboarded` otherwise). Another business's ids return **404**. Money is a 3-dp string on output. Money input accepts at most 2 decimals (D-080), and a third decimal gives a 422 field error. Unsafe methods need `X-XSRF-TOKEN`.
+
+| Method & path | Request | Success | Errors (code) |
+|---|---|---|---|
+| GET `categories` | — | 200 `[{ id, name, productCount }]` (non-archived, by name; count = active products) | — |
+| POST `categories` | `{ name }` (≤ 60) | 201 `{ id, name, productCount }` | 409 `category.duplicate_name` · 422 |
+| PUT `categories/{id}` | `{ name }` | 200 same shape | 404 `category.not_found` · 409 · 422 |
+| DELETE `categories/{id}` | — | 204: deleted, or archived when only archived products use it (D-095) | 409 `category.has_products` (detail gives the count) · 404 |
+| GET `product-templates` | — | 200 `[{ code, nameAr, supportsExpiry, supportsGiftBox, defaultAxes:[{ name, suggestedValues[] }], fields:[{ key, labelAr, type, options[], isRequired, isCustom }] }]` (6 system templates, plus the business's custom fields) | — |
+| POST `product-templates/{code}/fields` | `{ labelAr (≤ 40), type: text\|number\|select\|date, options[] (select: 1–20), isRequired }` | 201 field | 404 `template.not_found` · 409 `template.duplicate_field_label` / `template.field_limit` (20) · 422 |
+| PUT `product-templates/{code}/fields/{key}` | same | 200 field | 404 `template.field_not_found` · 409 · 422 |
+| DELETE `product-templates/{code}/fields/{key}` | — | 204 (stored product values are kept but no longer shown or validated) | 404 |
+| GET `products` | `search, categoryId \| uncategorized=true, stockStatus=in\|low\|out, archived=true, sort=-createdAt\|createdAt\|name\|-name\|available\|-available, page (≥ 1), pageSize (1–100, default 20)` | 200 `{ items:[ProductListItem], page, pageSize, totalCount }` | 422 `validation.failed` |
+| POST `products` | `CreateProductRequest` (below) | 201 `ProductDetails` + `Location` | 404 `category.not_found` · 422 `validation.failed` (field paths such as `sellingPrice`, `variants`, `attributes.fabric`, `expiryDate`) |
+| GET `products/{id}` | — | 200 `ProductDetails` | 404 `product.not_found` |
+| PUT `products/{id}` | `{ name, categoryId?, templateCode, sellingPrice, cost, lowStockThreshold, attributes{}, optionNames[] }` (renames axes; their count is fixed) | 200 `ProductDetails` | 404 · 422 `product.axes_fixed` · 422 |
+| POST `products/{id}/archive` · `/restore` | — | 200 `ProductDetails` | 404 |
+| POST `products/{id}/variants` | `{ values[], openingQuantity, priceOverride?, costOverride?, expiryDate?, optionNames? }`. On a simple product, `optionNames` converts it (only at zero stock) | 201 `ProductDetails` | 409 `product.duplicate_variant` / `product.too_many_variants` / `product.convert_has_stock` · 422 |
+| PUT `products/{id}/variants/{variantId}` | `{ priceOverride?, costOverride?, expiryDate? }` (null clears the override) | 200 `ProductDetails` | 404 `product.variant_not_found` · 409 `concurrency.conflict` · 422 |
+| POST `products/{id}/variants/{variantId}/archive` · `/restore` | — | 200 `ProductDetails` | 409 `product.last_variant` / `product.default_variant_retired` · 404 |
+| PUT `products/{id}/image` | multipart, field `file` | 200 `ProductDetails` | 422 `product.image_invalid_type` (checked by content: jpg/png/webp) / `product.image_too_large` (> 5 MB) / `product.image_missing` · 404 |
+| DELETE `products/{id}/image` | — | 204 | 404 |
+| GET `products/{id}/image` | — | 200 image stream (`X-Content-Type-Options: nosniff`) | 404 `product.not_found` / `product.image_not_found` |
+
+**`CreateProductRequest`:**
+```json
+{ "name": "فستان كتان", "categoryId": null, "templateCode": "clothing", "sellingPrice": "38", "cost": "17",
+  "lowStockThreshold": null, "attributes": { "fabric": "كتان 100%" }, "expiryDate": null,
+  "options": [ { "name": "المقاس", "values": ["S", "M"] }, { "name": "اللون", "values": ["زيتي"] } ],
+  "variants": [ { "values": ["S", "زيتي"], "openingQuantity": 3, "priceOverride": null, "costOverride": null } ] }
+```
+- `templateCode` omitted → the business type's default (D-091). `lowStockThreshold` omitted → the business default.
+- No `options` → simple product: `variants` is empty or one entry with `values: []` that carries the opening quantity.
+- `expiryDate` is accepted only for templates with `supportsExpiry` and applies to all variants (D-101).
+- Opening quantities become `receive` movements with `referenceKind: "opening"` in the same transaction (D-096).
+
+**`ProductListItem`:** `{ id, name, categoryId, categoryName, templateCode, imageUrl, minPrice, maxPrice, onHand, reserved, available, lowStockThreshold, stockStatus, variantCount, isArchived, createdAt }`. `variantCount` counts non-default active variants.
+
+**`ProductDetails`:**
+- List fields plus `sellingPrice, cost, marginPerUnit, marginPercent (number, 1 dp), attributes{key: value}, options:[{ name, values[] }], variants:[...], recentMovements:[...], updatedAt`.
+- `variants[]` = `{ id, values[], label, price, cost, priceOverride, costOverride, onHand, reserved, available, stockStatus, expiryDate, isArchived, isDefault }`, active first, in creation order.
+- `recentMovements[]` = the last 10 `{ id, variantId, variantLabel, type, referenceKind, label, onHandDelta, reservedDelta, unitCost, isAutomatic, createdAt }`.
+
+**Stock status (D-099):**
+- Product: `out` when available ≤ 0, `low` when ≤ `lowStockThreshold`, otherwise `in`.
+- Variant: `out` at ≤ 0, `low` at 1 (the prototype heatmap rule), otherwise `in`.
+- Archived variants are excluded from the totals.
+
+**Image URL:** `/api/v1/products/{id}/image?v=<file id>`. The image changes URL when it is replaced. Responses are never publicly cacheable, because the auth cookie is renewed on each request.

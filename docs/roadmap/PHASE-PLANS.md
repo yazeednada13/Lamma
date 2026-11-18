@@ -62,9 +62,9 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-10 | All backend tasks run in one batch (D-087) |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-10 | migration `InitialIdentityAndBusiness` applied by the founder: ☑ (verified read-only in `Lamma_Dev`) |
 | 5. `Frontend` started | ☑ | 2026-11-10 | All frontend tasks run in one batch (D-087) |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
-| 7. PR merged into `develop` (founder) | ☐ | | |
-| 8. `Next Phase` given | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-17 | Pushed together with the frontend restructure (D-089) |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-17 | Founder-reported |
+| 8. `Next Phase` given | ☑ | 2026-11-17 | Phase 2 branch created and plan requested |
 
 ### Phase 1 Part A: implementation status (approved plan tasks)
 | ID | Task | Status |
@@ -106,7 +106,7 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 1.B9 | Coming-soon page for all 21 unbuilt routes | Done (verified) |
 | 1.B10 | New-user dashboard with real data | Done (verified) |
 | 1.B11 | Account (name, change password in a drawer) and Settings (profile, channels, payment methods, threshold; dirty bar) | Done (verified against the real API) |
-| 1.B12 | Tests, build, real-API end-to-end check, RTL and 4-width check, docs | Done. **Waiting for the founder: push** |
+| 1.B12 | Tests, build, real-API end-to-end check, RTL and 4-width check, docs | Done. Pushed and merged (2026-11-17) |
 
 **Frontend deviations and notes (for founder review):**
 1. The sign-up field is **email** instead of phone (D-078). Onboarding is reordered: name → single type → channels (D-081).
@@ -164,7 +164,53 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 ---
 
 ## Phase 2 — Catalog
-**Objective:** categories, templates and fields, products with variants and opening stock. **Depends on:** Phase 1. **Blocking:** OQ-010…015.
+**Objective:** categories, templates and fields, products with variants and opening stock. **Depends on:** Phase 1. **Blocking:** none (OQ-010…015 resolved as D-090–D-096).
+
+**Approved plan (2026-11-17):** [`PHASE-2-PLAN.md`](PHASE-2-PLAN.md), with tasks 2.A1–2.A10 (backend) and 2.B1–2.B7 (frontend), API contracts, DB changes (migration `AddCatalog`), tests and risks, is the Phase 2 plan approved by the founder. It supersedes the draft task tables below. Decisions: D-090–D-105.
+
+### Phase 2 gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-17 | `feature/phase2-catalog` |
+| 2. Plan approved | ☑ | 2026-11-17 | D-090–D-105 |
+| 3. `Backend` started | ☑ | 2026-11-17 | All backend tasks in one batch (D-087) |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-17 | migration `AddCatalog` applied by the founder (verified read-only in `Lamma_Dev`) |
+| 5. `Frontend` started | ☑ | 2026-11-17 | All frontend tasks in one batch (D-087) |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-18 | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
+
+### Phase 2 approved tasks
+| ID | Backend task | Status |
+|---|---|---|
+| 2.A1 | Template catalogue in code (6 templates, axes, fields, flags, 13-type map); `defaultTemplateCode` on business types | Done (verified) |
+| 2.A2 | Custom template fields per business (CRUD, max 20 per template) | Done (verified) |
+| 2.A3 | Categories: CRUD, product count, delete rule D-095 | Done (verified) |
+| 2.A4 | Product + variant aggregate (D-090, D-093, D-097, D-100) | Done (verified) |
+| 2.A5 | Attribute validation against template fields | Done (verified) |
+| 2.A6 | StockMovement; create product with opening stock in one transaction (D-096) | Done (verified) |
+| 2.A7 | Product update, archive/restore; variant add, edit, archive/restore | Done (verified) |
+| 2.A8 | Product image via IFileStorage (D-094) | Done (verified) |
+| 2.A9 | Product list (search, filters, paging) and details queries | Done (verified) |
+| 2.A10 | Wiring, configurations, indexes, docs; migration `AddCatalog` (founder) | Done. **Waiting for the founder: migration + push** |
+
+| ID | Frontend task | Status |
+|---|---|---|
+| 2.B1 | Products list | Done (verified against the real API) |
+| 2.B2 | Product form (new and edit) with the variant matrix | Done (verified against the real API) |
+| 2.B3 | Product details | Done (verified against the real API) |
+| 2.B4 | Categories page | Done (verified against the real API) |
+| 2.B5 | Settings: templates and custom fields; business-type labels from the API | Done (verified against the real API) |
+| 2.B6 | Routing wiring (remove the coming-soon catalog routes, links) | Done (verified) |
+| 2.B7 | Frontend checkpoint | Done. Pushed (2026-11-18) |
+
+**Frontend notes (for founder review):**
+1. The prototype's three summary cards on the products page (stock value at cost, expected profit, needs attention) are not built: they need inventory totals across all products, which is Phase 3 (inventory) scope.
+2. Variant archive/restore and per-variant price, cost and expiry live on the product details page (variants table + drawer); the edit form adds new variants and renames axes.
+3. "تعديل المخزون", "استلام" and "طلب فيه" on the details page are disabled with "قريبًا" (Phases 3 and 5); the sales chart is an empty state until orders exist.
+4. Product images are not cached by the browser (the auth cookie is renewed on every request, which marks responses no-store). Performance only; revisit in Phase 12.
+
+**Draft task tables (Phase 0, superseded by the approved plan above):**
 
 | ID | Backend task | Acceptance / tests |
 |---|---|---|

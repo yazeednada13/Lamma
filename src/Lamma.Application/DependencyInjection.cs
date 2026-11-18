@@ -1,6 +1,7 @@
 using FluentValidation;
 using Lamma.Application.Accounts;
 using Lamma.Application.Businesses;
+using Lamma.Application.Catalog;
 using Lamma.Application.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,7 @@ public static class DependencyInjection
         services.AddIdentityModule();
         services.AddAccountsModule();
         services.AddBusinessesModule();
+        services.AddCatalogModule();
 
         // Validators are stateless: transient.
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, ServiceLifetime.Transient);
@@ -30,4 +32,11 @@ public static class DependencyInjection
         => services
             .AddScoped<IOnboardingService, OnboardingService>()
             .AddScoped<IBusinessSettingsService, BusinessSettingsService>();
+
+    private static IServiceCollection AddCatalogModule(this IServiceCollection services)
+        => services
+            .AddScoped<ICategoryService, CategoryService>()
+            .AddScoped<IProductTemplateService, ProductTemplateService>()
+            .AddScoped<IProductService, ProductService>()
+            .AddScoped<IProductImageService, ProductImageService>();
 }

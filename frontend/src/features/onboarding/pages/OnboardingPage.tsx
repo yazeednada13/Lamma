@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useCurrentAccount } from "@/features/auth";
-import { businessTypeInfo, SALES_CHANNELS, type SalesChannelCode } from "@/features/settings";
+import { SALES_CHANNELS, useBusinessTypes, type SalesChannelCode } from "@/features/settings";
 import { ApiError, errorMessage } from "@/services/api/apiClient";
-import { useBusinessTypes, useCompleteOnboarding } from "../api/onboardingApi";
+import { useCompleteOnboarding } from "../api/onboardingApi";
 import { BusinessNameStep } from "../components/BusinessNameStep";
 import { BusinessTypeStep } from "../components/BusinessTypeStep";
 import { OnboardingComplete } from "../components/OnboardingComplete";
@@ -74,7 +74,7 @@ export function OnboardingPage() {
       <OnboardingLayout step={3}>
         <OnboardingComplete
           businessName={name.trim()}
-          templateLabel={businessTypeInfo[type ?? "other"]?.label ?? ""}
+          templateLabel={types.data?.find((t) => t.code === type)?.labelAr ?? ""}
           trialDays={complete.data?.business?.trialDaysRemaining ?? 30}
           onEnter={enterApp}
         />

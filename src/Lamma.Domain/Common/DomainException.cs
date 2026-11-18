@@ -14,3 +14,6 @@ public class DomainException : Exception
 
     public string Code { get; }
 }
+
+/// <summary>A business rule rejected the operation because of the record's current state (mapped to 409).</summary>
+public sealed class DomainConflictException(string code, string message) : DomainException(code, message);

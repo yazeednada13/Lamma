@@ -1,6 +1,7 @@
 using System.Reflection;
 using Lamma.Application.Common;
 using Lamma.Domain.Businesses;
+using Lamma.Domain.Catalog;
 using Lamma.Domain.Common;
 using Lamma.Infrastructure.Identity;
 using Lamma.Infrastructure.Persistence.Conventions;
@@ -34,6 +35,16 @@ public sealed class LammaDbContext : IdentityDbContext<ApplicationUser, Identity
 
     public DbSet<BusinessPaymentMethod> BusinessPaymentMethods => Set<BusinessPaymentMethod>();
 
+    public DbSet<Category> Categories => Set<Category>();
+
+    public DbSet<Product> Products => Set<Product>();
+
+    public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+
+    public DbSet<ProductTemplateCustomField> ProductTemplateCustomFields => Set<ProductTemplateCustomField>();
+
     /// <summary>Referenced by the query filters; EF Core re-evaluates it per query (parameterized).</summary>
     internal Guid? CurrentBusinessId => _tenant.ResolvedBusinessId;
 
@@ -42,6 +53,11 @@ public sealed class LammaDbContext : IdentityDbContext<ApplicationUser, Identity
         try
         {
             return await SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // A rowversion-protected row (e.g. ProductVariant, DATABASE-DESIGN §9) changed since it was loaded.
+            throw new ConflictException("concurrency.conflict", "البيانات تغيّرت من مكان ثاني. حدّث الصفحة وجرّب كمان مرة.");
         }
         catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 } sql)
         {

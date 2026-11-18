@@ -1,8 +1,7 @@
-import { businessTypeInfo } from "@/features/settings";
+import { businessTypeInfo, type BusinessTypeOption } from "@/features/settings";
 import { Illustration } from "@/shared/ui/brand/Illustration";
 import { Button } from "@/shared/ui/Button";
 import { FormAlert } from "@/shared/ui/form/FormAlert";
-import type { BusinessTypeOption } from "../api/onboardingApi";
 
 interface BusinessTypeStepProps {
   options: readonly BusinessTypeOption[];

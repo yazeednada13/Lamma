@@ -70,6 +70,9 @@ public class LammaApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public MutableClock Clock { get; } = new();
 
+    /// <summary>Throwaway image storage folder (D-094), deleted with the factory.</summary>
+    public string StorageRoot { get; } = Path.Combine(Path.GetTempPath(), "lamma-tests", Guid.NewGuid().ToString("N"));
+
     public CapturingEmailSender Email { get; } = new();
 
     protected virtual int LoginPermitsPerMinute => 1000;
@@ -82,6 +85,7 @@ public class LammaApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("App:AllowedOrigins:0", "https://app.lamma.test");
         builder.UseSetting("RateLimiting:LoginPermitsPerMinute", LoginPermitsPerMinute.ToString(System.Globalization.CultureInfo.InvariantCulture));
         builder.UseSetting("RateLimiting:SensitivePermitsPerMinute", "1000");
+        builder.UseSetting("Storage:RootPath", StorageRoot);
 
         builder.ConfigureTestServices(services =>
         {
@@ -114,6 +118,10 @@ public class LammaApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         }
 
         await DisposeAsync();
+        if (Directory.Exists(StorageRoot))
+        {
+            Directory.Delete(StorageRoot, recursive: true);
+        }
     }
 }
 

@@ -61,19 +61,19 @@ Entry format: **ID · Priority · Blocks**, then the context, the options, and t
 
 ## P1 — before Phase 2 (Catalog)
 
-**OQ-010 · P1 · Phase 2: default-variant rule.** Proposed P-006: every product has ≥1 ProductVariant, so a simple product has one "default" variant, and stock and movements always live on variants. The alternative is stock on the product when it has no variants, which produces two code paths. Recommendation: approve P-006.
+**OQ-010 · P1 · Phase 2: default-variant rule.** Proposed P-006: every product has ≥1 ProductVariant, so a simple product has one "default" variant, and stock and movements always live on variants. The alternative is stock on the product when it has no variants, which produces two code paths. Recommendation: approve P-006. **Resolved (2026-11-17) → D-090.**
 
-**OQ-011 · P1 · Phase 2: template catalogue and fields.**
+**OQ-011 · P1 · Phase 2: template catalogue and fields.** **Resolved (2026-11-17) → D-091, D-093.**
 - Context: the spec mentions Clothing, Perfume, Gifts, Jewelry, Beauty, and "others". The prototype maps types to 6 template "arts": clothing, perfume, beauty, jewelry, gift, other. Its example fields are clothing (fabric, gender category, cut, size × colour), perfume (size in ml), beauty (shade, expiry), jewelry (material, weight), gift (box, gift message).
 - Needed: the exact template list, the fields for each one (name, type, required), which options generate variants, and the business-type → template mapping for all 13 types.
 
-**OQ-012 · P1 · Phase 2: are templates system-defined or editable?** The spec says Settings includes "product templates" and "template fields", and the prototype shows "+ template / custom fields". Options: (a) system templates plus per-business custom fields added to a template; (b) fully custom templates per business. Recommendation: (a).
+**OQ-012 · P1 · Phase 2: are templates system-defined or editable?** The spec says Settings includes "product templates" and "template fields", and the prototype shows "+ template / custom fields". Options: (a) system templates plus per-business custom fields added to a template; (b) fully custom templates per business. Recommendation: (a). **Resolved (2026-11-17) → D-092.**
 
-**OQ-013 · P1 · Phase 2: product image storage.** Options: local disk in development and blob storage (e.g. Azure Blob) in production behind `IFileStorage`. Decide the size limit (Proposed: 5 MB; jpg/png/webp), whether there is one image per product, and whether thumbnails are generated. This also depends on the hosting decision (OQ-086).
+**OQ-013 · P1 · Phase 2: product image storage.** Options: local disk in development and blob storage (e.g. Azure Blob) in production behind `IFileStorage`. Decide the size limit (Proposed: 5 MB; jpg/png/webp), whether there is one image per product, and whether thumbnails are generated. This also depends on the hosting decision (OQ-086). **Resolved (2026-11-17) → D-094.**
 
-**OQ-014 · P1 · Phase 2: category deletion when products exist.** Options: (a) block the delete; (b) move the products to "uncategorized"; (c) archive the category. Recommendation: (a), showing the product count.
+**OQ-014 · P1 · Phase 2: category deletion when products exist.** Options: (a) block the delete; (b) move the products to "uncategorized"; (c) archive the category. Recommendation: (a), showing the product count. **Resolved (2026-11-17) → D-095.**
 
-**OQ-015 · P1 · Phase 2: initial stock on product creation.** The prototype says "opening quantity is recorded automatically as a stock movement". Confirm that the movement type is `Receive` (or a new `Opening` type) and that it carries the product's cost.
+**OQ-015 · P1 · Phase 2: initial stock on product creation.** The prototype says "opening quantity is recorded automatically as a stock movement". Confirm that the movement type is `Receive` (or a new `Opening` type) and that it carries the product's cost. **Resolved (2026-11-17) → D-096.**
 
 ## P1 — before Phase 3 (Inventory)
 
@@ -228,4 +228,4 @@ Recommendation:
 
 **OQ-089 · P2 · Legal: terms and privacy.** The prototype says "by creating an account you agree to the terms and privacy policy". Content and pages are needed before launch.
 
-**OQ-091 · P2 · Phase 2: business-type labels are defined twice.** The API returns `labelAr` for each business type (used by onboarding). The client also keeps its own labels and illustrations in `features/settings/domain/businessTypes.ts` (used by settings). Recommendation: the API stays the source of the label, and the client keeps only the illustration mapping. This changes behaviour, so it waits for founder approval.
+**OQ-091 · P2 · Phase 2: business-type labels are defined twice.** The API returns `labelAr` for each business type (used by onboarding). The client also keeps its own labels and illustrations in `features/settings/domain/businessTypes.ts` (used by settings). Recommendation: the API stays the source of the label, and the client keeps only the illustration mapping. This changes behaviour, so it waits for founder approval. **Resolved (2026-11-17) → D-103.**

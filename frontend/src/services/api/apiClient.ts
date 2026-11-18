@@ -132,9 +132,10 @@ export async function apiRequest<T>(method: HttpMethod, path: string, body?: unk
   const unsafe = method !== "GET";
 
   const send = async (allowCsrfRetry: boolean): Promise<T> => {
+    const isForm = typeof FormData !== "undefined" && body instanceof FormData;
     const headers: Record<string, string> = { Accept: "application/json" };
-    if (body !== undefined) {
-      headers["Content-Type"] = "application/json";
+    if (body !== undefined && !isForm) {
+      headers["Content-Type"] = "application/json"; // multipart sets its own boundary header
     }
 
     if (unsafe) {
@@ -148,7 +149,7 @@ export async function apiRequest<T>(method: HttpMethod, path: string, body?: unk
     const response = await safeFetch(apiUrl(path), {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
       signal: options.signal,
     });
 
@@ -182,6 +183,8 @@ export const api = {
   post: <T>(path: string, body?: unknown, options?: RequestOptions) => apiRequest<T>("POST", path, body, options),
   put: <T>(path: string, body?: unknown, options?: RequestOptions) => apiRequest<T>("PUT", path, body, options),
   delete: <T>(path: string, options?: RequestOptions) => apiRequest<T>("DELETE", path, undefined, options),
+  /** Multipart PUT (e.g. a product image). */
+  upload: <T>(path: string, form: FormData, options?: RequestOptions) => apiRequest<T>("PUT", path, form, options),
 };
 
 /** Turns any thrown value into a user-safe Arabic message. */

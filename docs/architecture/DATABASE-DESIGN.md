@@ -311,3 +311,20 @@ Indexes are reviewed against the actual query plans in each phase.
 - `-- --environment Development` is required because user-secrets (which hold the connection string) load only in Development.
 - `dotnet-ef` **9.0.6** is installed globally (checked 2026-11-10). If .NET 10 is chosen (OQ-001), the founder should update it to the matching version (`dotnet tool update -g dotnet-ef`). That command is the founder's action.
 - Each phase report gives the exact commands, migration names, and verification steps.
+
+## 12b. Implemented in Phase 2: Catalog (code only; migration `AddCatalog` pending founder)
+**Deviations from §5.2 (approved with the Phase 2 plan):**
+1. System templates, their fields and the business-type map live in code (`ProductTemplateCatalog`, D-091/D-092). There are no `ProductTemplate`, `ProductTemplateField` or `BusinessTypeTemplateMap` tables. Only custom fields are stored.
+2. Variant options are columns (`Product.Option1Name/Option2Name`, `ProductVariant.Option1Value/Option2Value` + `OptionsKey`) instead of `OptionsJson`.
+3. `IsPreOrderAllowed`, `IsMadeToOrder` and `HasExpiry` are not columns in Phase 2. Expiry support comes from the template (D-101, D-102).
+4. `StockMovement` has `ProductId` (immutable and denormalized, for the product history). It uses `OnHandDelta`/`ReservedDelta` (the preferred §5.3 shape) and `ReferenceKind` (opening, order, receipt, adjustment, return).
+
+| Table | Notes |
+|---|---|
+| `Categories` | `Name nvarchar(60)`, `IsArchived`. **Unique `(BusinessId, Name)` filtered on `IsArchived = 0`** (`UX_Categories_BusinessId_Name_Active`). FK → Businesses (Restrict) |
+| `Products` | `Name nvarchar(120)`, `CategoryId` FK (Restrict, nullable), `TemplateCode varchar(32)`, `SellingPrice decimal(19,3)` CHECK > 0, `Cost decimal(19,3)` CHECK ≥ 0, `LowStockThreshold` CHECK 0–1000, `AttributesJson nvarchar(max)`, `Option1Name`/`Option2Name nvarchar(30)`, `ImagePath varchar(400)`, `IsArchived`, timestamps. Indexes `(BusinessId, CategoryId)`, `(BusinessId, Name)` |
+| `ProductVariants` | `ProductId` FK (cascade from the aggregate; never deleted in practice), `SortOrder`, `Option1Value`/`Option2Value nvarchar(40)`, `OptionsKey nvarchar(100)` **unique per product**, `PriceOverride` (NULL or > 0), `CostOverride` (NULL or ≥ 0), `OnHand`/`Reserved` CHECK ≥ 0, `ExpiryDate date`, `IsArchived`, **`RowVersion rowversion`** (a conflict surfaces as 409 `concurrency.conflict`). Filtered index `(BusinessId, ExpiryDate) WHERE ExpiryDate IS NOT NULL` |
+| `StockMovements` | Append-only: `ProductId`, `VariantId`, `Type varchar(32)` (D-028 codes), `OnHandDelta`, `ReservedDelta`, `ReferenceKind`, `ReferenceId`, `ReferenceLabel nvarchar(60)`, `UnitCost decimal(19,3)`, `Reason nvarchar(200)`, `IsAutomatic`, `OperationId`, `CreatedAt`. Indexes `(VariantId, CreatedAt DESC)`, `(ProductId, CreatedAt DESC)`, `(BusinessId, CreatedAt DESC)`. FKs Restrict |
+| `ProductTemplateCustomFields` | `TemplateCode varchar(32)`, `Key varchar(16)` (`c_` + 8 hex), `LabelAr nvarchar(40)`, `FieldType varchar(32)`, `OptionsJson nvarchar(2000)`, `IsRequired`, `SortOrder`. Unique `(BusinessId, TemplateCode, Key)` |
+
+All five tables are business-owned: they carry the tenant query filter and the write guard (verified in `CatalogPersistenceTests`).

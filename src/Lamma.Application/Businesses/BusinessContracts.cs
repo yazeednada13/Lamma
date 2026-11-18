@@ -1,6 +1,7 @@
 using FluentValidation;
 using Lamma.Application.Common.Validation;
 using Lamma.Domain.Businesses;
+using Lamma.Domain.Catalog;
 using Lamma.Domain.Common;
 
 namespace Lamma.Application.Businesses;
@@ -10,7 +11,8 @@ namespace Lamma.Application.Businesses;
 /// <summary>3-step onboarding in the spec order (D-081): name → one business type → sales channels.</summary>
 public sealed record OnboardingRequest(string BusinessName, string BusinessType, IReadOnlyList<string> SalesChannels);
 
-public sealed record BusinessTypeOption(string Code, string LabelAr);
+/// <summary>A business type with its Arabic label and default product template (D-103).</summary>
+public sealed record BusinessTypeOption(string Code, string LabelAr, string DefaultTemplateCode);
 
 // ---------- Settings ----------
 
@@ -35,21 +37,23 @@ public sealed record SettingFlagRow<TEnum>(TEnum Value, bool IsEnabled)
 /// <summary>Arabic labels for the 13 approved business types (D-009), in display order.</summary>
 public static class BusinessTypeCatalog
 {
+    private static BusinessTypeOption Option(BusinessType type, string labelAr) => new(type.ToCode(), labelAr, ProductTemplateCatalog.DefaultFor(type));
+
     public static readonly IReadOnlyList<BusinessTypeOption> All =
     [
-        new(BusinessType.Clothing.ToCode(), "ملابس وأزياء"),
-        new(BusinessType.ShoesBags.ToCode(), "أحذية وشنط"),
-        new(BusinessType.Perfume.ToCode(), "عطور"),
-        new(BusinessType.Beauty.ToCode(), "تجميل وعناية"),
-        new(BusinessType.Accessories.ToCode(), "إكسسوارات ومجوهرات"),
-        new(BusinessType.Gifts.ToCode(), "هدايا وبوكسات"),
-        new(BusinessType.HomeFood.ToCode(), "أكل وحلويات بيتية"),
-        new(BusinessType.Handmade.ToCode(), "شغل يدوي"),
-        new(BusinessType.Electronics.ToCode(), "إلكترونيات"),
-        new(BusinessType.Kids.ToCode(), "أطفال وألعاب"),
-        new(BusinessType.HomeDecor.ToCode(), "ديكور ومنزل"),
-        new(BusinessType.Books.ToCode(), "كتب وقرطاسية"),
-        new(BusinessType.Other.ToCode(), "أخرى"),
+        Option(BusinessType.Clothing, "ملابس وأزياء"),
+        Option(BusinessType.ShoesBags, "أحذية وشنط"),
+        Option(BusinessType.Perfume, "عطور"),
+        Option(BusinessType.Beauty, "تجميل وعناية"),
+        Option(BusinessType.Accessories, "إكسسوارات ومجوهرات"),
+        Option(BusinessType.Gifts, "هدايا وبوكسات"),
+        Option(BusinessType.HomeFood, "أكل وحلويات بيتية"),
+        Option(BusinessType.Handmade, "شغل يدوي"),
+        Option(BusinessType.Electronics, "إلكترونيات"),
+        Option(BusinessType.Kids, "أطفال وألعاب"),
+        Option(BusinessType.HomeDecor, "ديكور ومنزل"),
+        Option(BusinessType.Books, "كتب وقرطاسية"),
+        Option(BusinessType.Other, "أخرى"),
     ];
 }
 
