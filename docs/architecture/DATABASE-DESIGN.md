@@ -328,3 +328,12 @@ Indexes are reviewed against the actual query plans in each phase.
 | `ProductTemplateCustomFields` | `TemplateCode varchar(32)`, `Key varchar(16)` (`c_` + 8 hex), `LabelAr nvarchar(40)`, `FieldType varchar(32)`, `OptionsJson nvarchar(2000)`, `IsRequired`, `SortOrder`. Unique `(BusinessId, TemplateCode, Key)` |
 
 All five tables are business-owned: they carry the tenant query filter and the write guard (verified in `CatalogPersistenceTests`).
+
+## 12c. Implemented in Phase 3: Inventory (code only; migration `AddInventory` pending founder)
+| Table / change | Notes |
+|---|---|
+| `StockReceipts` | `ReceivedOn date`, `Supplier nvarchar(100)`, `Note nvarchar(200)`, `Pieces int`, `TotalCost decimal(19,3)`, `CreatedAt`. Index `(BusinessId, ReceivedOn DESC)`. FK → Businesses (Restrict). Its lines are the `receive` movements with `ReferenceId = receipt id`. No expense link (D-107) |
+| `IdempotencyRecords` | `Key uniqueidentifier`, `RequestHash char(64)` (SHA-256 hex), `ResponseJson nvarchar(max)`, `CreatedAt`. **Unique `(BusinessId, Key)`** (`UX_IdempotencyRecords_BusinessId_Key`). The entity lives in Infrastructure (persistence concern) |
+| `StockMovements.AdjustmentReason` | `varchar(32) null`: damage, loss, count, correction, gift (D-110). `Reason` keeps the free-text note |
+
+Both new tables are business-owned (tenant filter and write guard). The receipt, its movements, the variant stock, cost and expiry, and the idempotency record are written in **one transaction**. A concurrent duplicate loses on the unique key or on the variant `rowversion`, rolls back, and returns the winner's response.

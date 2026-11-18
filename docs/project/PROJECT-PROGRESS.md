@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 3: Inventory** |
-| Current gate | **Gate 3: waiting for `Backend`.** The Phase 3 plan is approved (D-107–D-113) |
+| Current gate | **Gate 4: Backend checkpoint.** Phase 3 backend tasks 3.A1–3.A8 are done and verified. Waiting for the founder to create and apply `AddInventory` and push |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Branch `feature/phase3-inventory` created (2026-11-18) |
 | Migrations | `InitialIdentityAndBusiness` (Phase 1) and `AddCatalog` (Phase 2) applied by the founder (verified read-only: `__EFMigrationsHistory` and the 5 catalog tables in `Lamma_Dev`) |
-| Next expected founder action | Write `Backend` to start the Phase 3 backend tasks 3.A1–3.A8 |
+| Next expected founder action | Create and apply migration `AddInventory`, commit and push the backend, confirm. Then `Frontend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -29,7 +29,7 @@
 | 0 Discovery & planning | **Merged into develop (founder-reported 2026-11-10)** |
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
-| 3 Inventory | **Plan approved (2026-11-18); waiting for `Backend`** |
+| 3 Inventory | **Backend done (gate 4 checkpoint)** |
 | 4 Customers | Pending |
 | 5 Orders core | Pending |
 | 6 Payments & receivables | Pending |
@@ -71,6 +71,7 @@
 | 2026-11-18 | Phase 2 frontend: `vitest run` (jsdom + MSW, StrictMode) | **73 passed, 0 failed** across 23 files (23 new); stable over 3 consecutive full runs |
 | 2026-11-18 | Phase 2 frontend: `vite build` | OK; JS 613 kB (186 kB gzip) |
 | 2026-11-18 | Phase 2 real-API browser check (Vite + API + `Lamma_Dev`) | category create → product with size matrix and opening stock → details (stock map, variants, opening movements) → variant price override → edit adds a size with opening stock → list with price range; settings templates section loads; widths 1440/1024/768/375 without horizontal scroll, RTL |
+| 2026-11-18 | Phase 3 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; **246 passed, 0 failed**: Domain 88, Application 58, Infrastructure 19, Architecture 8, API integration 73 (24 new) |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -92,4 +93,5 @@
 | 2026-11-18 | Phase 2 Frontend 2.B1–2.B7 implemented and verified |
 | 2026-11-18 | Founder pushed the Phase 2 frontend and merged the Phase 2 PR into `develop`; Phase 2 closed |
 | 2026-11-18 | D-106 recorded (lean verification); founder created `feature/phase3-inventory`; Phase 3 at gate 2 |
-| 2026-11-18 | Phase 3 plan approved (D-107–D-113); waiting at gate 3 |
+| 2026-11-18 | Phase 3 plan approved (D-107–D-113) |
+| 2026-11-18 | Phase 3 Backend 3.A1–3.A8 implemented and verified; waiting at gate 4 |

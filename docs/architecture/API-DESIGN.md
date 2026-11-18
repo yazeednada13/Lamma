@@ -195,3 +195,24 @@ All endpoints need an onboarded business (`403 business.not_onboarded` otherwise
 - Archived variants are excluded from the totals.
 
 **Image URL:** `/api/v1/products/{id}/image?v=<file id>`. The image changes URL when it is replaced. Responses are never publicly cacheable, because the auth cookie is renewed on each request.
+
+## 13. Phase 3 contracts: Inventory (implemented, 2026-11-18)
+All endpoints need an onboarded business. Another business's ids return **404 `inventory.variant_not_found`**. Unsafe calls need `X-XSRF-TOKEN`, and **receive and adjust also need `Idempotency-Key: <uuid>`** (D-112).
+- A missing or invalid key returns 422 `idempotency.key_required`.
+- A retry with the same key returns the stored response (same status code).
+- The same key with a different body returns 422 `idempotency.key_reused`.
+- The client generates the key once per user action and reuses it on retries.
+
+| Method & path | Request | Success | Errors |
+|---|---|---|---|
+| POST `inventory/receipts` | `{ receivedOn? (≤ today, Asia/Amman; default today), supplier? ≤100, note? ≤200, lines[1..50]: { variantId, quantity 1..100000, unitCost (≥0, ≤2 dp), expiryDate? } }` (no duplicate variants) | 201 `{ id, receivedOn, supplier, note, pieces, totalCost, lines:[{ productId, productName, variantId, variantLabel, quantity, unitCost, lineTotal, newOnHand, newCost }] }` | 404 · 409 `stock.archived` · 422 (`lines[i].expiryDate` for templates without expiry) |
+| POST `inventory/adjustments` | `{ variantId, delta (≠0), reason: damage\|loss\|count\|correction\|gift, note? ≤200 }` (increase: count/correction only) | 200 `{ movementId, productId, productName, variantId, variantLabel, delta, onHand, reserved, available, stockStatus }` | 409 `stock.below_reserved` · 409 `stock.archived` · 422 `stock.invalid_reason` |
+| GET `inventory/levels` | `search, categoryId, status=low\|out, page, pageSize ≤100` | 200 paged `{ productId, name, categoryName, templateCode, imageUrl, onHand, reserved, available, lowStockThreshold, stockStatus, variants:[{ variantId, label, onHand, reserved, available, cost, expiryDate }] }`, most urgent first (available ÷ threshold) | 422 |
+| GET `inventory/summary` | — | 200 `{ stockValueAtCost, retailValue, expectedProfit, pieces, reserved, productCount, lowCount, outCount, lowNames[≤2], outNames[≤2] }` (active products/variants, D-113) | — |
+| GET `inventory/movements` | `direction=in\|out, origin=auto\|manual, productId, variantId, page, pageSize ≤100 (default 50)` | 200 paged `{ id, productId, productName, variantId, variantLabel, type, referenceKind, label, adjustmentReason, note, onHandDelta, reservedDelta, unitCost, isAutomatic, createdAt }`, newest first | 422 |
+| GET `inventory/expiring` | — | 200 `[{ productId, productName, templateCode, imageUrl, variantId, variantLabel, onHand, expiryDate, daysLeft, status: expired\|soon\|ok }]`, nearest first, only variants with stock (D-108, D-111) | — |
+
+**Rules:**
+- **Receive** raises on hand and sets the variant cost to the weighted average (D-109). The expiry date follows the oldest stock (D-108). It writes one `receive` movement per line (`referenceKind: receipt`, label = supplier or «استلام بضاعة»).
+- **Adjust** writes an `adjustment` movement whose label is «تعديل: <reason>».
+- No purchases expense is recorded (D-107).

@@ -32,7 +32,11 @@ public sealed class ApiSession(HttpClient http)
 
     public Task<HttpResponseMessage> PutAsync(string url, object? body = null) => SendAsync(HttpMethod.Put, url, body, withToken: true, origin: null);
 
-    public async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, object? body, bool withToken, string? origin)
+    /// <summary>POST with an Idempotency-Key header (inventory receive/adjust, D-112).</summary>
+    public Task<HttpResponseMessage> PostIdempotentAsync(string url, object body, Guid? key)
+        => SendAsync(HttpMethod.Post, url, body, withToken: true, origin: null, headers: key is null ? null : new Dictionary<string, string> { ["Idempotency-Key"] = key.Value.ToString() });
+
+    public async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, object? body, bool withToken, string? origin, IReadOnlyDictionary<string, string>? headers = null)
     {
         if (withToken && _token is null)
         {
@@ -52,6 +56,11 @@ public sealed class ApiSession(HttpClient http)
         if (withToken)
         {
             request.Headers.Add("X-XSRF-TOKEN", _token);
+        }
+
+        foreach (var (name, value) in headers ?? new Dictionary<string, string>())
+        {
+            request.Headers.Add(name, value);
         }
 
         if (origin is not null)

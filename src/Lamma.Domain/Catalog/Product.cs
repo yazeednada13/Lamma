@@ -274,6 +274,73 @@ public sealed class Product : Entity, IBusinessOwned, IHasTimestamps
         return StockMovement.Opening(BusinessId, Id, variant.Id, quantity, EffectiveCost(variant), operationId, nowUtc);
     }
 
+    /// <summary>Receives stock into a variant (D-109 weighted-average cost, D-108 expiry rule) and returns the movement.</summary>
+    public StockMovement ReceiveStock(ProductVariant variant, int quantity, decimal unitCost, DateOnly? expiryDate, Guid receiptId, string label, Guid operationId, DateTime nowUtc)
+    {
+        EnsureStockable(variant);
+        if (quantity <= 0 || quantity > ProductVariant.MaxQuantity)
+        {
+            throw new DomainException("stock.invalid_quantity", $"الكمية لازم تكون بين 1 و {ProductVariant.MaxQuantity}.");
+        }
+
+        var cost = ValidMoney(unitCost, mustBePositive: false);
+        var before = variant.OnHand;
+        variant.SetCost(StockRules.WeightedCost(before, EffectiveCost(variant), quantity, cost));
+        if (expiryDate is { } expiry)
+        {
+            variant.SetExpiry(StockRules.ExpiryAfterReceive(before, variant.ExpiryDate, expiry));
+        }
+
+        variant.ApplyOnHand(quantity);
+        return StockMovement.Receive(BusinessId, Id, variant.Id, quantity, cost, receiptId, label, operationId, nowUtc);
+    }
+
+    /// <summary>Manual stock adjustment with a reason (D-110). On hand never goes below reserved or below 0.</summary>
+    public StockMovement AdjustStock(ProductVariant variant, int delta, AdjustmentReason reason, string? note, Guid operationId, DateTime nowUtc)
+    {
+        EnsureStockable(variant);
+        if (delta == 0 || Math.Abs(delta) > ProductVariant.MaxQuantity)
+        {
+            throw new DomainException("stock.invalid_quantity", $"الكمية لازم تكون بين 1 و {ProductVariant.MaxQuantity}.");
+        }
+
+        if (!StockRules.IsReasonAllowed(reason, increase: delta > 0))
+        {
+            throw new DomainException("stock.invalid_reason", delta > 0 ? "الزيادة بتكون بسبب جرد أو تصحيح بس." : "اختار سبب النقص من القائمة.");
+        }
+
+        if (variant.OnHand + delta < variant.Reserved)
+        {
+            throw new DomainConflictException(
+                "stock.below_reserved",
+                variant.Reserved > 0
+                    ? $"ما بنقدر ننزل تحت المحجوز ({variant.Reserved} قطع لطلبات مؤكدة)."
+                    : $"ما بنقدر ننقص أكثر من الموجود ({variant.OnHand} قطع).");
+        }
+
+        var trimmed = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        if (trimmed is { Length: > StockMovement.ReasonMaxLength })
+        {
+            throw new DomainException("stock.note_too_long", $"الملاحظة لازم تكون {StockMovement.ReasonMaxLength} حرف أو أقل.");
+        }
+
+        variant.ApplyOnHand(delta);
+        return StockMovement.Adjustment(BusinessId, Id, variant.Id, delta, reason, trimmed, EffectiveCost(variant), operationId, nowUtc);
+    }
+
+    private void EnsureStockable(ProductVariant variant)
+    {
+        if (!_variants.Contains(variant))
+        {
+            throw new InvalidOperationException("The variant does not belong to this product.");
+        }
+
+        if (IsArchived || variant.IsArchived)
+        {
+            throw new DomainConflictException("stock.archived", "المنتج أو النسخة مؤرشفة. استرجعها أول.");
+        }
+    }
+
     public decimal EffectivePrice(ProductVariant variant) => variant.PriceOverride ?? SellingPrice;
 
     public decimal EffectiveCost(ProductVariant variant) => variant.CostOverride ?? Cost;

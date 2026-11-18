@@ -72,6 +72,16 @@ public interface IFileStorage
     Task DeleteAsync(string path, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// Runs an operation at most once per <c>Idempotency-Key</c> (D-112). The work and the stored response commit in one
+/// transaction. A retry with the same key and request returns the stored response; the same key with a different
+/// request is rejected (422 <c>idempotency.key_reused</c>).
+/// </summary>
+public interface IIdempotencyService
+{
+    Task<T> ExecuteAsync<T>(Guid key, object request, Func<CancellationToken, Task<T>> work, CancellationToken cancellationToken);
+}
+
 /// <summary>Builds links into the frontend app (e.g. the password-reset page).</summary>
 public interface IAppLinks
 {

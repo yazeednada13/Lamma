@@ -23,6 +23,16 @@ public enum StockReferenceKind
     Return,
 }
 
+/// <summary>Fixed adjustment reasons (D-110). Codes: damage, loss, count, correction, gift.</summary>
+public enum AdjustmentReason
+{
+    Damage,
+    Loss,
+    Count,
+    Correction,
+    Gift,
+}
+
 /// <summary>Append-only stock log entry (D-028). One row per event per variant; never updated or deleted.</summary>
 public sealed class StockMovement : Entity, IBusinessOwned
 {
@@ -58,7 +68,10 @@ public sealed class StockMovement : Entity, IBusinessOwned
 
     public decimal? UnitCost { get; private set; }
 
+    /// <summary>Free-text note of a manual adjustment (≤ 200).</summary>
     public string? Reason { get; private set; }
+
+    public AdjustmentReason? AdjustmentReason { get; private set; }
 
     public bool IsAutomatic { get; private set; }
 
@@ -66,6 +79,41 @@ public sealed class StockMovement : Entity, IBusinessOwned
     public Guid OperationId { get; private set; }
 
     public DateTime CreatedAt { get; private set; }
+
+    internal static StockMovement Receive(Guid businessId, Guid productId, Guid variantId, int quantity, decimal unitCost, Guid receiptId, string label, Guid operationId, DateTime nowUtc)
+        => new(NewId())
+        {
+            BusinessId = businessId,
+            ProductId = productId,
+            VariantId = variantId,
+            Type = StockMovementType.Receive,
+            OnHandDelta = quantity,
+            ReferenceKind = StockReferenceKind.Receipt,
+            ReferenceId = receiptId,
+            ReferenceLabel = label.Length > ReferenceLabelMaxLength ? label[..ReferenceLabelMaxLength] : label,
+            UnitCost = unitCost,
+            IsAutomatic = false,
+            OperationId = operationId,
+            CreatedAt = nowUtc,
+        };
+
+    internal static StockMovement Adjustment(Guid businessId, Guid productId, Guid variantId, int delta, AdjustmentReason reason, string? note, decimal unitCost, Guid operationId, DateTime nowUtc)
+        => new(NewId())
+        {
+            BusinessId = businessId,
+            ProductId = productId,
+            VariantId = variantId,
+            Type = StockMovementType.Adjustment,
+            OnHandDelta = delta,
+            ReferenceKind = StockReferenceKind.Adjustment,
+            ReferenceLabel = "تعديل: " + StockRules.ReasonLabel(reason),
+            AdjustmentReason = reason,
+            Reason = note,
+            UnitCost = unitCost,
+            IsAutomatic = false,
+            OperationId = operationId,
+            CreatedAt = nowUtc,
+        };
 
     internal static StockMovement Opening(Guid businessId, Guid productId, Guid variantId, int quantity, decimal unitCost, Guid operationId, DateTime nowUtc)
         => new(NewId())

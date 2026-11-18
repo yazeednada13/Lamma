@@ -96,9 +96,9 @@ Arabic labels: جديد · مؤكد · قيد التجهيز · مع المند�
 |---|---|
 | Per variant: on hand, reserved, available (= on hand − reserved) | [A] |
 | Status: in stock, running low (available ≤ threshold), out of stock (available = 0) | [A]; [P] the running-low test uses available, not on hand |
-| Receive stock: product, variant, qty, cost, supplier or note; increases on hand and logs a movement | [A]; [O] cost update (OQ-022), purchases expense (OQ-020) |
+| Receive stock: product, variant, qty, cost, supplier or note; increases on hand and logs a movement | [A]; weighted-average cost (D-109); no purchases expense (D-107) |
 | Movements: reserve, release, sale, receive, adjustment, return, each with qty, reference, auto/manual flag, timestamp | [A] |
-| Expiry: products with expiry, sorted nearest first | [A]; [O] batch versus product (OQ-021), warning window (OQ-024) |
+| Expiry: products with expiry, sorted nearest first | [A]; one date per variant (D-108), 60-day window (D-111) |
 
 ### M6 — Customers
 | Req | Status |
