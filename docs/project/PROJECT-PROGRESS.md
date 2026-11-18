@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 2: Catalog** |
-| Current gate | **Gate 6: Frontend checkpoint.** All Phase 2 frontend tasks 2.B1–2.B7 are done and verified. Waiting for the founder to commit and push |
+| Current gate | **Gate 7: PR.** Backend and frontend pushed; waiting for the founder to open and merge the Phase 2 PR |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Branch `feature/phase2-catalog` created (2026-11-17) |
 | Migrations | `InitialIdentityAndBusiness` (Phase 1) and `AddCatalog` (Phase 2) applied by the founder (verified read-only: `__EFMigrationsHistory` and the 5 catalog tables in `Lamma_Dev`) |
-| Next expected founder action | Review the catalog screens, commit and push the frontend, confirm. Then PR (gate 7) |
+| Next expected founder action | Open the PR `feature/phase2-catalog` → `develop`, merge, confirm |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -28,7 +28,7 @@
 |---|---|
 | 0 Discovery & planning | **Merged into develop (founder-reported 2026-11-10)** |
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
-| 2 Catalog | **Backend pushed; Frontend done (gate 6 checkpoint)** |
+| 2 Catalog | **Backend and frontend pushed; PR (gate 7)** |
 | 3 Inventory | Pending |
 | 4 Customers | Pending |
 | 5 Orders core | Pending |
@@ -89,4 +89,5 @@
 | 2026-11-17 | Founder created `feature/phase2-catalog`, accepted the recommended answers to the Phase 2 questions, and approved the Phase 2 plan (D-090–D-105) |
 | 2026-11-17 | Phase 2 Backend 2.A1–2.A10 implemented and verified; waiting at gate 4 |
 | 2026-11-17 | Founder applied `AddCatalog` and pushed the backend; `Frontend` given |
-| 2026-11-18 | Phase 2 Frontend 2.B1–2.B7 implemented and verified; waiting at gate 6 |
+| 2026-11-18 | Phase 2 Frontend 2.B1–2.B7 implemented and verified |
+| 2026-11-18 | Founder pushed the Phase 2 frontend; at gate 7 (PR) |

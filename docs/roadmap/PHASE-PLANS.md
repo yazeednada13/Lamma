@@ -176,7 +176,7 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-17 | All backend tasks in one batch (D-087) |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-17 | migration `AddCatalog` applied by the founder (verified read-only in `Lamma_Dev`) |
 | 5. `Frontend` started | ☑ | 2026-11-17 | All frontend tasks in one batch (D-087) |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-18 | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |
 
@@ -202,7 +202,7 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 2.B4 | Categories page | Done (verified against the real API) |
 | 2.B5 | Settings: templates and custom fields; business-type labels from the API | Done (verified against the real API) |
 | 2.B6 | Routing wiring (remove the coming-soon catalog routes, links) | Done (verified) |
-| 2.B7 | Frontend checkpoint | Done. **Waiting for the founder: push** |
+| 2.B7 | Frontend checkpoint | Done. Pushed (2026-11-18) |
 
 **Frontend notes (for founder review):**
 1. The prototype's three summary cards on the products page (stock value at cost, expected profit, needs attention) are not built: they need inventory totals across all products, which is Phase 3 (inventory) scope.
