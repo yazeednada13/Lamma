@@ -59,11 +59,12 @@ frontend/
       settings/                account page, business settings page (with extra-section slots), business types (API labels, D-103), domain code lists
       catalog/                 products list/details/form, variant matrix, categories, templates & custom fields settings section (Phase 2)
       inventory/               stock levels, receive, adjust dialog, movement log, expiry (Phase 3)
-      customers/               customers list with segments, profile, quick-add/edit drawer (Phase 4; drawer exported for Phase 5)
+      customers/               customers list with segments, profile (orders-section slot), quick-add/edit drawer (Phase 4)
+      orders/                  orders list, status board, 4-step new/edit order form, order details, undo, cancel; customer/product history sections (Phase 5)
     shared/                    reusable, business-agnostic code
       ui/                      Button, Icon, Menu, Badge, Chip, Money, PageHeader
         brand/  form/ (incl. MoneyField, ImagePicker)  feedback/  overlay/  toast/  charts/ (Donut)  MetricCard
-      lib/                     money, personName, formErrors
+      lib/                     money, personName, formErrors, useActionKey (one Idempotency-Key per action, D-112)
       validation/              fieldSchemas (emailSchema, personNameSchema)
     services/                  infrastructure: api/apiClient.ts, query/queryClient.ts
     assets/                    generated modules: icons/iconData, illustrations/lammaArt
@@ -97,8 +98,8 @@ Create only the sub-folders a feature needs.
 | `test/`, `*.test.ts(x)` | anything |
 
 - **Alias:** `@/` → `src/` (`tsconfig.app.json` `paths` + `vite.config.ts` `resolve.alias`). Inside one folder use relative imports (`./`, `../`); across top-level folders always use `@/…`. **`../../` is banned.**
-- **Cross-feature edges (current):** `settings → auth`, `onboarding → auth, settings`, `dashboard → auth, settings`, `subscription → auth`, `catalog → auth, settings, inventory`, `customers → settings`. All point one way; **no cycles** are allowed.
-- **Plugging a feature into another feature's screen:** when feature B must show a section on feature A's page and A must not depend on B, A exposes a slot and the **app layer composes them**. Example: `createSettingsRoutes({ extraSections: [productTemplatesSettingsSection] })` in `app/router/routes.tsx`. This is the same pattern as the AppShell slots (§6).
+- **Cross-feature edges (current):** `settings → auth`, `onboarding → auth, settings`, `dashboard → auth, settings`, `subscription → auth`, `catalog → auth, settings, inventory`, `customers → settings`, `orders → settings, customers`. All point one way; **no cycles** are allowed.
+- **Plugging a feature into another feature's screen:** when feature B must show a section on feature A's page and A must not depend on B, A exposes a slot and the **app layer composes them**. Example: `createSettingsRoutes({ extraSections: [productTemplatesSettingsSection] })` in `app/router/routes.tsx`. Phase 5 uses it twice: `createCatalogRoutes({ productOrders })` and `createCustomersRoutes({ customerOrders })` receive the orders feature's `ProductOrdersSection` / `CustomerOrdersSection`. The slot types live in each feature's `slots.ts` (not `routes.tsx`), so the page and the route factory don't import each other. This is the same pattern as the AppShell slots (§6).
 - **Enforcement:** ESLint `no-restricted-imports` per folder (`eslint.config.js`) and `npm run check:architecture` (layer violations, deep feature imports, feature imports in the AppShell, `../../`, unresolved imports, import cycles). Both must report 0 before any frontend checkpoint.
 
 ## 5. Public-API rule
@@ -173,7 +174,11 @@ Split a file only along a real responsibility boundary, never just to cut lines:
 - **Stock changes across features:** inventory mutations invalidate only `["inventory"]`. Catalog screens refetch on mount (`staleTime` 0), and the shared `AdjustStockDialog` takes an `onDone` callback so the catalog refreshes its own product. Neither feature imports the other's query keys.
 - **Confirmations (D-120):** every confirm-worthy action (archive, delete, …) calls `useConfirm()` from `shared/ui/confirm/ConfirmProvider.tsx` (mounted once in `AppProviders`). Pass `action` so the dialog shows the spinner and keeps a server error (e.g. a blocked delete) inside it. Never build an ad-hoc confirm dialog.
 - **Error extensions:** `ApiError.problem` keeps the whole ProblemDetails body, so a screen can read error-specific members (e.g. `existingCustomerId` on `customer.duplicate_phone`).
-- **Idempotent actions:** `useActionKey()` (inventory) keeps one `Idempotency-Key` per request body; retries reuse it, a changed body gets a new one, and success clears it (D-112).
+- **Idempotent actions:** `useActionKey()` (`shared/lib/useActionKey.ts`, moved from inventory in Phase 5) keeps one `Idempotency-Key` per request body; retries reuse it, a changed body gets a new one, and success clears it (D-112).
+- **Confirmation content:** `useConfirm({ …, content })` renders extra controls (e.g. the cancel-reason chips of an order, D-130) between the text and the buttons. The controls keep their own state; `action` reads it and can throw an `ApiError` to show a message inside the dialog.
+- **Order status moves:** list, board and details share `useOrderMove()` (status change + toast with «تراجع», D-122). Orders invalidate `["orders"]`, `["catalog"]`, `["inventory"]` and `["customers"]`, because a move changes stock, sold and customer figures. The order form reads other modules' endpoints (`/customers`, `/products`) through its own read-only hooks and types in `orders/api`, never through another feature's internals.
+
+**Audit after Phase 5 frontend (2026-11-20):** `check:architecture` reports 0 violations and 0 cycles over 216 files. No UI file calls the API client directly. The order form is split into `OrderCustomerSection`, `OrderLinesSection`, `OrderExtrasSections` and `OrderReceipt`, with the pure state mapping in `domain/orderFormModel.ts` (unit-tested). Largest order files: `OrderFormPage.tsx` 222, `OrderDetailsPage.tsx` 204, `OrdersPage.tsx` 173.
 
 **Audit after Phase 2 frontend (2026-11-18):** `check:architecture` reports 0 violations and 0 cycles over 165 files. No UI file calls the API client directly. Largest files: `ProductFormPage.tsx` 202, `apiClient.ts` 197 (multipart upload added), `ProductsPage.tsx` 182, `VariantsSection.tsx` 161.
 

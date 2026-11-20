@@ -72,6 +72,9 @@
 .lconfirm__text { margin: 0; color: var(--lamma-text-secondary); font: var(--lamma-type-body); }
 .lconfirm__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
 .lconfirm .form-alert { text-align: start; }
+/* The rounded .control shows the focus ring (:focus-within); the field inside must not draw its own rectangular one. */
+.control input:focus-visible, .control select:focus-visible, .control textarea:focus-visible { box-shadow: none; }
+.lconfirm__content { text-align: start; display: flex; flex-direction: column; gap: 10px; }
 @media (prefers-reduced-motion: reduce) { .lconfirm.is-open .lconfirm__seal { animation: none; } }
 @media (max-width: 420px) { .lconfirm__actions { grid-template-columns: 1fr; } }
 

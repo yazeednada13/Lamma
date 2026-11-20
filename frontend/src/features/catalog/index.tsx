@@ -2,7 +2,8 @@
 import type { SettingsExtraSection } from "@/features/settings";
 import { ProductTemplatesSection } from "./components/ProductTemplatesSection";
 
-export { catalogRoutes } from "./routes";
+export { createCatalogRoutes } from "./routes";
+export type { CatalogSlots } from "./slots";
 
 /** The templates-and-custom-fields section, composed into the settings page by the app layer (D-092). */
 export const productTemplatesSettingsSection: SettingsExtraSection = {

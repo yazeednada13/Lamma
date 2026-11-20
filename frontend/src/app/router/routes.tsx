@@ -1,10 +1,11 @@
 import type { RouteObject } from "react-router";
 import { authRoutes, resetPasswordRoute } from "@/features/auth";
-import { catalogRoutes, productTemplatesSettingsSection } from "@/features/catalog";
-import { customersRoutes } from "@/features/customers";
+import { createCatalogRoutes, productTemplatesSettingsSection } from "@/features/catalog";
+import { createCustomersRoutes } from "@/features/customers";
 import { inventoryRoutes } from "@/features/inventory";
 import { dashboardRoute } from "@/features/dashboard";
 import { onboardingRoute } from "@/features/onboarding";
+import { CustomerOrdersSection, ordersRoutes, ProductOrdersSection } from "@/features/orders";
 import { createSettingsRoutes } from "@/features/settings";
 import { AuthenticatedLayout } from "../layouts/AuthenticatedLayout";
 import { navigationRoutes } from "../navigation/navigationRoutes";
@@ -16,6 +17,8 @@ import { RouteErrorPage } from "./RouteErrorPage";
 
 // Features plug into each other's screens here, so they never import each other in a cycle.
 const settingsRoutes = createSettingsRoutes({ extraSections: [productTemplatesSettingsSection] });
+const catalogRoutes = createCatalogRoutes({ productOrders: (p) => <ProductOrdersSection {...p} /> });
+const customersRoutes = createCustomersRoutes({ customerOrders: (c) => <CustomerOrdersSection {...c} /> });
 
 const plannedRoutes: RouteObject[] = COMING_SOON_ROUTES.map((r) => ({
   path: `/${r.path}`,
@@ -41,7 +44,7 @@ export const routes: RouteObject[] = [
             children: [
               {
                 element: <AuthenticatedLayout />,
-                children: [dashboardRoute, ...catalogRoutes, ...inventoryRoutes, ...customersRoutes, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
+                children: [dashboardRoute, ...catalogRoutes, ...inventoryRoutes, ...customersRoutes, ...ordersRoutes, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
               },
             ],
           },

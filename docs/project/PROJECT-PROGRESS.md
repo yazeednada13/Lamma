@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 5: Orders core** |
-| Current gate | **Gate 4: Backend checkpoint.** Backend 5.A1–5.A9 implemented and verified; waiting for the founder to add and apply `AddOrders` and push |
+| Current gate | **Gate 6: Frontend checkpoint.** Frontend 5.B1–5.B6 implemented; automated checks pass; waiting for the founder's manual browser check and push |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Run the `AddOrders` migration and database update, commit and push the backend, then write `Frontend` |
+| Next expected founder action | Run the Phase 5 manual checklist on the real API, then commit and push the frontend |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -31,7 +31,7 @@
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
 | 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
 | 4 Customers | **Merged into develop (founder-reported 2026-11-20)** |
-| 5 Orders core | **Backend done (2026-11-20); at gate 4** |
+| 5 Orders core | **Backend pushed; frontend done (2026-11-20); at gate 6** |
 | 6 Payments & receivables | Pending |
 | 7 Courier & expenses | Pending |
 | 8 Returns & pre-orders | Pending |
@@ -75,6 +75,8 @@
 | 2026-11-18 | Phase 3 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 178 files, 0 violations, 0 cycles |
 | 2026-11-18 | Phase 3 frontend: `vitest run` | **78 passed, 0 failed** (24 files; 5 new logic tests) |
 | 2026-11-20 | Phase 3 manual browser check by the founder (D-106 checklist, 21 cases on the real API: summary, receive incl. double-submit, weighted cost, adjust rules, movement filters, low/out, expiry rule, 4 widths, RTL) | **21/21 passed** |
+| 2026-11-20 | Phase 5 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 216 files, 0 violations, 0 cycles |
+| 2026-11-20 | Phase 5 frontend: `vitest run` | **92 passed, 0 failed** (28 files; 9 new logic tests: receipt math, order rules, Amman date presets, form model) |
 | 2026-11-20 | Phase 4 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; **274 passed, 0 failed**: Domain 111, Application 58, Infrastructure 19, Architecture 8, API integration 78 (28 new) |
 | 2026-11-20 | Phase 4 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 187 files, 0 violations, 0 cycles |
 | 2026-11-20 | Phase 4 frontend: `vitest run` (after the review fixes) | **83 passed, 0 failed** (5 new: customer logic + shared confirmation dialog) |
@@ -114,3 +116,5 @@
 | 2026-11-20 | Founder pushed the Phase 4 frontend and merged the Phase 4 PR into `develop`; Phase 4 closed, at gate 8 |
 | 2026-11-20 | Founder created `feature/phase5-orders`, delegated the Phase 5 answers, and approved the Phase 5 plan (D-121–D-130); waiting at gate 3 |
 | 2026-11-20 | Phase 5 Backend 5.A1–5.A9 implemented and verified; waiting at gate 4 (migration `AddOrders`) |
+| 2026-11-20 | Founder applied `AddOrders` and pushed the backend; `Frontend` given |
+| 2026-11-20 | Phase 5 Frontend 5.B1–5.B6 implemented; automated checks pass; waiting at gate 6 |
