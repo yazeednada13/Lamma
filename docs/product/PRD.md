@@ -71,9 +71,9 @@
 | Req | Status |
 |---|---|
 | List: search, status filter with counts, table and card views, quick next-step action | [A] |
-| Kanban board: move between valid statuses, with Undo for a limited time | [A]; [O] matrix and undo semantics (OQ-040, OQ-041) |
-| Create order in 4 steps: customer (pick or quick-add) → products (variant, qty ≤ available) → delivery and payment (fee, discount, method, amount paid, channel, note, gift message) → review with a live receipt | [A]; [O] address and recipient fields (OQ-048), discount rules (OQ-045), save as new or confirmed (OQ-047) |
-| Details: items, customer, total, paid, remaining, timeline, change status, record payment, cancel with reason, return | [A]; [O] cancel reasons (OQ-049), editing (OQ-046) |
+| Kanban board: move between valid statuses, with Undo for a limited time | [A]; matrix D-121, undo D-122 |
+| Create order in 4 steps: customer (pick or quick-add) → products (variant, qty ≤ available) → delivery and payment (fee, discount, method, amount paid, channel, note, gift message) → review with a live receipt | [A]; address and gift fields D-129, discount D-126, save as new or confirmed D-128; amount paid is Phase 6 |
+| Details: items, customer, total, paid, remaining, timeline, change status, record payment, cancel with reason, return | [A]; cancel reasons D-130, editing D-127; paid, remaining and payments are Phase 6, returns Phase 8 |
 | Pre-orders: out-of-stock or made-to-order products, deposit, expected delivery date | [A]; [O] all rules (OQ-074) |
 | 7 order statuses and 4 payment statuses, with Arabic labels | [A] |
 | Channels: Instagram, WhatsApp, Facebook, Other | [A] |

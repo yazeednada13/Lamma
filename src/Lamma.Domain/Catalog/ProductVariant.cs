@@ -111,4 +111,20 @@ public sealed class ProductVariant : Entity, IBusinessOwned
 
         OnHand = result;
     }
+
+    /// <summary>
+    /// Applies an order's stock effect (D-024–D-026). Keeps 0 ≤ Reserved ≤ OnHand; the caller checks Available first.
+    /// </summary>
+    internal void ApplyOrderEffect(int onHandDelta, int reservedDelta)
+    {
+        var onHand = OnHand + onHandDelta;
+        var reserved = Reserved + reservedDelta;
+        if (onHand < 0 || reserved < 0 || reserved > onHand || onHand > MaxQuantity)
+        {
+            throw new DomainConflictException("stock.not_available", "الكمية المتوفرة ما بتكفي.");
+        }
+
+        OnHand = onHand;
+        Reserved = reserved;
+    }
 }

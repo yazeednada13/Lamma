@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 5: Orders core** |
-| Current gate | **Gate 3: waiting for `Backend`.** The Phase 5 plan is approved (D-121–D-130) |
+| Current gate | **Gate 4: Backend checkpoint.** Backend 5.A1–5.A9 implemented and verified; waiting for the founder to add and apply `AddOrders` and push |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Commit these doc updates, then write `Backend` to start Phase 5 backend tasks 5.A1–5.A9 |
+| Next expected founder action | Run the `AddOrders` migration and database update, commit and push the backend, then write `Frontend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -31,7 +31,7 @@
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
 | 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
 | 4 Customers | **Merged into develop (founder-reported 2026-11-20)** |
-| 5 Orders core | **Plan approved (2026-11-20); waiting for `Backend`** |
+| 5 Orders core | **Backend done (2026-11-20); at gate 4** |
 | 6 Payments & receivables | Pending |
 | 7 Courier & expenses | Pending |
 | 8 Returns & pre-orders | Pending |
@@ -79,6 +79,7 @@
 | 2026-11-20 | Phase 4 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 187 files, 0 violations, 0 cycles |
 | 2026-11-20 | Phase 4 frontend: `vitest run` (after the review fixes) | **83 passed, 0 failed** (5 new: customer logic + shared confirmation dialog) |
 | 2026-11-20 | Phase 4 manual browser check by the founder (D-106) | Approved after two review fixes: duplicate-phone notice card; unified confirmation dialog (D-120) |
+| 2026-11-20 | Phase 5 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; 350 passed, 1 failed (architecture rule: public `init` setters on two Domain records). Fixed; Architecture 8/8 and Order domain 69/69 re-run green → **351 passing** (Domain 180, Application 58, Infrastructure 19, Architecture 8, API integration 86; 77 new) |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -112,3 +113,4 @@
 | 2026-11-20 | Phase 4 Frontend 4.B1–4.B4 implemented; founder review → duplicate-phone notice redesigned and unified confirmation dialog added (D-120); approved |
 | 2026-11-20 | Founder pushed the Phase 4 frontend and merged the Phase 4 PR into `develop`; Phase 4 closed, at gate 8 |
 | 2026-11-20 | Founder created `feature/phase5-orders`, delegated the Phase 5 answers, and approved the Phase 5 plan (D-121–D-130); waiting at gate 3 |
+| 2026-11-20 | Phase 5 Backend 5.A1–5.A9 implemented and verified; waiting at gate 4 (migration `AddOrders`) |

@@ -570,6 +570,256 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                     b.ToTable("Customers", (string)null);
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Orders.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CancelNote")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("CancelReason")
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<string>("DeliveryAddress")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("DeliveryFee")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<string>("GiftMessage")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<bool>("IsGift")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("ItemsSubtotal")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("OrderNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentMethodHint")
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("RecipientName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("RecipientPhone")
+                        .HasMaxLength(16)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("BusinessId", "CreatedAt")
+                        .IsDescending(false, true);
+
+                    b.HasIndex("BusinessId", "DeliveredAt");
+
+                    b.HasIndex("BusinessId", "OrderNumber")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Orders_BusinessId_OrderNumber");
+
+                    b.HasIndex("BusinessId", "CustomerId", "CreatedAt");
+
+                    b.HasIndex("BusinessId", "Status", "CreatedAt")
+                        .IsDescending(false, false, true);
+
+                    b.ToTable("Orders", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Orders_DeliveryFee", "[DeliveryFee] >= 0");
+
+                            t.HasCheckConstraint("CK_Orders_Discount", "[Discount] >= 0 AND [Discount] <= [ItemsSubtotal]");
+
+                            t.HasCheckConstraint("CK_Orders_OrderNumber", "[OrderNumber] >= 1001");
+
+                            t.HasCheckConstraint("CK_Orders_Total", "[Total] = [ItemsSubtotal] + [DeliveryFee] - [Discount]");
+                        });
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Orders.OrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<Guid>("VariantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("VariantLabel")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("VariantId");
+
+                    b.ToTable("OrderItems", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_OrderItems_Quantity", "[Quantity] > 0");
+
+                            t.HasCheckConstraint("CK_OrderItems_UnitCost", "[UnitCost] >= 0");
+
+                            t.HasCheckConstraint("CK_OrderItems_UnitPrice", "[UnitPrice] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Orders.OrderStatusLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<bool>("IsUndo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<Guid?>("UndoOfLogId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId", "Sequence")
+                        .IsUnique();
+
+                    b.ToTable("OrderStatusLogs", (string)null);
+                });
+
             modelBuilder.Entity("Lamma.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -678,6 +928,24 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("UX_IdempotencyRecords_BusinessId_Key");
 
                     b.ToTable("IdempotencyRecords", (string)null);
+                });
+
+            modelBuilder.Entity("Lamma.Infrastructure.Persistence.Repositories.BusinessCounter", b =>
+                {
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<int>("NextValue")
+                        .HasColumnType("int");
+
+                    b.HasKey("BusinessId", "Name");
+
+                    b.ToTable("BusinessCounters", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -924,7 +1192,61 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Orders.Order", b =>
+                {
+                    b.HasOne("Lamma.Domain.Businesses.Business", null)
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Customers.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Orders.OrderItem", b =>
+                {
+                    b.HasOne("Lamma.Domain.Orders.Order", null)
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Catalog.ProductVariant", null)
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Orders.OrderStatusLog", b =>
+                {
+                    b.HasOne("Lamma.Domain.Orders.Order", null)
+                        .WithMany("StatusLogs")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Lamma.Infrastructure.Persistence.Idempotency.IdempotencyRecord", b =>
+                {
+                    b.HasOne("Lamma.Domain.Businesses.Business", null)
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lamma.Infrastructure.Persistence.Repositories.BusinessCounter", b =>
                 {
                     b.HasOne("Lamma.Domain.Businesses.Business", null)
                         .WithMany()
@@ -994,6 +1316,13 @@ namespace Lamma.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Lamma.Domain.Catalog.Product", b =>
                 {
                     b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Orders.Order", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("StatusLogs");
                 });
 #pragma warning restore 612, 618
         }

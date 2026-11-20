@@ -3,6 +3,7 @@ using Lamma.Application.Customers;
 using Lamma.Domain.Businesses;
 using Lamma.Domain.Common;
 using Lamma.Domain.Customers;
+using Lamma.Domain.Orders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -51,8 +52,9 @@ internal sealed class CustomerQueries(LammaDbContext db) : ICustomerQueries
     private static readonly TimeZoneInfo Zone = BusinessTime.FindZone(BusinessTime.DefaultTimeZoneId);
 
     /// <summary>
-    /// Customers with their derived figures (D-033). The single place where stats come from: orders and payments do not
-    /// exist before Phases 5–6, so the figures are 0 / null. Phase 5 replaces only these four expressions with order aggregates.
+    /// Customers with their derived figures (D-033, Phase 5 rules): order count = non-cancelled orders; total spent =
+    /// Σ total of delivered orders; last order = latest non-cancelled order. The single place where stats come from.
+    /// The balance due stays 0 until payments exist (Phase 6).
     /// </summary>
     private IQueryable<CustomerRow> Rows() => db.Customers.AsNoTracking().Select(c => new CustomerRow
     {
@@ -66,10 +68,10 @@ internal sealed class CustomerQueries(LammaDbContext db) : ICustomerQueries
         IsArchived = c.IsArchived,
         CreatedAt = c.CreatedAt,
         UpdatedAt = c.UpdatedAt,
-        OrderCount = 0,
-        TotalSpent = 0m,
-        BalanceDue = 0m,
-        LastOrderAt = null,
+        OrderCount = db.Orders.Count(o => o.CustomerId == c.Id && o.Status != OrderStatus.Cancelled),
+        TotalSpent = db.Orders.Where(o => o.CustomerId == c.Id && o.Status == OrderStatus.Delivered).Sum(o => (decimal?)o.Total) ?? 0m,
+        BalanceDue = 0m, // payments arrive in Phase 6
+        LastOrderAt = db.Orders.Where(o => o.CustomerId == c.Id && o.Status != OrderStatus.Cancelled).Max(o => (DateTime?)o.CreatedAt),
     });
 
     public async Task<PagedResult<CustomerListItemDto>> ListAsync(CustomerListQuery query, DateOnly today, CancellationToken cancellationToken)

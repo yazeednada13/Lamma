@@ -50,7 +50,8 @@ public interface IProductRepository
 }
 
 /// <summary>Read model of one product for the details screen (no tracking).</summary>
-public sealed record ProductDetailsRow(Product Product, string? CategoryName, IReadOnlyList<StockMovement> RecentMovements);
+/// <summary><c>Sold</c> = Σ quantities on delivered orders (DATABASE-DESIGN §8).</summary>
+public sealed record ProductDetailsRow(Product Product, string? CategoryName, IReadOnlyList<StockMovement> RecentMovements, int Sold);
 
 public interface IProductQueries
 {
