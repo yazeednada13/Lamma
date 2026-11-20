@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 4: Customers, closed (merged into `develop`)** |
-| Current gate | **Gate 8: Next phase.** Waiting for the founder's `Next Phase` to start Phase 5 (Orders core) planning |
+| Current phase | **Phase 5: Orders core** |
+| Current gate | **Gate 3: waiting for `Backend`.** The Phase 5 plan is approved (D-121–D-130) |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Create the Phase 5 branch from the latest `develop` (stash/pop these doc updates), commit them, and write `Next Phase`; Phase 5 open questions OQ-040+ |
+| Next expected founder action | Commit these doc updates, then write `Backend` to start Phase 5 backend tasks 5.A1–5.A9 |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -31,7 +31,7 @@
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
 | 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
 | 4 Customers | **Merged into develop (founder-reported 2026-11-20)** |
-| 5 Orders core | Pending |
+| 5 Orders core | **Plan approved (2026-11-20); waiting for `Backend`** |
 | 6 Payments & receivables | Pending |
 | 7 Courier & expenses | Pending |
 | 8 Returns & pre-orders | Pending |
@@ -111,3 +111,4 @@
 | 2026-11-20 | Founder applied `AddCustomers` and pushed the backend; `Frontend` given |
 | 2026-11-20 | Phase 4 Frontend 4.B1–4.B4 implemented; founder review → duplicate-phone notice redesigned and unified confirmation dialog added (D-120); approved |
 | 2026-11-20 | Founder pushed the Phase 4 frontend and merged the Phase 4 PR into `develop`; Phase 4 closed, at gate 8 |
+| 2026-11-20 | Founder created `feature/phase5-orders`, delegated the Phase 5 answers, and approved the Phase 5 plan (D-121–D-130); waiting at gate 3 |
