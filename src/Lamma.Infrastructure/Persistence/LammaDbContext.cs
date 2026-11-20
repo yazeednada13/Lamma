@@ -47,6 +47,8 @@ public sealed class LammaDbContext : IdentityDbContext<ApplicationUser, Identity
 
     public DbSet<StockReceipt> StockReceipts => Set<StockReceipt>();
 
+    public DbSet<Lamma.Domain.Customers.Customer> Customers => Set<Lamma.Domain.Customers.Customer>();
+
     public DbSet<Idempotency.IdempotencyRecord> IdempotencyRecords => Set<Idempotency.IdempotencyRecord>();
 
     /// <summary>Referenced by the query filters; EF Core re-evaluates it per query (parameterized).</summary>

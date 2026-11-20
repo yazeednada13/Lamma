@@ -19,7 +19,11 @@ public abstract class AppException : Exception
 public sealed class NotFoundException(string code, string message) : AppException(code, message);
 
 /// <summary>409. The request conflicts with the current state.</summary>
-public sealed class ConflictException(string code, string message) : AppException(code, message);
+public sealed class ConflictException(string code, string message, IReadOnlyDictionary<string, object?>? extensions = null) : AppException(code, message)
+{
+    /// <summary>Extra ProblemDetails members (e.g. <c>existingCustomerId</c>), written next to <c>code</c>.</summary>
+    public IReadOnlyDictionary<string, object?>? Extensions { get; } = extensions;
+}
 
 /// <summary>403. Authenticated but not allowed (e.g. not onboarded).</summary>
 public sealed class ForbiddenException(string code, string message) : AppException(code, message);

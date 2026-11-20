@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 4: Customers** |
-| Current gate | **Gate 3: waiting for `Backend`.** The Phase 4 plan is approved (D-114–D-119) |
+| Current gate | **Gate 4: Backend checkpoint.** Phase 4 backend tasks 4.A1–4.A4 are done and verified. Waiting for the founder to create and apply `AddCustomers` and push |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Commit these doc updates, then write `Backend` to start Phase 4 backend tasks 4.A1–4.A4 |
+| Next expected founder action | Create and apply migration `AddCustomers`, commit and push the backend, confirm. Then `Frontend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -30,7 +30,7 @@
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
 | 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
-| 4 Customers | **Plan approved (2026-11-20); waiting for `Backend`** |
+| 4 Customers | **Backend done (gate 4 checkpoint)** |
 | 5 Orders core | Pending |
 | 6 Payments & receivables | Pending |
 | 7 Courier & expenses | Pending |
@@ -75,6 +75,7 @@
 | 2026-11-18 | Phase 3 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 178 files, 0 violations, 0 cycles |
 | 2026-11-18 | Phase 3 frontend: `vitest run` | **78 passed, 0 failed** (24 files; 5 new logic tests) |
 | 2026-11-20 | Phase 3 manual browser check by the founder (D-106 checklist, 21 cases on the real API: summary, receive incl. double-submit, weighted cost, adjust rules, movement filters, low/out, expiry rule, 4 widths, RTL) | **21/21 passed** |
+| 2026-11-20 | Phase 4 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; **274 passed, 0 failed**: Domain 111, Application 58, Infrastructure 19, Architecture 8, API integration 78 (28 new) |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -103,3 +104,4 @@
 | 2026-11-20 | Founder's manual browser check passed (21/21) |
 | 2026-11-20 | Founder pushed the Phase 3 frontend and merged the Phase 3 PR into `develop`; Phase 3 closed, at gate 8 |
 | 2026-11-20 | Founder created `feature/phase4-customers`; Phase 4 plan approved and decisions D-114–D-119 recorded on the founder's confirmation; waiting at gate 3 |
+| 2026-11-20 | Phase 4 Backend 4.A1–4.A4 implemented and verified; waiting at gate 4 |
