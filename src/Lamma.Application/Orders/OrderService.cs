@@ -3,10 +3,12 @@ using Lamma.Application.Catalog;
 using Lamma.Application.Common;
 using Lamma.Application.Customers;
 using Lamma.Application.Inventory;
+using Lamma.Application.Payments;
 using Lamma.Domain.Businesses;
 using Lamma.Domain.Catalog;
 using Lamma.Domain.Common;
 using Lamma.Domain.Orders;
+using Lamma.Domain.Payments;
 
 namespace Lamma.Application.Orders;
 
@@ -65,11 +67,14 @@ internal sealed class OrderService(
     IOrderQueries queries,
     ICustomerRepository customers,
     IInventoryRepository inventory,
+    IPaymentRepository payments,
     IBusinessSettingsQueries settings,
     IIdempotencyService idempotency,
     IUnitOfWork unitOfWork,
     IClock clock) : IOrderService
 {
+    private static readonly TimeZoneInfo Zone = BusinessTime.FindZone(BusinessTime.DefaultTimeZoneId);
+
     public Task<PagedResult<OrderListItemDto>> ListAsync(OrderListQuery query, CancellationToken cancellationToken) => queries.ListAsync(query, cancellationToken);
 
     public Task<OrderStatusCountsDto> StatusCountsAsync(OrderListQuery query, CancellationToken cancellationToken) => queries.StatusCountsAsync(query, cancellationToken);
@@ -99,6 +104,12 @@ internal sealed class OrderService(
         await EnsureEnabledAsync(channel == order.Channel ? null : channel, method == order.PaymentMethodHint ? null : method, cancellationToken);
         var (lines, _) = await LinesAsync(request.Items, cancellationToken);
         order.ReplaceItems(channel, lines, request.DeliveryFee, request.Discount, method);
+        if (order.Total < await payments.PaidAsync(id, cancellationToken))
+        {
+            // D-132: paid never exceeds the total. A deposit recorded meanwhile bumps the rowversion, so the save fails.
+            throw new ConflictException("order.total_below_paid", "مجموع الطلب صار أقل من المدفوع. ألغِ الدفعة الزايدة أول.");
+        }
+
         order.UpdateDetails(Delivery(request.DeliveryAddress, request.IsGift, request.RecipientName, request.RecipientPhone, request.GiftMessage), request.Note);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
@@ -149,6 +160,14 @@ internal sealed class OrderService(
             inventory.AddMovements(order.ChangeStatus(OrderStatus.Confirmed, null, null, variants, Entity.NewId(), now)); // D-128
         }
 
+        if (request.Payment is { } deposit)
+        {
+            // D-135: a deposit is an early payment, saved in the order's transaction and dated today.
+            var depositMethod = await PaymentService.RecordableMethodAsync(settings, currentBusiness.BusinessId, deposit.Method, "payment.method", cancellationToken);
+            var today = BusinessTime.LocalDate(now, Zone);
+            payments.Add(Payment.ForOrder(currentBusiness.BusinessId, customer.Id, order.Id, order.Total, deposit.Amount, depositMethod, today, today, today, null, Entity.NewId(), now));
+        }
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await GetAsync(order.Id, cancellationToken);
     }
@@ -162,9 +181,16 @@ internal sealed class OrderService(
             throw StatusChanged(order.Status);
         }
 
+        var to = EnumCode.Parse<OrderStatus>(request.To);
+        if (to == OrderStatus.Cancelled && await payments.HasActivePaymentsAsync(id, cancellationToken))
+        {
+            // D-137. A payment recorded meanwhile bumps the order's rowversion, so this check is retried, never skipped.
+            throw new ConflictException("order.has_payments", "على الطلب دفعات. ألغِ الدفعات أول، بعدين ألغِ الطلب.");
+        }
+
         var variants = await VariantsOfAsync(order, cancellationToken);
         var reason = request.CancelReason is null ? (CancelReason?)null : EnumCode.Parse<CancelReason>(request.CancelReason);
-        inventory.AddMovements(order.ChangeStatus(EnumCode.Parse<OrderStatus>(request.To), reason, request.CancelNote, variants, Entity.NewId(), clock.UtcNow));
+        inventory.AddMovements(order.ChangeStatus(to, reason, request.CancelNote, variants, Entity.NewId(), clock.UtcNow));
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }

@@ -148,17 +148,17 @@ Questions:
 
 ## P1 — before Phase 6 (Payments)
 
-**OQ-050 · P1 · Phase 6: customer-level payment allocation.** When a payment is recorded "against a customer", how is it allocated? (a) Automatically, oldest unpaid order first (FIFO); (b) manual allocation; (c) held as unallocated customer credit. Recommendation: (a), keeping the allocation records.
+**OQ-050 · P1 · Phase 6: customer-level payment allocation.** When a payment is recorded "against a customer", how is it allocated? (a) Automatically, oldest unpaid order first (FIFO); (b) manual allocation; (c) held as unallocated customer credit. Recommendation: (a), keeping the allocation records. **Resolved (2026-11-21) → D-131.**
 
-**OQ-051 · P1 · Phase 6: overpayment and credit.** Can a payment exceed the remaining amount? The prototype blocks it. Recommendation: block it in V1.
+**OQ-051 · P1 · Phase 6: overpayment and credit.** Can a payment exceed the remaining amount? The prototype blocks it. Recommendation: block it in V1. **Resolved (2026-11-21) → D-132.**
 
-**OQ-052 · P1 · Phase 6: payment status source.** Proposed P-012: derived from the sum of payments versus the total, plus a COD-with-courier state. (The mock data is inconsistent: order 1039 has `pay: "paid"` but `paid: 0`.)
+**OQ-052 · P1 · Phase 6: payment status source.** Proposed P-012: derived from the sum of payments versus the total, plus a COD-with-courier state. (The mock data is inconsistent: order 1039 has `pay: "paid"` but `paid: 0`.) **Resolved (2026-11-21) → D-133.**
 
-**OQ-053 · P1 · Phase 6: what counts as a receivable.** Customer receivables = Σ(total − paid) for which orders? Only delivered ones, or also confirmed or in-progress ones? Are courier-held amounts excluded from customer balances (the customer has paid the courier)? Recommendation: customer receivables cover delivered orders that are not fully paid and not courier-held. Courier receivables are tracked separately.
+**OQ-053 · P1 · Phase 6: what counts as a receivable.** Customer receivables = Σ(total − paid) for which orders? Only delivered ones, or also confirmed or in-progress ones? Are courier-held amounts excluded from customer balances (the customer has paid the courier)? Recommendation: customer receivables cover delivered orders that are not fully paid and not courier-held. Courier receivables are tracked separately. **Resolved (2026-11-21) → D-134.**
 
-**OQ-054 · P1 · Phase 6: deposits on normal orders.** The prototype's payment step has "deposit" and "amount paid" options for any order. Are a deposit and a payment the same thing (a Payment recorded at creation)? Recommendation: yes. A deposit is just an early Payment.
+**OQ-054 · P1 · Phase 6: deposits on normal orders.** The prototype's payment step has "deposit" and "amount paid" options for any order. Are a deposit and a payment the same thing (a Payment recorded at creation)? Recommendation: yes. A deposit is just an early Payment. **Resolved (2026-11-21) → D-135.**
 
-**OQ-055 · P1 · Phase 6: payment date.** May the owner back-date payments? May payments be edited or deleted (with an audit trail), or only reversed? Recommendation: back-dating allowed; no edits; reversal only, through a reversing entry.
+**OQ-055 · P1 · Phase 6: payment date.** May the owner back-date payments? May payments be edited or deleted (with an audit trail), or only reversed? Recommendation: back-dating allowed; no edits; reversal only, through a reversing entry. **Resolved (2026-11-21) → D-136, D-137.**
 
 ## P1 — before Phase 7 (Courier & Expenses)
 

@@ -1,4 +1,5 @@
 import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import type { OrderPaymentLine, PaymentStatus } from "@/features/payments";
 import type { PaymentMethodCode, SalesChannelCode } from "@/features/settings";
 import { api } from "@/services/api/apiClient";
 import type { MoneyString } from "@/shared/lib/money";
@@ -30,6 +31,10 @@ export interface OrderListItem {
   total: MoneyString;
   createdAt: string;
   deliveredAt: string | null;
+  /** Phase 6 (D-133): Σ active payments, what is left, and the derived status (null when cancelled). */
+  paid: MoneyString;
+  remaining: MoneyString;
+  paymentStatus: PaymentStatus | null;
 }
 
 export type OrderStatusCounts = Record<OrderStatus | "all", number>;
@@ -98,6 +103,11 @@ export interface OrderDetails {
   deliveredAt: string | null;
   cancelledAt: string | null;
   updatedAt: string;
+  paid: MoneyString;
+  remaining: MoneyString;
+  paymentStatus: PaymentStatus | null;
+  /** Payments applied to this order, reversed ones included (D-136). */
+  payments: OrderPaymentLine[];
 }
 
 export interface OrderDetailsBody {
@@ -120,6 +130,8 @@ export interface OrderItemsBody extends OrderDetailsBody {
 export interface CreateOrderBody extends OrderItemsBody {
   customerId: string;
   status: "new" | "confirmed";
+  /** Optional deposit, dated today (D-135). */
+  payment?: { amount: MoneyString; method: PaymentMethodCode };
 }
 
 export interface OrderListParams {
@@ -230,9 +242,9 @@ export const useProductsWithVariants = (ids: readonly string[]) =>
 export const fetchProductWithVariants = (queryClient: QueryClient, productId: string) =>
   queryClient.fetchQuery({ queryKey: productKey(productId), queryFn: () => getProduct(productId), staleTime: 0 });
 
-/** Orders change stock, product and customer figures: refresh all of them. */
+/** Orders change stock, product, customer and receivable figures: refresh all of them. */
 function invalidateAfterOrderChange(queryClient: QueryClient) {
-  for (const key of [orderKeys.all, ["catalog"], ["inventory"], ["customers"]]) {
+  for (const key of [orderKeys.all, ["catalog"], ["inventory"], ["customers"], ["payments"]]) {
     void queryClient.invalidateQueries({ queryKey: key });
   }
 }

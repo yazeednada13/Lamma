@@ -1,15 +1,22 @@
 using Lamma.Application.Catalog;
 using Lamma.Domain.Common;
 using Lamma.Domain.Orders;
+using Lamma.Domain.Payments;
 
 namespace Lamma.Application.Orders;
 
 /// <summary>Builds order DTOs from the aggregate (server-computed totals, profit, allowed moves and the undo window).</summary>
 public static class OrderMapping
 {
-    public static OrderDetailsDto ToDetails(Order order, OrderCustomerDto customer, IReadOnlyDictionary<Guid, string?> imagePaths, DateTime nowUtc)
+    public static OrderDetailsDto ToDetails(
+        Order order,
+        OrderCustomerDto customer,
+        IReadOnlyDictionary<Guid, string?> imagePaths,
+        IReadOnlyList<OrderPaymentDto> payments,
+        DateTime nowUtc)
     {
         var undoable = order.UndoableChange(nowUtc);
+        var paid = payments.Where(p => !p.IsReversed).Sum(p => p.Amount); // D-131: Σ active allocations
         var timeline = order.StatusLogs
             .OrderBy(l => l.Sequence)
             .Select(l => new OrderStatusChangeDto(l.Id, l.FromStatus?.ToCode(), l.ToStatus.ToCode(), l.ChangedAt, l.IsUndo, l.Reason?.ToCode(), l.Note))
@@ -61,6 +68,10 @@ public static class OrderMapping
             order.ConfirmedAt,
             order.DeliveredAt,
             order.CancelledAt,
-            order.UpdatedAt);
+            order.UpdatedAt,
+            paid,
+            order.Total - paid,
+            PaymentStatusPolicy.For(order.Status, order.PaymentMethodHint, order.Total, paid)?.ToCode(),
+            payments);
     }
 }

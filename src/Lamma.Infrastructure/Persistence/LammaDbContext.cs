@@ -55,6 +55,10 @@ public sealed class LammaDbContext : IdentityDbContext<ApplicationUser, Identity
 
     public DbSet<Lamma.Domain.Orders.OrderStatusLog> OrderStatusLogs => Set<Lamma.Domain.Orders.OrderStatusLog>();
 
+    public DbSet<Lamma.Domain.Payments.Payment> Payments => Set<Lamma.Domain.Payments.Payment>();
+
+    public DbSet<Lamma.Domain.Payments.PaymentAllocation> PaymentAllocations => Set<Lamma.Domain.Payments.PaymentAllocation>();
+
     public DbSet<Repositories.BusinessCounter> BusinessCounters => Set<Repositories.BusinessCounter>();
 
     public DbSet<Idempotency.IdempotencyRecord> IdempotencyRecords => Set<Idempotency.IdempotencyRecord>();

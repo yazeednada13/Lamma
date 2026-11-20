@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { PaymentBadge } from "@/features/payments";
 import { channelIcon } from "@/features/settings";
 import { Illustration } from "@/shared/ui/brand/Illustration";
 import { Icon } from "@/shared/ui/Icon";
@@ -95,6 +96,7 @@ export function OrderCard({ order, index = 0, children, asLink = true }: { order
       <Track status={order.status} />
       <div className="track__lbl">
         <span>{orderDate(order.createdAt)}</span>
+        <PaymentBadge status={order.paymentStatus} />
       </div>
       {children}
     </>

@@ -7,7 +7,7 @@ import type { Receipt } from "../domain/orderDomain";
 import { linePrice, lineVariant, type Line } from "../domain/orderFormModel";
 
 /** Live receipt of the order form (prototype `#receipt`), computed in fils like the server. */
-export function OrderReceipt({ customerName, channel, caption, lines, fee, discount, receipt }: { customerName: string | null; channel: SalesChannelCode | null; caption: string; lines: Line[]; fee: MoneyString; discount: MoneyString; receipt: Receipt }) {
+export function OrderReceipt({ customerName, channel, caption, lines, fee, discount, receipt, paidNow }: { customerName: string | null; channel: SalesChannelCode | null; caption: string; lines: Line[]; fee: MoneyString; discount: MoneyString; receipt: Receipt; paidNow?: MoneyString | null }) {
   return (
     <div className="receipt" aria-label="ملخّص الطلب">
       <div className="receipt__head">
@@ -46,6 +46,18 @@ export function OrderReceipt({ customerName, channel, caption, lines, fee, disco
         <b>المجموع</b>
         <Money value={receipt.total} />
       </div>
+      {paidNow && (
+        <>
+          <div className="receipt__row">
+            <span>المدفوع هلأ</span>
+            <Money value={paidNow} tone="pos" />
+          </div>
+          <div className="receipt__row">
+            <span>الباقي عليه</span>
+            <Money value={fromFils(toFils(receipt.total) - toFils(paidNow))} />
+          </div>
+        </>
+      )}
       <div className="receipt__profit">
         <span>
           <Icon name="wallet" size={16} /> ربحك المتوقع

@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { placeLabel } from "@/features/customers";
+import { checkAmount, defaultMethod, recordableMethods } from "@/features/payments";
 import { PAYMENT_METHODS, SALES_CHANNELS, usePaymentMethodSettings, useSalesChannelSettings } from "@/features/settings";
 import { errorMessage } from "@/services/api/apiClient";
 import { parseMoneyInput } from "@/shared/lib/money";
@@ -100,7 +101,12 @@ function OrderForm({ initial, editing }: { initial: OrderFormState; editing?: Or
   );
   const overStock = form.lines.some((l) => l.quantity > lineVariant(l).available);
   const giftMissing = form.isGift && !form.recipientName.trim();
-  const done = [Boolean(c && !c.isArchived), form.lines.length > 0 && !overStock, fee !== null && discount !== null && !receipt.discountTooHigh && !giftMissing, Boolean(channel)];
+  // D-135: an optional deposit with a new order, ≤ the total, with a recordable method (never COD, D-138).
+  const depositMethods = recordableMethods(methodSettings.data?.methods);
+  const depositMethod = form.depositMethod ?? defaultMethod(depositMethods, form.paymentMethod);
+  const depositCheck = !editing && form.depositAmount.trim() ? checkAmount(form.depositAmount, receipt.total) : null;
+  const depositInvalid = depositCheck !== null && (depositCheck.amount === null || depositMethod === null);
+  const done = [Boolean(c && !c.isArchived), form.lines.length > 0 && !overStock, fee !== null && discount !== null && !receipt.discountTooHigh && !giftMissing, Boolean(channel) && !depositInvalid];
   const ready = done.every(Boolean);
 
   const chooseCustomer = (x: CustomerOption) =>
@@ -132,7 +138,8 @@ function OrderForm({ initial, editing }: { initial: OrderFormState; editing?: Or
         toast(`انحفظت تعديلات الطلب #${order.number}`);
         navigate(`/orders/${order.id}`);
       } else {
-        const order = await create.mutateAsync({ ...orderBody(form, channel), customerId: form.customerId!, status });
+        const payment = depositCheck?.amount && depositMethod ? { amount: depositCheck.amount, method: depositMethod } : undefined;
+        const order = await create.mutateAsync({ ...orderBody(form, channel), customerId: form.customerId!, status, payment });
         toast(status === "confirmed" ? `انحفظ الطلب #${order.number} وانحجزت القطع، كل شي بمكانه` : `انحفظ الطلب #${order.number}`);
         navigate(`/orders/${order.id}`, { replace: true });
       }
@@ -194,10 +201,16 @@ function OrderForm({ initial, editing }: { initial: OrderFormState; editing?: Or
             onRemove={(key) => setForm((f) => ({ ...f, lines: f.lines.filter((l) => l.key !== key) }))}
           />
           <OrderDeliverySection done={done[2]!} form={form} set={set} feeInvalid={fee === null} discountInvalid={discount === null} discountTooHigh={receipt.discountTooHigh} />
-          <OrderPaymentSection done={done[3]!} form={form} set={set} methods={methods} />
+          <OrderPaymentSection
+            done={done[3]!}
+            form={form}
+            set={set}
+            methods={methods}
+            deposit={editing ? undefined : { methods: depositMethods, method: depositMethod, error: depositCheck?.error, help: depositCheck?.help || undefined }}
+          />
         </div>
         <aside className="receipt-wrap">
-          <OrderReceipt customerName={c?.name ?? null} channel={channel} caption={editing ? `#${editing.number}` : "اليوم"} lines={form.lines} fee={fee ?? "0"} discount={discount ?? "0"} receipt={receipt} />
+          <OrderReceipt customerName={c?.name ?? null} channel={channel} caption={editing ? `#${editing.number}` : "اليوم"} lines={form.lines} fee={fee ?? "0"} discount={discount ?? "0"} receipt={receipt} paidNow={depositCheck?.amount ?? null} />
           <div className="col" style={{ gap: 8 }}>
             {editing ? (
               <Button size="lg" icon="check" loading={saving} disabled={!ready} onClick={() => void save("new")}>

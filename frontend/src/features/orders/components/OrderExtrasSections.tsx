@@ -47,8 +47,16 @@ export function OrderDeliverySection({ done, form, set, feeInvalid, discountInva
   );
 }
 
-/** Step 4: the expected payment method (enabled methods only; recording payments is Phase 6) and a note. */
-export function OrderPaymentSection({ done, form, set, methods }: { done: boolean; form: OrderFormState; set: Patch; methods: readonly PaymentMethodCode[] }) {
+export interface DepositState {
+  /** Methods a deposit can be recorded with (enabled, never COD, D-138). */
+  methods: readonly PaymentMethodCode[];
+  method: PaymentMethodCode | null;
+  error?: string;
+  help?: string;
+}
+
+/** Step 4: the expected payment method (enabled methods only), an optional deposit for a new order (D-135), and a note. */
+export function OrderPaymentSection({ done, form, set, methods, deposit }: { done: boolean; form: OrderFormState; set: Patch; methods: readonly PaymentMethodCode[]; deposit?: DepositState }) {
   return (
     <section className={`card osec${done ? " is-done" : ""}`} id="s4" aria-labelledby="s4-title">
       <div className="osec__h">
@@ -64,8 +72,29 @@ export function OrderPaymentSection({ done, form, set, methods }: { done: boolea
             </button>
           ))}
         </div>
-        <span className="field__help">تسجيل المبالغ المدفوعة بيكون من شاشة المدفوعات لما تجهز.</span>
+        <span className="field__help">«عند الاستلام» يعني المندوب بيجمع المبلغ، وبيضل عند شركة التوصيل لحد التسوية.</span>
       </div>
+      {deposit && (
+        <div className="grid g-2" style={{ marginTop: 12 }}>
+          <MoneyField label="المدفوع هلأ (عربون)" placeholder="0.00" value={form.depositAmount} onChange={(e) => set({ depositAmount: e.target.value })} error={deposit.error} help={deposit.help ?? "اختياري: إذا دفع جزء أو كل المبلغ وقت الطلب"} />
+          {form.depositAmount.trim() !== "" && (
+            <div className="field">
+              <span className="field__label">طريقة دفع العربون</span>
+              {deposit.methods.length === 0 ? (
+                <span className="field__error">فعّل طريقة دفع غير «عند الاستلام» من الإعدادات.</span>
+              ) : (
+                <div className="row wrap" style={{ gap: 6 }} role="radiogroup" aria-label="طريقة دفع العربون">
+                  {deposit.methods.map((m) => (
+                    <button key={m} type="button" role="radio" aria-checked={deposit.method === m} className={`chip${deposit.method === m ? " is-selected" : ""}`} onClick={() => set({ depositMethod: m })}>
+                      {paymentMethodLabel[m]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       <div style={{ marginTop: 12 }}>
         <TextField label="ملاحظة على الطلب" maxLength={500} value={form.note} onChange={(e) => set({ note: e.target.value })} />
       </div>

@@ -96,7 +96,7 @@ export const QUICK_ADD: readonly { icon: IconName; label: string; to: string; to
   { icon: "receipt", label: "طلب", to: "/orders/new", tone: "tone-olive" },
   { icon: "package", label: "منتج", to: "/products/new", tone: "tone-apricot" },
   { icon: "users", label: "عميل", to: "/customers/new", tone: "tone-blue" },
-  { icon: "cash", label: "دفعة", to: "/finance/payments", tone: "tone-green" },
+  { icon: "cash", label: "دفعة", to: "/finance/payments?pay=1", tone: "tone-green" },
   { icon: "wallet", label: "مصروف", to: "/finance/expenses", tone: "tone-brick" },
   { icon: "truck", label: "استلام بضاعة", to: "/inventory/receive", tone: "tone-olive" },
 ];

@@ -820,6 +820,110 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                     b.ToTable("OrderStatusLogs", (string)null);
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Payments.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("PaidOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<Guid?>("ReversalOperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReversalReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("ReversedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("BusinessId", "CustomerId");
+
+                    b.HasIndex("BusinessId", "OperationId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Payments_BusinessId_OperationId");
+
+                    b.HasIndex("BusinessId", "PaidOn");
+
+                    b.ToTable("Payments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Payments_Amount", "[Amount] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Payments.PaymentAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsReversed")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("OrderId"), new[] { "Amount", "IsReversed" });
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("PaymentAllocations", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PaymentAllocations_Amount", "[Amount] > 0");
+                        });
+                });
+
             modelBuilder.Entity("Lamma.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1237,6 +1341,41 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Payments.Payment", b =>
+                {
+                    b.HasOne("Lamma.Domain.Businesses.Business", null)
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Customers.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Orders.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Payments.PaymentAllocation", b =>
+                {
+                    b.HasOne("Lamma.Domain.Orders.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Payments.Payment", null)
+                        .WithMany("Allocations")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Lamma.Infrastructure.Persistence.Idempotency.IdempotencyRecord", b =>
                 {
                     b.HasOne("Lamma.Domain.Businesses.Business", null)
@@ -1323,6 +1462,11 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                     b.Navigation("Items");
 
                     b.Navigation("StatusLogs");
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Payments.Payment", b =>
+                {
+                    b.Navigation("Allocations");
                 });
 #pragma warning restore 612, 618
         }

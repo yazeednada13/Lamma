@@ -256,4 +256,34 @@ All endpoints need an onboarded business. Another business's order, customer or 
 - **Undo** (D-122) reverts only the latest change, within 5 minutes of the server clock, with reverse movements labelled «تراجع #1001». An undo cannot be undone; the creation cannot be undone.
 - **Totals** are computed on the server: `total = itemsSubtotal + deliveryFee − discount`, `0 ≤ discount ≤ itemsSubtotal` (D-031, D-126). `profit = itemsSubtotal − discount − itemsCost`; the delivery fee is shown separately (D-125). `unitPrice` and `unitCost` are snapshots taken when the order is saved (D-032).
 - **Numbers** are per business from 1001 (D-123). A lost race on a stock row is retried once against fresh data, so the loser of the last piece gets `stock.not_available`.
-- Product details now include `sold` (Σ quantities on delivered orders). Payment status and recording payments arrive in Phase 6.
+- Product details now include `sold` (Σ quantities on delivered orders). Payment fields were added in Phase 6 (§16).
+
+## 16. Phase 6 contracts: Payments & receivables (implemented, 2026-11-21)
+All endpoints need an onboarded business. Another business's order, customer or payment returns 404. The three POSTs require an `Idempotency-Key` header (D-112). Money goes in with at most 2 decimals and comes out as 3-decimal strings (D-080). `paidOn` is a business-local date `yyyy-MM-dd` (Asia/Amman).
+
+| Method & path | Request | Success | Errors |
+|---|---|---|---|
+| POST `orders/{id}/payments` | `{ amount, method, paidOn, note? ≤200 }` | 200 `PaymentResult` | 404 `order.not_found` · 409 `order.not_payable` (cancelled/returned) · 409 `payment.exceeds_remaining` · 422 `payment.method_not_allowed` (COD or disabled) · 422 `payment.invalid_date` (future, or before the order's creation date) · 422 |
+| POST `customers/{id}/payments` | same body | 200 `PaymentResult` (FIFO allocations) | 404 `customer.not_found` · 409 `payment.exceeds_balance` · 422 as above |
+| POST `payments/{id}/reverse` | `{ reason? ≤200 }` | 200 `PaymentResult` | 404 `payment.not_found` · 409 `payment.already_reversed` |
+| GET `payments` | `from`/`to` (paidOn), `method`, `customerId`, `orderId` (any allocation on it), `page`, `pageSize ≤ 100` | 200 paged `Payment`, newest `paidOn` first; reversed ones included and flagged | 422 |
+| GET `payments/{id}` | — | 200 `Payment` | 404 `payment.not_found` |
+| GET `finance/receivables` | `search` (order number, customer name, ≥ 3 phone digits), `bucket=fresh\|late\|overdue`, `customerId`, `page`, `pageSize` | 200 paged `{ orderId, number, customerId, customerName, customerPhone, total, paid, remaining, paymentStatus, deliveredAt, ageDays, bucket }`, oldest delivery first | 422 |
+| GET `finance/receivables/aging` | — | 200 `{ total, count, customerCount, fresh{ amount, count }, late{…}, overdue{…}, courierHeld, courierHeldCount }` | — |
+
+**`Payment`:** `id, customerId, customerName, orderId (null = customer-level), orderNumber, amount, method, paidOn, recordedAt, note, isReversed, reversedAt, reversalReason, allocations[{ orderId, orderNumber, amount }]`.
+**`PaymentResult`:** `{ payment: Payment, orders[{ orderId, number, total, paid, remaining, paymentStatus }] (every order the payment touches), customerBalance }`.
+
+**Changes to existing contracts:**
+- `POST orders` accepts an optional `payment: { amount, method }`: a deposit dated today, saved in the order's transaction (D-135). Errors: 409 `payment.exceeds_remaining`, 422 `payment.method_not_allowed`.
+- `POST orders/{id}/status` to `cancelled` returns 409 `order.has_payments` while the order has active payments (D-137).
+- `PUT orders/{id}` returns 409 `order.total_below_paid` when the new total would be below what is paid (D-132).
+- Order list rows gain `paid, remaining, paymentStatus`. `OrderDetails` gains `paid, remaining, paymentStatus, payments[{ paymentId, amount (on this order), paymentAmount, method, paidOn, recordedAt, note, isCustomerLevel, isReversed, reversedAt, reversalReason }]`. The UI builds the payment entries of the timeline from `payments`.
+- Customer `balanceDue` (list, details, summary `totalDue`/`customersWithDue`, segment `owes`) is real now (D-134).
+
+**Rules:**
+- **Payment status** (D-133) is derived: `paid` if remaining ≤ 0; `courier` if the expected method is COD, the order is with the courier or delivered and something is due; `partial` if anything is paid; otherwise `unpaid`. Cancelled orders have `paymentStatus: null`.
+- **Receivable** (D-134) = delivered, not COD, remaining > 0. Customer balance = Σ their remaining. Age = business today − business-local delivery date; buckets `fresh` 0–7, `late` 8–30, `overdue` > 30 days (D-038). Courier-held money is reported separately.
+- **Methods** (D-138): enabled methods only, never `cod`. **Dates** (D-136): back-dating allowed, never the future.
+- **Concurrency:** each write locks what it reads (the order; or the customer and then their delivered orders; or the payment) until commit, so concurrent payments can never exceed what is due. The loser gets `payment.exceeds_remaining` or `payment.exceeds_balance`.
+- **Reversal** (D-136) keeps the payment in history and removes it (and all its allocations) from every sum. It is also the «تراجع» of the payment toast.

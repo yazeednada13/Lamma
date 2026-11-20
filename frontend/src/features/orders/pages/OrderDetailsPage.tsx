@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { phoneDisplay, placeLabel } from "@/features/customers";
+import { OrderPaymentCard } from "@/features/payments";
 import { errorMessage } from "@/services/api/apiClient";
 import { toFils } from "@/shared/lib/money";
 import { Button, ButtonLink } from "@/shared/ui/Button";
@@ -50,7 +51,17 @@ export function OrderDetailsPage() {
     ...o.allowedStatuses
       .filter((s) => s !== o.nextStatus && s !== "cancelled")
       .map((s) => ({ label: `نقل مباشرة لـ «${STATUS[s].label}»`, icon: STATUS[s].icon, danger: false, onSelect: () => void move(o, s) })),
-    ...(o.allowedStatuses.includes("cancelled") ? [{ label: "إلغاء الطلب", icon: "x" as const, danger: true, onSelect: () => void cancel(o) }] : []),
+    ...(o.allowedStatuses.includes("cancelled")
+      ? [
+          {
+            label: "إلغاء الطلب",
+            icon: "x" as const,
+            danger: true,
+            // D-137: a paid order is cancelled only after its payments are reversed (refunds come with returns).
+            onSelect: () => (toFils(o.paid) > 0 ? toast("على الطلب دفعات. ألغِ الدفعات من بطاقة «الدفع» أول، بعدين ألغِ الطلب.", { type: "error" }) : void cancel(o)),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -164,6 +175,7 @@ export function OrderDetailsPage() {
           <OrderTimeline order={o} />
         </div>
         <div className="col" style={{ gap: 16 }}>
+          <OrderPaymentCard order={o} />
           <article className="card">
             <div className="shead">
               <div className="shead__t">

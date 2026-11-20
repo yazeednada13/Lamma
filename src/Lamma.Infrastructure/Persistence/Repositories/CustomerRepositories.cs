@@ -54,7 +54,8 @@ internal sealed class CustomerQueries(LammaDbContext db) : ICustomerQueries
     /// <summary>
     /// Customers with their derived figures (D-033, Phase 5 rules): order count = non-cancelled orders; total spent =
     /// Σ total of delivered orders; last order = latest non-cancelled order. The single place where stats come from.
-    /// The balance due stays 0 until payments exist (Phase 6).
+    /// Balance due (D-134) = Σ remaining over delivered, non-COD orders = Σ their totals − Σ their active allocations
+    /// (paid never exceeds the total, D-132). Same predicate as <c>PaymentQueries.Receivables</c>.
     /// </summary>
     private IQueryable<CustomerRow> Rows() => db.Customers.AsNoTracking().Select(c => new CustomerRow
     {
@@ -70,7 +71,12 @@ internal sealed class CustomerQueries(LammaDbContext db) : ICustomerQueries
         UpdatedAt = c.UpdatedAt,
         OrderCount = db.Orders.Count(o => o.CustomerId == c.Id && o.Status != OrderStatus.Cancelled),
         TotalSpent = db.Orders.Where(o => o.CustomerId == c.Id && o.Status == OrderStatus.Delivered).Sum(o => (decimal?)o.Total) ?? 0m,
-        BalanceDue = 0m, // payments arrive in Phase 6
+        BalanceDue = (db.Orders
+                .Where(o => o.CustomerId == c.Id && o.Status == OrderStatus.Delivered && (o.PaymentMethodHint == null || o.PaymentMethodHint != PaymentMethod.Cod))
+                .Sum(o => (decimal?)o.Total) ?? 0m)
+            - (db.PaymentAllocations
+                .Where(a => !a.IsReversed && db.Orders.Any(o => o.Id == a.OrderId && o.CustomerId == c.Id && o.Status == OrderStatus.Delivered && (o.PaymentMethodHint == null || o.PaymentMethodHint != PaymentMethod.Cod)))
+                .Sum(a => (decimal?)a.Amount) ?? 0m),
         LastOrderAt = db.Orders.Where(o => o.CustomerId == c.Id && o.Status != OrderStatus.Cancelled).Max(o => (DateTime?)o.CreatedAt),
     });
 

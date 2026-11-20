@@ -5,7 +5,6 @@
 export const COMING_SOON_ROUTES: readonly { path: string; title: string; phase: number }[] = [
   { path: "orders/preorders", title: "الطلبات المسبقة", phase: 8 },
   { path: "finance", title: "نظرة مالية", phase: 7 },
-  { path: "finance/payments", title: "المدفوعات والذمم", phase: 6 },
   { path: "finance/courier", title: "شركة التوصيل", phase: 7 },
   { path: "finance/expenses", title: "المصاريف", phase: 7 },
   { path: "reports", title: "مركز التقارير", phase: 10 },

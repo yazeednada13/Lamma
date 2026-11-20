@@ -41,5 +41,6 @@ public static class DependencyInjection
             .AddScoped<IProductImageService, ProductImageService>()
             .AddScoped<Inventory.IInventoryService, Inventory.InventoryService>()
             .AddScoped<Customers.ICustomerService, Customers.CustomerService>()
-            .AddScoped<Orders.IOrderService, Orders.OrderService>();
+            .AddScoped<Orders.IOrderService, Orders.OrderService>()
+            .AddScoped<Payments.IPaymentService, Payments.PaymentService>();
 }
