@@ -4,6 +4,7 @@ import { errorMessage } from "@/services/api/apiClient";
 import { Badge } from "@/shared/ui/Badge";
 import { Illustration } from "@/shared/ui/brand/Illustration";
 import { Button, IconButton } from "@/shared/ui/Button";
+import { useConfirm } from "@/shared/ui/confirm/ConfirmProvider";
 import { Skeleton } from "@/shared/ui/feedback/Skeleton";
 import { FormAlert } from "@/shared/ui/form/FormAlert";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
@@ -21,6 +22,7 @@ export function ProductTemplatesSection() {
   const save = useSaveTemplateField();
   const remove = useDeleteTemplateField();
   const toast = useToast();
+  const confirm = useConfirm();
   const [selected, setSelected] = useState("clothing");
   const [drawer, setDrawer] = useState<TemplateField | "new" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -61,12 +63,16 @@ export function ProductTemplatesSection() {
                       label={`حذف ${f.labelAr}`}
                       onClick={async () => {
                         setError(null);
-                        try {
-                          await remove.mutateAsync({ templateCode: template.code, key: f.key });
-                          toast(`انحذف حقل «${f.labelAr}»`);
-                        } catch (e) {
-                          setError(errorMessage(e));
-                        }
+                        const done = await confirm({
+                          tone: "danger",
+                          icon: "trash",
+                          title: "حذف الحقل؟",
+                          subject: `${f.labelAr} · قالب ${template.nameAr}`,
+                          message: "الحقل بيختفي من نموذج المنتجات. القيم اللي انكتبت قبل بتضل محفوظة بس ما بتظهر.",
+                          confirmLabel: "حذف",
+                          action: () => remove.mutateAsync({ templateCode: template.code, key: f.key }),
+                        });
+                        if (done) toast(`انحذف حقل «${f.labelAr}»`);
                       }}
                     />
                   </>

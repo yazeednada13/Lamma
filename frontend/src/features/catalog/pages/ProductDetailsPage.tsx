@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router";
 import { AdjustStockDialog } from "@/features/inventory";
 import { errorMessage } from "@/services/api/apiClient";
 import { Button, ButtonLink } from "@/shared/ui/Button";
+import { useConfirm } from "@/shared/ui/confirm/ConfirmProvider";
 import { EmptyState } from "@/shared/ui/feedback/EmptyState";
 import { ErrorState } from "@/shared/ui/feedback/ErrorState";
 import { PageSkeleton } from "@/shared/ui/feedback/Skeleton";
@@ -27,6 +28,7 @@ export function ProductDetailsPage() {
   const archiveVariant = useSetVariantArchived();
   const updateVariant = useUpdateVariant();
   const toast = useToast();
+  const confirm = useConfirm();
   const [editing, setEditing] = useState<ProductVariant | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [adjusting, setAdjusting] = useState(false);
@@ -76,13 +78,30 @@ export function ProductDetailsPage() {
             <ButtonLink to={`/products/${data.id}/edit`} variant="outline" icon="pencil">
               تعديل
             </ButtonLink>
-            <Button
-              variant={data.isArchived ? "primary" : "ghost"}
-              loading={archive.isPending}
-              onClick={() => void run(() => archive.mutateAsync({ id: data.id, archived: !data.isArchived }), data.isArchived ? `رجع «${data.name}» للمنتجات` : `انأرشف «${data.name}»`)}
-            >
-              {data.isArchived ? "استرجع المنتج" : "أرشف"}
-            </Button>
+            {data.isArchived ? (
+              <Button variant="primary" icon="arrow-back-up" loading={archive.isPending} onClick={() => void run(() => archive.mutateAsync({ id: data.id, archived: false }), `رجع «${data.name}» للمنتجات`)}>
+                استرجاع المنتج
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                icon="archive"
+                onClick={async () => {
+                  const done = await confirm({
+                    tone: "warning",
+                    icon: "archive",
+                    title: "أرشفة المنتج؟",
+                    subject: data.name,
+                    message: "رح يختفي من المنتجات ومن الاختيار بالطلبات، ومخزونه وحركاته بضلوا محفوظين. بتقدر ترجّعه بأي وقت من «المؤرشفة».",
+                    confirmLabel: "أرشفة",
+                    action: () => archive.mutateAsync({ id: data.id, archived: true }),
+                  });
+                  if (done) toast(`انأرشف «${data.name}»`);
+                }}
+              >
+                أرشفة
+              </Button>
+            )}
           </>
         }
       />
@@ -103,9 +122,23 @@ export function ProductDetailsPage() {
             product={data}
             busyId={archiveVariant.isPending ? (archiveVariant.variables?.variantId ?? null) : null}
             onEdit={setEditing}
-            onToggleArchived={(v) =>
-              void run(() => archiveVariant.mutateAsync({ id: data.id, variantId: v.id, archived: !v.isArchived }), v.isArchived ? `رجعت النسخة ${v.label}` : `انأرشفت النسخة ${v.label}`)
-            }
+            onToggleArchived={async (v) => {
+              if (v.isArchived) {
+                void run(() => archiveVariant.mutateAsync({ id: data.id, variantId: v.id, archived: false }), `رجعت النسخة ${v.label}`);
+                return;
+              }
+
+              const done = await confirm({
+                tone: "warning",
+                icon: "archive",
+                title: "أرشفة النسخة؟",
+                subject: `${data.name} · ${v.label}`,
+                message: "النسخة بتختفي من الاختيار ومن مجموع المخزون، وحركاتها بتضل محفوظة. بتقدر ترجّعها بأي وقت.",
+                confirmLabel: "أرشفة",
+                action: () => archiveVariant.mutateAsync({ id: data.id, variantId: v.id, archived: true }),
+              });
+              if (done) toast(`انأرشفت النسخة ${v.label}`);
+            }}
           />
           <EmptyState title="حركة البيع" text="رح تظهر مبيعات المنتج هون بعد ما تبلّش تسجّل طلبات." />
         </div>

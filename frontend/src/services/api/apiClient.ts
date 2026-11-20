@@ -14,6 +14,8 @@ export interface ProblemBody {
   code?: string;
   traceId?: string;
   errors?: Record<string, string[]>;
+  /** Extra members of a specific error (e.g. `existingCustomerId` on `customer.duplicate_phone`). */
+  [extension: string]: unknown;
 }
 
 export class ApiError extends Error {
@@ -21,14 +23,17 @@ export class ApiError extends Error {
   readonly code: string;
   readonly fieldErrors: Record<string, string[]>;
   readonly traceId?: string;
+  /** The full ProblemDetails body, for error-specific extensions. */
+  readonly problem: ProblemBody;
 
-  constructor(status: number, code: string, message: string, fieldErrors: Record<string, string[]> = {}, traceId?: string) {
+  constructor(status: number, code: string, message: string, fieldErrors: Record<string, string[]> = {}, traceId?: string, problem: ProblemBody = {}) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
     this.fieldErrors = fieldErrors;
     this.traceId = traceId;
+    this.problem = problem;
   }
 
   get isNetworkError(): boolean {
@@ -125,6 +130,7 @@ async function toApiError(response: Response): Promise<ApiError> {
     problem.detail ?? GENERIC_ERROR,
     problem.errors ?? {},
     problem.traceId,
+    problem,
   );
 }
 

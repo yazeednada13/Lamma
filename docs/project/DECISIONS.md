@@ -102,6 +102,7 @@ Sources:
 | D-117 | **City** = optional choice of the 12 Jordanian governorates (amman, irbid, zarqa, balqa, mafraq, jerash, ajloun, madaba, karak, tafilah, maan, aqaba); **Area** = optional free text ≤ 100 | F (2026-11-20, Phase 4 plan) |
 | D-118 | **Customer fields:** name (required ≤ 100), mobile, channel (required, one of the 4 sales channels; defaults to the first enabled), city, area, notes ≤ 500. Archive/restore only, never hard-deleted | F (2026-11-20, Phase 4 plan) |
 | D-119 | The prototype's **WhatsApp button on the customer profile is not built** (WhatsApp sharing is out of V1, R-001) | F (2026-11-20, Phase 4 plan) |
+| D-120 | **One confirmation dialog for every confirm-worthy action** (archive, delete, and similar): a centered Lamma-styled popup (tone band, icon seal, subject chip, short consequence text, full-width confirm/cancel), the shared `useConfirm()` (`shared/ui/confirm/ConfirmProvider.tsx`). Archive actions use an archive icon and the label «أرشفة»; restore needs no confirmation | F (2026-11-20, founder request during the Phase 4 review) |
 | D-090 | **Default variant:** every product has at least one ProductVariant. A simple product gets one hidden default variant with no option values. Stock, movements and order items always reference a variant (approves P-006) | F (2026-11-17, Phase 2 plan) |
 | D-091 | **Six system product templates:** `clothing` ملابس, `perfume` عطور, `beauty` تجميل, `jewelry` إكسسوارات, `gift` بوكس هدايا, `other` عام. Default axes and fields per PHASE-PLANS Phase 2 §2.1. Business type → template: clothing, kids → clothing; perfume → perfume; beauty → beauty; accessories → jewelry; gifts → gift; all other types → other | F (2026-11-17, Phase 2 plan) |
 | D-092 | **Templates are system-defined and fixed (defined in code).** A business may add up to 20 custom fields per template. All templates are always available (no enable/disable) | F (2026-11-17, Phase 2 plan) |
@@ -186,6 +187,7 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | 2026-11-10 | D-088 added: keep DTO + ProblemDetails, no response envelope |
 | 2026-11-17 | D-089 added: feature-based frontend architecture; FRONTEND-ARCHITECTURE.md is authoritative |
 | 2026-11-17 | D-090–D-105 added: Phase 2 (Catalog) decisions; the founder accepted the recommended answers and approved the Phase 2 plan |
+| 2026-11-20 | D-120 added: unified confirmation dialog for every confirm-worthy action (founder request) |
 | 2026-11-20 | D-114–D-119 added: Phase 4 (Customers) decisions; the founder approved the Phase 4 plan and confirmed recording them |
 | 2026-11-18 | D-107–D-113 added: Phase 3 (Inventory) decisions; the founder approved the Phase 3 plan with the recommended answers |
 | 2026-11-18 | D-106 added: lean verification to save tokens (focused backend tests, one full run; frontend checked manually by the founder with a checklist) |

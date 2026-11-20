@@ -35,6 +35,8 @@ describe("product details", () => {
     const { user } = renderApp(`/products/${p.id}`);
 
     await user.click(await screen.findByRole("button", { name: "أرشف 10 مل" }));
+    const confirmVariant = await screen.findByRole("alertdialog", { name: "أرشفة النسخة؟" });
+    await user.click(within(confirmVariant).getByRole("button", { name: "أرشفة" }));
     expect(await screen.findByText("انأرشفت النسخة 10 مل")).toBeInTheDocument();
     expect(screen.getByText("مؤرشفة")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "أرشف 50 مل" })).not.toBeInTheDocument(); // the last active variant stays
@@ -53,9 +55,14 @@ describe("product details", () => {
     const p = seedProduct(catalog(), { name: "كريم", template: "beauty" });
     const { user } = renderApp(`/products/${p.id}`);
 
-    await user.click(await screen.findByRole("button", { name: "أرشف" }));
+    await user.click(await screen.findByRole("button", { name: "أرشفة" }));
+    const dialog = await screen.findByRole("alertdialog", { name: "أرشفة المنتج؟" });
+    await user.click(within(dialog).getByRole("button", { name: "إلغاء" })); // cancel changes nothing
+    expect(screen.queryByText("مؤرشف")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "أرشفة" }));
+    await user.click(within(await screen.findByRole("alertdialog")).getByRole("button", { name: "أرشفة" }));
     expect(await screen.findByText("مؤرشف")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "استرجع المنتج" }));
+    await user.click(screen.getByRole("button", { name: "استرجاع المنتج" }));
     expect(await screen.findByText(/رجع «كريم» للمنتجات/)).toBeInTheDocument();
   });
 

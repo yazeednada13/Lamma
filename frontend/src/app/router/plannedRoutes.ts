@@ -7,8 +7,6 @@ export const COMING_SOON_ROUTES: readonly { path: string; title: string; phase: 
   { path: "orders/board", title: "لوحة الحالات", phase: 5 },
   { path: "orders/new", title: "طلب جديد", phase: 5 },
   { path: "orders/preorders", title: "الطلبات المسبقة", phase: 8 },
-  { path: "customers", title: "العملاء", phase: 4 },
-  { path: "customers/new", title: "عميل جديد", phase: 4 },
   { path: "finance", title: "نظرة مالية", phase: 7 },
   { path: "finance/payments", title: "المدفوعات والذمم", phase: 6 },
   { path: "finance/courier", title: "شركة التوصيل", phase: 7 },
