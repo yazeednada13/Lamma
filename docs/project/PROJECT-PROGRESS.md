@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 3: Inventory, closed (merged into `develop`)** |
-| Current gate | **Gate 8: Next phase.** Waiting for the founder's `Next Phase` to start Phase 4 (Customers) planning |
+| Current phase | **Phase 4: Customers** |
+| Current gate | **Gate 3: waiting for `Backend`.** The Phase 4 plan is approved (D-114–D-119) |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Create the Phase 4 branch from the latest `develop`, commit these doc updates on it, and write `Next Phase` (open questions OQ-030…OQ-033) |
+| Next expected founder action | Commit these doc updates, then write `Backend` to start Phase 4 backend tasks 4.A1–4.A4 |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -30,7 +30,7 @@
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
 | 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
-| 4 Customers | Pending |
+| 4 Customers | **Plan approved (2026-11-20); waiting for `Backend`** |
 | 5 Orders core | Pending |
 | 6 Payments & receivables | Pending |
 | 7 Courier & expenses | Pending |
@@ -102,3 +102,4 @@
 | 2026-11-18 | Phase 3 Frontend 3.B1–3.B7 implemented; automated checks pass |
 | 2026-11-20 | Founder's manual browser check passed (21/21) |
 | 2026-11-20 | Founder pushed the Phase 3 frontend and merged the Phase 3 PR into `develop`; Phase 3 closed, at gate 8 |
+| 2026-11-20 | Founder created `feature/phase4-customers`; Phase 4 plan approved and decisions D-114–D-119 recorded on the founder's confirmation; waiting at gate 3 |

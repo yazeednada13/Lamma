@@ -278,7 +278,23 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 ---
 
 ## Phase 4 — Customers
-**Objective:** customers, quick add, segments, profile. **Depends on:** 1 (it can follow Phase 3). **Blocking:** OQ-030…033.
+**Objective:** customers, quick add, segments, profile. **Depends on:** 1 (it can follow Phase 3). **Blocking:** none (OQ-030…033 resolved as D-114–D-117).
+
+**Approved plan (2026-11-20):** [`PHASE-4-PLAN.md`](PHASE-4-PLAN.md), tasks 4.A1–4.A4 and 4.B1–4.B4, decisions D-114–D-119, verification per D-106. It supersedes the draft tables below.
+
+### Phase 4 gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-20 | `feature/phase4-customers` |
+| 2. Plan approved | ☑ | 2026-11-20 | D-114–D-119 |
+| 3. `Backend` started | ☐ | | |
+| 4. Backend pushed (founder confirmed) | ☐ | | migration `AddCustomers` |
+| 5. `Frontend` started | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
+
+**Draft task tables (Phase 0, superseded by the approved plan):**
 
 | ID | Backend task | Acceptance / tests |
 |---|---|---|
