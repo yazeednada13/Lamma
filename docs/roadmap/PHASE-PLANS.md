@@ -368,8 +368,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-21 | 6.A1–6.A7 implemented and verified |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-21 | migration `AddPayments` applied (verified read-only) |
 | 5. `Frontend` started | ☑ | 2026-11-21 | 6.B1–6.B5 implemented; automated checks pass |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
-| 7. PR merged into `develop` (founder) | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-21 | Smoke test on the real API passed |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-21 | Founder-reported |
 | 8. `Next Phase` given | ☐ | | |
 
 **Draft task tables (Phase 0, superseded by the approved plan):**

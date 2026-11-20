@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 6: Payments & receivables** (branch `feature/phase6-payments`) |
-| Current gate | **Gate 6: Frontend checkpoint.** 6.B1–6.B5 implemented; automated checks pass; waiting for the founder's manual check ([PHASE-6-PLAN.md](../roadmap/PHASE-6-PLAN.md)) |
-| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21) |
+| Current phase | **Phase 6: Payments & receivables, closed (merged into `develop`)** |
+| Current gate | **Gate 8: Next phase.** Waiting for the founder's `Next Phase` to start Phase 7 (Courier & expenses) planning |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Run the Phase 6 manual checklist in the browser, then push the frontend |
+| Next expected founder action | Create the Phase 7 branch from the latest `develop`, commit these doc updates, and write `Next Phase` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -32,7 +32,7 @@
 | 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
 | 4 Customers | **Merged into develop (founder-reported 2026-11-20)** |
 | 5 Orders core | **Merged into develop (founder-reported 2026-11-21)** |
-| 6 Payments & receivables | **Frontend done (2026-11-21); at gate 6** |
+| 6 Payments & receivables | **Merged into develop (founder-reported 2026-11-21)** |
 | 7 Courier & expenses | Pending |
 | 8 Returns & pre-orders | Pending |
 | 9 Dashboard | Pending |
@@ -128,3 +128,4 @@
 | 2026-11-21 | Phase 6 Backend 6.A1–6.A7 implemented and verified; waiting at gate 4 (migration `AddPayments`) |
 | 2026-11-21 | Founder applied `AddPayments` and pushed the backend; `Frontend` given |
 | 2026-11-21 | Phase 6 Frontend 6.B1–6.B5 implemented; automated checks pass; waiting at gate 6 |
+| 2026-11-21 | Live smoke test on the real API passed (aging, courier-held, drawer limits and methods, save, undo); founder pushed the frontend and merged the Phase 6 PR into `develop`; Phase 6 closed, at gate 8 |
