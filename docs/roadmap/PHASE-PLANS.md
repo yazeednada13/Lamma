@@ -16,7 +16,7 @@ Copy this block into each phase when it starts, and keep it current.
 | 3. `Backend` started | ☐ | | |
 | 4. Backend pushed (founder confirmed) | ☐ | | migrations applied by founder: ☐ |
 | 5. `Frontend` started | ☐ | | |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-21 | manual checklist passed |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |
 
