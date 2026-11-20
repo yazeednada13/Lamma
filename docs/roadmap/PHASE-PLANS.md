@@ -16,7 +16,7 @@ Copy this block into each phase when it starts, and keep it current.
 | 3. `Backend` started | ☐ | | |
 | 4. Backend pushed (founder confirmed) | ☐ | | migrations applied by founder: ☐ |
 | 5. `Frontend` started | ☐ | | |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-21 | manual checklist passed |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |
 
@@ -290,8 +290,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-20 | 4.A1–4.A4 done in one run (D-087) |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-20 | migration `AddCustomers` applied by the founder (verified read-only) |
 | 5. `Frontend` started | ☑ | 2026-11-20 | 4.B1–4.B4 done in one run; verification per D-106 |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
-| 7. PR merged into `develop` (founder) | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-20 | Founder review approved |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-20 | Founder-reported |
 | 8. `Next Phase` given | ☐ | | |
 
 **Draft task tables (Phase 0, superseded by the approved plan):**
@@ -313,7 +313,23 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 ---
 
 ## Phase 5 — Orders core
-**Objective:** order creation, lifecycle, and the inventory effects, which make up the core business engine. **Depends on:** 2, 3, 4. **Blocking:** OQ-040…049.
+**Objective:** order creation, lifecycle, and the inventory effects, which make up the core business engine. **Depends on:** 2, 3, 4. **Blocking:** none (OQ-040…049 resolved as D-121–D-130).
+
+**Approved plan (2026-11-20):** [`PHASE-5-PLAN.md`](PHASE-5-PLAN.md), tasks 5.A1–5.A9 and 5.B1–5.B6, decisions D-121–D-130, verification per D-106. It supersedes the draft tables below.
+
+### Phase 5 gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-20 | `feature/phase5-orders` |
+| 2. Plan approved | ☑ | 2026-11-20 | D-121–D-130 |
+| 3. `Backend` started | ☑ | 2026-11-20 | 5.A1–5.A9 implemented and verified |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-20 | migration `AddOrders` applied |
+| 5. `Frontend` started | ☑ | 2026-11-20 | 5.B1–5.B6 implemented; automated checks pass |
+| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
+
+**Draft task tables (Phase 0, superseded by the approved plan):**
 
 | ID | Backend task | Acceptance / tests |
 |---|---|---|

@@ -3,9 +3,8 @@ import { Link, useParams } from "react-router";
 import { channelLabel } from "@/features/settings";
 import { errorMessage } from "@/services/api/apiClient";
 import { formatMoneyNumber, toFils } from "@/shared/lib/money";
-import { Button } from "@/shared/ui/Button";
+import { Button, ButtonLink } from "@/shared/ui/Button";
 import { useConfirm } from "@/shared/ui/confirm/ConfirmProvider";
-import { EmptyState } from "@/shared/ui/feedback/EmptyState";
 import { ErrorState } from "@/shared/ui/feedback/ErrorState";
 import { PageSkeleton } from "@/shared/ui/feedback/Skeleton";
 import { FormAlert } from "@/shared/ui/form/FormAlert";
@@ -14,14 +13,15 @@ import { MetricCard } from "@/shared/ui/MetricCard";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
 import { useCustomer, useSetCustomerArchived } from "../api/customersApi";
+import type { CustomersSlots } from "../slots";
 import { CustomerAvatar, SegmentTags } from "../components/CustomerBits";
 import { CustomerFormDrawer } from "../components/CustomerFormDrawer";
 import { phoneDisplay, placeLabel } from "../domain/customerDomain";
 
 const date = new Intl.DateTimeFormat("ar-JO-u-nu-latn", { day: "numeric", month: "long", timeZone: "UTC" });
 
-/** Customer profile (prototype `#/customers/:id`). Orders and payments arrive in Phases 5–6 (D-119: no WhatsApp button). */
-export function CustomerProfilePage() {
+/** Customer profile (prototype `#/customers/:id`). The orders section comes from the orders feature (D-119: no WhatsApp button). */
+export function CustomerProfilePage({ ordersSection }: { ordersSection?: CustomersSlots["customerOrders"] }) {
   const { id } = useParams();
   const customer = useCustomer(id);
   const archive = useSetCustomerArchived();
@@ -105,9 +105,11 @@ export function CustomerProfilePage() {
           {c.notes && <p className="caption" style={{ marginTop: 8 }}>{c.notes}</p>}
         </div>
         <div className="chero__acts">
-          <Button icon="plus" disabled title="قريبًا">
-            طلب جديد <span className="caption">(قريبًا)</span>
-          </Button>
+          {!c.isArchived && (
+            <ButtonLink to={`/orders/new?customerId=${c.id}`} icon="plus">
+              طلب جديد
+            </ButtonLink>
+          )}
           <Button variant="outline" icon="pencil" onClick={() => setEditing(true)}>
             تعديل
           </Button>
@@ -135,15 +137,7 @@ export function CustomerProfilePage() {
           foot={toFils(c.balanceDue) > 0 ? "من طلبات غير مدفوعة" : "ما عليه إشي"}
         />
       </div>
-      <section>
-        <div className="shead">
-          <div className="shead__t">
-            <span className="overline">{c.orderCount} طلب</span>
-            <h2>الطلبات</h2>
-          </div>
-        </div>
-        <EmptyState title="لسا ما في طلبات" text="بتظهر طلبات العميل هون من أول طلب." />
-      </section>
+      {ordersSection?.({ customerId: c.id, orderCount: c.orderCount })}
       <CustomerFormDrawer
         open={editing}
         customer={c}

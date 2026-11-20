@@ -18,9 +18,10 @@ import { ProductHero } from "../components/ProductHero";
 import { VariantEditDrawer } from "../components/VariantEditDrawer";
 import { VariantsCard } from "../components/VariantsCard";
 import { VariantStockMap } from "../components/VariantStockMap";
+import type { CatalogSlots } from "../slots";
 
-/** Product details (prototype `#/products/:id`). Stock changes and orders arrive in Phases 3 and 5. */
-export function ProductDetailsPage() {
+/** Product details (prototype `#/products/:id`). The sales section comes from the orders feature (app composition). */
+export function ProductDetailsPage({ ordersSection }: { ordersSection?: CatalogSlots["productOrders"] }) {
   const { id } = useParams();
   const product = useProduct(id);
   const templates = useProductTemplates();
@@ -75,6 +76,11 @@ export function ProductDetailsPage() {
             <ButtonLink to={`/inventory/receive?productId=${data.id}`} variant="outline" icon="truck">
               استلام
             </ButtonLink>
+            {!data.isArchived && (
+              <ButtonLink to={`/orders/new?productId=${data.id}`} variant="outline" icon="plus">
+                طلب جديد
+              </ButtonLink>
+            )}
             <ButtonLink to={`/products/${data.id}/edit`} variant="outline" icon="pencil">
               تعديل
             </ButtonLink>
@@ -140,7 +146,7 @@ export function ProductDetailsPage() {
               if (done) toast(`انأرشفت النسخة ${v.label}`);
             }}
           />
-          <EmptyState title="حركة البيع" text="رح تظهر مبيعات المنتج هون بعد ما تبلّش تسجّل طلبات." />
+          {ordersSection ? ordersSection({ productId: data.id, sold: data.sold }) : <EmptyState title="حركة البيع" text={`انباع منه ${data.sold} قطعة.`} />}
         </div>
         <div className="col" style={{ gap: 16 }}>
           <MovementsCard movements={data.recentMovements} allHref={`/inventory/movements?productId=${data.id}`} />

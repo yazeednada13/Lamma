@@ -97,6 +97,7 @@ public static class CatalogMapping
             reserved,
             available,
             StockStatusRules.For(available, product.LowStockThreshold).ToCode(),
+            row.Sold,
             product.IsArchived,
             ProductAttributes.Read(product.AttributesJson),
             options,

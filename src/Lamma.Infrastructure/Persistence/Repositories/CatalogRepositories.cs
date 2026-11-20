@@ -1,6 +1,7 @@
 using Lamma.Application.Catalog;
 using Lamma.Domain.Catalog;
 using Lamma.Domain.Common;
+using Lamma.Domain.Orders;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lamma.Infrastructure.Persistence.Repositories;
@@ -173,7 +174,12 @@ internal sealed class ProductQueries(LammaDbContext db) : IProductQueries
             .Take(recentMovements)
             .ToListAsync(cancellationToken);
 
-        return new ProductDetailsRow(product, categoryName, movements);
+        var sold = await (from i in db.OrderItems.AsNoTracking()
+                          join o in db.Orders.AsNoTracking() on i.OrderId equals o.Id
+                          where i.ProductId == id && o.Status == OrderStatus.Delivered
+                          select (int?)i.Quantity).SumAsync(cancellationToken) ?? 0;
+
+        return new ProductDetailsRow(product, categoryName, movements, sold);
     }
 
     private sealed class ProductListRow

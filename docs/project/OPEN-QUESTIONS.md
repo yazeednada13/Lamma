@@ -105,7 +105,7 @@ Entry format: **ID · Priority · Blocks**, then the context, the options, and t
 
 ## P1 — before Phase 5 (Orders core)
 
-**OQ-040 · P1 · Phase 5: status transition matrix.** ⚠ Proposed matrix, to approve or edit:
+**OQ-040 · P1 · Phase 5: status transition matrix.** ⚠ Proposed matrix, to approve or edit: **Resolved (2026-11-20) → D-121.**
 
 | From \ To | new | confirmed | preparing | courier | delivered | cancelled | returned |
 |---|---|---|---|---|---|---|---|
@@ -122,29 +122,29 @@ Questions:
 - Can a cancelled order be reopened?
 - Can a courier order be cancelled, which would be a failed delivery?
 
-**OQ-041 · P1 · Phase 5: Undo semantics.** ⚠
+**OQ-041 · P1 · Phase 5: Undo semantics.** ⚠ **Resolved (2026-11-20) → D-122.**
 - Context: the prototype restores a snapshot of stock, which would wipe out any operation made in the meantime.
 - Proposed P-009: Undo creates a **compensating transition** back to the previous status, with reverse movements and a status-log entry flagged "undo". It is allowed only (1) within N minutes (proposed: 5), (2) when it reverts the order's latest status change, and (3) when the reverse is still valid (e.g. undoing "delivered" needs the deducted stock to be restorable, which it always is; undoing "cancelled" needs enough Available to re-reserve).
 - Needed: the window length, and whether Undo also applies to payments, expenses, and settlements (the prototype offers Undo on all of these).
 
-**OQ-042 · P1 · Phase 5: order number format.** Proposed P-022: a sequential integer per business starting at 1001, shown as `#1001`. Alternatives: a prefix, or a yearly reset.
+**OQ-042 · P1 · Phase 5: order number format.** Proposed P-022: a sequential integer per business starting at 1001, shown as `#1001`. Alternatives: a prefix, or a yearly reset. **Resolved (2026-11-20) → D-123.**
 
-**OQ-043 · P1 · Phase 5: business timezone.** Proposed P-018: `Asia/Amman` (UTC+3) for "today", reporting days, and period boundaries.
+**OQ-043 · P1 · Phase 5: business timezone.** Proposed P-018: `Asia/Amman` (UTC+3) for "today", reporting days, and period boundaries. **Resolved (2026-11-20) → D-124.**
 
-**OQ-044 · P1 · Phase 5: delivery fee — revenue or pass-through?** ⚠
+**OQ-044 · P1 · Phase 5: delivery fee — revenue or pass-through?** ⚠ **Resolved (2026-11-20) → D-125.**
 - Context: the order total includes the delivery fee (D-031). The prototype's "your profit from this order" computes `total − delivery − cost`, which treats the fee as a pass-through rather than profit. The prototype's sales figures include delivery.
 - Options: (a) the delivery fee is revenue, and the courier's charges are a delivery expense; (b) the delivery fee is a pass-through, excluded from sales and profit.
 - This affects Sales, Net Sales, and P&L, so a decision is required.
 
-**OQ-045 · P1 · Phase 5: discount rules.** Is the discount a fixed amount per order only, or can it be a percentage or apply per line? May it exceed the subtotal? Recommendation: a fixed amount per order, between 0 and the item subtotal. (The prototype's total omits the discount, which is a prototype bug.)
+**OQ-045 · P1 · Phase 5: discount rules.** Is the discount a fixed amount per order only, or can it be a percentage or apply per line? May it exceed the subtotal? Recommendation: a fixed amount per order, between 0 and the item subtotal. (The prototype's total omits the discount, which is a prototype bug.) **Resolved (2026-11-20) → D-126.**
 
-**OQ-046 · P1 · Phase 5: order editing.** The prototype's order menu has "edit order", which the spec does not list. Can items or quantities change after confirmation, and how are reservations recalculated? Recommendation: allow edits only in `new` (and maybe `confirmed`, with re-reservation).
+**OQ-046 · P1 · Phase 5: order editing.** The prototype's order menu has "edit order", which the spec does not list. Can items or quantities change after confirmation, and how are reservations recalculated? Recommendation: allow edits only in `new` (and maybe `confirmed`, with re-reservation). **Resolved (2026-11-20) → D-127.**
 
-**OQ-047 · P1 · Phase 5: initial status on save.** The prototype lets the owner save as "new" or as "confirmed", with immediate reservation. Confirm both.
+**OQ-047 · P1 · Phase 5: initial status on save.** The prototype lets the owner save as "new" or as "confirmed", with immediate reservation. Confirm both. **Resolved (2026-11-20) → D-128.**
 
-**OQ-048 · P1 · Phase 5: delivery address and gift fields on the order.** The prototype has an address field and a gift toggle with "recipient and gift message". The spec lists only the gift message. Confirm the extra fields: delivery address, recipient name, recipient phone.
+**OQ-048 · P1 · Phase 5: delivery address and gift fields on the order.** The prototype has an address field and a gift toggle with "recipient and gift message". The spec lists only the gift message. Confirm the extra fields: delivery address, recipient name, recipient phone. **Resolved (2026-11-20) → D-129.**
 
-**OQ-049 · P1 · Phase 5: cancellation reasons.** The prototype offers: customer changed their mind, no answer on the phone, product unavailable, other. Confirm the list, and say whether "other" takes free text.
+**OQ-049 · P1 · Phase 5: cancellation reasons.** The prototype offers: customer changed their mind, no answer on the phone, product unavailable, other. Confirm the list, and say whether "other" takes free text. **Resolved (2026-11-20) → D-130.**
 
 ## P1 — before Phase 6 (Payments)
 

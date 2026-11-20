@@ -16,6 +16,8 @@ export interface ConfirmOptions {
   subject?: ReactNode;
   tone?: ConfirmTone;
   icon?: IconName;
+  /** Extra controls between the text and the buttons (e.g. a reason picker); they keep their own state. */
+  content?: ReactNode;
   confirmLabel: string;
   cancelLabel?: string;
   /**
@@ -119,6 +121,7 @@ function ConfirmPanel({ options, onDone }: { options: ConfirmOptions; onDone: (c
               {options.message}
             </p>
           )}
+          {options.content && <div className="lconfirm__content">{options.content}</div>}
           {error && <FormAlert>{error}</FormAlert>}
           <div className="lconfirm__actions">
             <Button variant={tone === "danger" ? "danger" : "primary"} loading={busy} onClick={() => void accept()}>

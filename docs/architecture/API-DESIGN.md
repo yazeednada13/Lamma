@@ -232,4 +232,28 @@ All endpoints need an onboarded business. Another business's id returns 404 `cus
 **Rules:**
 - Phones are stored as E.164 (D-116). Jordanian input such as `0791234567` or `+962 79 123 4567` becomes `+962791234567`.
 - City codes are the 12 governorates: `amman, irbid, zarqa, balqa, mafraq, jerash, ajloun, madaba, karak, tafilah, maan, aqaba` (D-117).
-- **The figures and segments are derived** (D-033, D-114, D-115). Until orders exist (Phase 5) they are `0`, `null` and `["new"]`.
+- **The figures and segments are derived** (D-033, D-114, D-115). Since Phase 5 they come from orders: order count = non-cancelled orders, total spent = Σ total of delivered orders, last order = latest non-cancelled order. The balance due stays `0` until Phase 6.
+
+## 15. Phase 5 contracts: Orders (implemented, 2026-11-20)
+All endpoints need an onboarded business. Another business's order, customer or variant returns 404. `POST orders`, `POST orders/{id}/status` and `POST orders/{id}/status/undo` require an `Idempotency-Key` header (UUID, D-112): a retry returns the stored response, a changed body under the same key is 422 `idempotency.key_reused`, and a missing key is 422 `idempotency.key_required`.
+
+| Method & path | Request | Success | Errors |
+|---|---|---|---|
+| GET `orders` | `search` (`#1001`/`1001`, customer name, or ≥ 3 phone digits), `status`, `from`/`to` (business-local dates, Asia/Amman), `customerId`, `productId`, `sort=-createdAt\|createdAt\|-total`, `page`, `pageSize ≤ 100` | 200 paged `{ id, number, customerId, customerName, customerPhone, channel, status, nextStatus, pieces, items[{ productName, variantLabel, quantity }], total, createdAt, deliveredAt }` | 422 |
+| GET `orders/status-counts` | same filters (status ignored) | 200 `{ all, new, confirmed, preparing, courier, delivered, cancelled, returned }` | 422 |
+| GET `orders/{id}` | — | 200 `OrderDetails` (below) | 404 `order.not_found` |
+| POST `orders` | `{ customerId, channel, items[{ variantId, quantity 1–1000, unitPrice? }] (1–50, no repeated variant), deliveryFee, discount, paymentMethod?, deliveryAddress? ≤200, isGift, recipientName? ≤100 (required for a gift), recipientPhone?, giftMessage? ≤300, note? ≤500, status: new\|confirmed }` | 201 `OrderDetails` | 404 `order.customer_not_found` · 404 `order.variant_not_found` · 409 `order.customer_archived` · 409 `order.item_archived` · 409 `stock.not_available` · 422 `order.channel_disabled` · 422 `order.payment_method_disabled` · 422 `order.invalid_discount` · 422 `order.invalid_recipient_phone` · 422 `validation.failed` |
+| PUT `orders/{id}` | `{ channel, items, deliveryFee, discount, paymentMethod?, deliveryAddress?, isGift, recipientName?, recipientPhone?, giftMessage?, note? }` | 200 `OrderDetails` | 404 · 409 `order.locked` (not `new`) · 422 |
+| PUT `orders/{id}/details` | `{ deliveryAddress?, isGift, recipientName?, recipientPhone?, giftMessage?, note? }` | 200 `OrderDetails` | 404 · 409 `order.locked` (delivered, cancelled, returned) · 422 |
+| POST `orders/{id}/status` | `{ to, expectedStatus, cancelReason?: changed_mind\|no_answer\|unavailable\|other, cancelNote? ≤200 (required for other) }` | 200 `OrderDetails` | 404 · 409 `order.status_changed` (+ `currentStatus`) · 409 `order.invalid_transition` · 409 `stock.not_available` · 422 |
+| POST `orders/{id}/status/undo` | `{ changeId }` (the `undo.changeId` of the details) | 200 `OrderDetails` | 404 · 409 `order.undo_not_latest` · 409 `order.undo_expired` · 409 `order.undo_not_available` · 409 `stock.not_available` |
+
+**`OrderDetails`:** `id, number, customer{ id, name, phone, city, area, isArchived }, channel, status, nextStatus, allowedStatuses[], canEditItems, canEditDetails, items[{ id, productId, variantId, productName, variantLabel, imageUrl, quantity, unitPrice, unitCost, lineTotal }], pieces, itemsSubtotal, deliveryFee, discount, total, itemsCost, profit, paymentMethod, deliveryAddress, isGift, recipientName, recipientPhone, giftMessage, note, cancelReason, cancelNote, timeline[{ id, from, to, changedAt, isUndo, cancelReason, note }], undo{ changeId, from, to, availableUntil } or null, createdAt, confirmedAt, deliveredAt, cancelledAt, updatedAt`.
+
+**Rules:**
+- **Statuses** (D-020): `new, confirmed, preparing, courier, delivered, cancelled, returned`. Moves are forward only and may skip (D-121); `delivered → returned` opens with returns (Phase 8). `nextStatus` is the usual next step for the "next" button.
+- **Stock** (D-024–D-026, DATABASE-DESIGN §6): entering confirmed/preparing/courier reserves; leaving them for cancelled releases; delivered sells (on hand and reserved down, or on hand only when skipping from `new`). Reserving or a direct sale needs available stock. Each change writes automatic `reserve`/`release`/`sale` movements (`referenceKind: order`, label `#1001`) in the same transaction as the status and the log row.
+- **Undo** (D-122) reverts only the latest change, within 5 minutes of the server clock, with reverse movements labelled «تراجع #1001». An undo cannot be undone; the creation cannot be undone.
+- **Totals** are computed on the server: `total = itemsSubtotal + deliveryFee − discount`, `0 ≤ discount ≤ itemsSubtotal` (D-031, D-126). `profit = itemsSubtotal − discount − itemsCost`; the delivery fee is shown separately (D-125). `unitPrice` and `unitCost` are snapshots taken when the order is saved (D-032).
+- **Numbers** are per business from 1001 (D-123). A lost race on a stock row is retried once against fresh data, so the loser of the last piece gets `stock.not_available`.
+- Product details now include `sold` (Σ quantities on delivered orders). Payment status and recording payments arrive in Phase 6.

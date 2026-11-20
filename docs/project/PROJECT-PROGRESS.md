@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 4: Customers** |
-| Current gate | **Gate 6 → 7.** Phase 4 frontend done; the founder reviewed it in the browser and approved the duplicate-phone notice and the confirmation dialog (D-120). Waiting for the frontend push, then the PR |
+| Current phase | **Phase 5: Orders core** |
+| Current gate | **Gate 7: PR.** Founder's manual check passed and the frontend is pushed; waiting for the PR merge into `develop` |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Commit and push the frontend, open and merge the Phase 4 PR, confirm |
+| Next expected founder action | Create and merge the Phase 5 PR (`feature/phase5-orders` → `develop`), then write `Next Phase` in a new session |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -30,8 +30,8 @@
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
 | 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
-| 4 Customers | **Backend pushed; Frontend done (gate 6 checkpoint)** |
-| 5 Orders core | Pending |
+| 4 Customers | **Merged into develop (founder-reported 2026-11-20)** |
+| 5 Orders core | **Backend and frontend pushed (2026-11-21); at gate 7 (PR)** |
 | 6 Payments & receivables | Pending |
 | 7 Courier & expenses | Pending |
 | 8 Returns & pre-orders | Pending |
@@ -75,10 +75,14 @@
 | 2026-11-18 | Phase 3 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 178 files, 0 violations, 0 cycles |
 | 2026-11-18 | Phase 3 frontend: `vitest run` | **78 passed, 0 failed** (24 files; 5 new logic tests) |
 | 2026-11-20 | Phase 3 manual browser check by the founder (D-106 checklist, 21 cases on the real API: summary, receive incl. double-submit, weighted cost, adjust rules, movement filters, low/out, expiry rule, 4 widths, RTL) | **21/21 passed** |
+| 2026-11-20 | Phase 5 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 216 files, 0 violations, 0 cycles |
+| 2026-11-21 | Phase 5 manual browser check by the founder (21 cases on the real API, 4 widths, RTL) | **All passed** after two review fixes: skip-ahead moves in the order menu (D-121), and no rectangular focus ring on fields inside `.control` |
+| 2026-11-20 | Phase 5 frontend: `vitest run` | **92 passed, 0 failed** (28 files; 9 new logic tests: receipt math, order rules, Amman date presets, form model) |
 | 2026-11-20 | Phase 4 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; **274 passed, 0 failed**: Domain 111, Application 58, Infrastructure 19, Architecture 8, API integration 78 (28 new) |
 | 2026-11-20 | Phase 4 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 187 files, 0 violations, 0 cycles |
 | 2026-11-20 | Phase 4 frontend: `vitest run` (after the review fixes) | **83 passed, 0 failed** (5 new: customer logic + shared confirmation dialog) |
 | 2026-11-20 | Phase 4 manual browser check by the founder (D-106) | Approved after two review fixes: duplicate-phone notice card; unified confirmation dialog (D-120) |
+| 2026-11-20 | Phase 5 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; 350 passed, 1 failed (architecture rule: public `init` setters on two Domain records). Fixed; Architecture 8/8 and Order domain 69/69 re-run green → **351 passing** (Domain 180, Application 58, Infrastructure 19, Architecture 8, API integration 86; 77 new) |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -110,3 +114,9 @@
 | 2026-11-20 | Phase 4 Backend 4.A1–4.A4 implemented and verified |
 | 2026-11-20 | Founder applied `AddCustomers` and pushed the backend; `Frontend` given |
 | 2026-11-20 | Phase 4 Frontend 4.B1–4.B4 implemented; founder review → duplicate-phone notice redesigned and unified confirmation dialog added (D-120); approved |
+| 2026-11-20 | Founder pushed the Phase 4 frontend and merged the Phase 4 PR into `develop`; Phase 4 closed, at gate 8 |
+| 2026-11-20 | Founder created `feature/phase5-orders`, delegated the Phase 5 answers, and approved the Phase 5 plan (D-121–D-130); waiting at gate 3 |
+| 2026-11-20 | Phase 5 Backend 5.A1–5.A9 implemented and verified; waiting at gate 4 (migration `AddOrders`) |
+| 2026-11-20 | Founder applied `AddOrders` and pushed the backend; `Frontend` given |
+| 2026-11-20 | Phase 5 Frontend 5.B1–5.B6 implemented; automated checks pass; waiting at gate 6 |
+| 2026-11-21 | Founder's manual check passed (after two fixes) and the frontend was pushed; at gate 7 |

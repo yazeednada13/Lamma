@@ -99,6 +99,8 @@ export interface StockMovement {
 }
 
 export interface ProductDetails extends Omit<ProductListItem, "variantCount"> {
+  /** Units on delivered orders (Phase 5). */
+  sold: number;
   sellingPrice: MoneyString;
   cost: MoneyString;
   marginPerUnit: MoneyString;

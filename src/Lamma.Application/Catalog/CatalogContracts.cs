@@ -174,6 +174,7 @@ public sealed record ProductDetailsDto(
     int Reserved,
     int Available,
     string StockStatus,
+    int Sold,
     bool IsArchived,
     IReadOnlyDictionary<string, string> Attributes,
     IReadOnlyList<ProductOptionDto> Options,

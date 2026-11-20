@@ -115,6 +115,25 @@ public sealed class StockMovement : Entity, IBusinessOwned
             CreatedAt = nowUtc,
         };
 
+    /// <summary>Automatic movement of an order status change or its undo (reserve, release or sale; D-028).</summary>
+    internal static StockMovement ForOrder(Guid businessId, Guid productId, Guid variantId, StockMovementType type, int onHandDelta, int reservedDelta, decimal unitCost, Guid orderId, string label, Guid operationId, DateTime nowUtc)
+        => new(NewId())
+        {
+            BusinessId = businessId,
+            ProductId = productId,
+            VariantId = variantId,
+            Type = type,
+            OnHandDelta = onHandDelta,
+            ReservedDelta = reservedDelta,
+            ReferenceKind = StockReferenceKind.Order,
+            ReferenceId = orderId,
+            ReferenceLabel = label.Length > ReferenceLabelMaxLength ? label[..ReferenceLabelMaxLength] : label,
+            UnitCost = unitCost,
+            IsAutomatic = true,
+            OperationId = operationId,
+            CreatedAt = nowUtc,
+        };
+
     internal static StockMovement Opening(Guid businessId, Guid productId, Guid variantId, int quantity, decimal unitCost, Guid operationId, DateTime nowUtc)
         => new(NewId())
         {

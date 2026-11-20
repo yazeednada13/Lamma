@@ -42,8 +42,14 @@ public sealed class InventoryController(IInventoryService inventory) : Controlle
     public async Task<ActionResult<AdjustmentDto>> Adjust(AdjustStockRequest request, [FromHeader(Name = IdempotencyHeader)] string? idempotencyKey, CancellationToken cancellationToken)
         => Ok(await inventory.AdjustAsync(ParseKey(idempotencyKey), request, cancellationToken));
 
-    private static Guid ParseKey(string? value)
+    private static Guid ParseKey(string? value) => IdempotencyKeys.Parse(value);
+}
+
+/// <summary>Parses the <c>Idempotency-Key</c> header (D-112); a missing or invalid key is a 422.</summary>
+internal static class IdempotencyKeys
+{
+    public static Guid Parse(string? value)
         => Guid.TryParse(value, out var key) && key != Guid.Empty
             ? key
-            : throw RequestValidationException.ForField(IdempotencyHeader, "الطلب ناقصه مفتاح الحماية من التكرار. حدّث الصفحة وجرّب كمان مرة.", "idempotency.key_required");
+            : throw RequestValidationException.ForField(InventoryController.IdempotencyHeader, "الطلب ناقصه مفتاح الحماية من التكرار. حدّث الصفحة وجرّب كمان مرة.", "idempotency.key_required");
 }
