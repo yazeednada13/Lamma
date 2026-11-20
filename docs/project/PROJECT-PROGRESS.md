@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 3: Inventory** |
-| Current gate | **Gate 6 → 7.** Phase 3 frontend done; the founder's manual browser check passed (21/21). Waiting for the frontend push, then the PR |
-| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Branch `feature/phase3-inventory` created (2026-11-18) |
+| Current phase | **Phase 3: Inventory, closed (merged into `develop`)** |
+| Current gate | **Gate 8: Next phase.** Waiting for the founder's `Next Phase` to start Phase 4 (Customers) planning |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Commit and push the frontend, open and merge the Phase 3 PR, confirm |
+| Next expected founder action | Create the Phase 4 branch from the latest `develop`, commit these doc updates on it, and write `Next Phase` (open questions OQ-030…OQ-033) |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -29,7 +29,7 @@
 | 0 Discovery & planning | **Merged into develop (founder-reported 2026-11-10)** |
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
-| 3 Inventory | **Backend pushed; Frontend done (gate 6 checkpoint)** |
+| 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
 | 4 Customers | Pending |
 | 5 Orders core | Pending |
 | 6 Payments & receivables | Pending |
@@ -101,3 +101,4 @@
 | 2026-11-18 | Founder applied `AddInventory` and pushed the backend; `Frontend` given |
 | 2026-11-18 | Phase 3 Frontend 3.B1–3.B7 implemented; automated checks pass |
 | 2026-11-20 | Founder's manual browser check passed (21/21) |
+| 2026-11-20 | Founder pushed the Phase 3 frontend and merged the Phase 3 PR into `develop`; Phase 3 closed, at gate 8 |
