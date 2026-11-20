@@ -103,8 +103,8 @@ Arabic labels: جديد · مؤكد · قيد التجهيز · مع المند�
 ### M6 — Customers
 | Req | Status |
 |---|---|
-| List with search and automatic segments: VIP, Owes Money, New (≤2 orders), Dormant (>14 days) | [A]; [O] VIP thresholds and counting rules (OQ-030, OQ-031) |
-| Fields: name, mobile, channel, city, area, notes | [A]; [O] uniqueness and city list (OQ-032, OQ-033) |
+| List with search and automatic segments: VIP, Owes Money, New (≤2 orders), Dormant (>14 days) | [A]; VIP = top third by spend (D-114), counting rules (D-115) |
+| Fields: name, mobile, channel, city, area, notes | [A]; E.164 mobile unique per business (D-116), governorate list (D-117) |
 | Profile: order count, total spent, balance due, last order (computed); order history; record payment | [A] |
 | Quick add from the new-order flow | [A] |
 

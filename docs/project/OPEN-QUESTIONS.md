@@ -95,13 +95,13 @@ Entry format: **ID · Priority · Blocks**, then the context, the options, and t
 
 ## P1 — before Phase 4 (Customers)
 
-**OQ-030 · P1 · Phase 4: VIP thresholds.** Spend ≥ X JOD **and/or** ≥ Y delivered orders. Values are needed (the prototype has none).
+**OQ-030 · P1 · Phase 4: VIP thresholds.** Spend ≥ X JOD **and/or** ≥ Y delivered orders. Values are needed (the prototype has none). **Resolved (2026-11-20) → D-114.**
 
-**OQ-031 · P1 · Phase 4: segment counting rules.** Do "New (≤ 2 orders)" and "Dormant (last order > 14 days)" count cancelled or returned orders? Is "last order" the created date or the delivered date? Can a customer be in several segments at once? Recommendation: count non-cancelled orders, use the created date, and allow multiple segments.
+**OQ-031 · P1 · Phase 4: segment counting rules.** Do "New (≤ 2 orders)" and "Dormant (last order > 14 days)" count cancelled or returned orders? Is "last order" the created date or the delivered date? Can a customer be in several segments at once? Recommendation: count non-cancelled orders, use the created date, and allow multiple segments. **Resolved (2026-11-20) → D-115.**
 
-**OQ-032 · P1 · Phase 4: customer mobile uniqueness.** Is a mobile number unique per business, and is it required? Should the system warn about duplicates? Recommendation: optional, unique per business when present, normalized to E.164 (+962).
+**OQ-032 · P1 · Phase 4: customer mobile uniqueness.** Is a mobile number unique per business, and is it required? Should the system warn about duplicates? Recommendation: optional, unique per business when present, normalized to E.164 (+962). **Resolved (2026-11-20) → D-116.**
 
-**OQ-033 · P1 · Phase 4: Jordan cities list.** Is City a free-text field or a fixed list (12 governorates plus major cities)? Recommendation: a fixed list for cities, free text for the area.
+**OQ-033 · P1 · Phase 4: Jordan cities list.** Is City a free-text field or a fixed list (12 governorates plus major cities)? Recommendation: a fixed list for cities, free text for the area. **Resolved (2026-11-20) → D-117.**
 
 ## P1 — before Phase 5 (Orders core)
 

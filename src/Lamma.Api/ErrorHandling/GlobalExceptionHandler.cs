@@ -30,7 +30,7 @@ public sealed partial class GlobalExceptionHandler(ILogger<GlobalExceptionHandle
             LogUnhandled(logger, exception, httpContext.Request.Method, httpContext.Request.Path);
         }
 
-        await Problems.WriteAsync(httpContext, status, code, detail, errors);
+        await Problems.WriteAsync(httpContext, status, code, detail, errors, (exception as ConflictException)?.Extensions);
         return true;
     }
 

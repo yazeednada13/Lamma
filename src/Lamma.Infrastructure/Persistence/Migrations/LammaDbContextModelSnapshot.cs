@@ -510,6 +510,66 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                     b.ToTable("StockReceipts", (string)null);
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Customers.Customer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Area")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PhoneE164")
+                        .HasMaxLength(16)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId", "Name");
+
+                    b.HasIndex("BusinessId", "PhoneE164")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Customers_BusinessId_PhoneE164")
+                        .HasFilter("[PhoneE164] IS NOT NULL");
+
+                    b.ToTable("Customers", (string)null);
+                });
+
             modelBuilder.Entity("Lamma.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -847,6 +907,15 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Lamma.Domain.Catalog.StockReceipt", b =>
+                {
+                    b.HasOne("Lamma.Domain.Businesses.Business", null)
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Customers.Customer", b =>
                 {
                     b.HasOne("Lamma.Domain.Businesses.Business", null)
                         .WithMany()

@@ -337,3 +337,10 @@ All five tables are business-owned: they carry the tenant query filter and the w
 | `StockMovements.AdjustmentReason` | `varchar(32) null`: damage, loss, count, correction, gift (D-110). `Reason` keeps the free-text note |
 
 Both new tables are business-owned (tenant filter and write guard). The receipt, its movements, the variant stock, cost and expiry, and the idempotency record are written in **one transaction**. A concurrent duplicate loses on the unique key or on the variant `rowversion`, rolls back, and returns the winner's response.
+
+## 12d. Implemented in Phase 4: Customers (code only; migration `AddCustomers` pending founder)
+| Table | Notes |
+|---|---|
+| `Customers` | `Name nvarchar(100)`, `PhoneE164 varchar(16) null`, `Channel varchar(32)`, `City varchar(32) null` (governorate code), `Area nvarchar(100) null`, `Notes nvarchar(500) null`, `IsArchived`, timestamps. **Unique `(BusinessId, PhoneE164)` filtered on `PhoneE164 IS NOT NULL`** (`UX_Customers_BusinessId_PhoneE164`; archived customers included). Index `(BusinessId, Name)`. FK → Businesses (Restrict). Tenant filter and write guard |
+
+No order count, spend, balance or last-order column exists: these figures are derived (D-033). `CustomerQueries.Rows()` is the single projection of them; it returns 0/null until Phase 5 replaces it with order aggregates.

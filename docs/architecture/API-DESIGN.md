@@ -216,3 +216,20 @@ All endpoints need an onboarded business. Another business's ids return **404 `i
 - **Receive** raises on hand and sets the variant cost to the weighted average (D-109). The expiry date follows the oldest stock (D-108). It writes one `receive` movement per line (`referenceKind: receipt`, label = supplier or «استلام بضاعة»).
 - **Adjust** writes an `adjustment` movement whose label is «تعديل: <reason>».
 - No purchases expense is recorded (D-107).
+
+## 14. Phase 4 contracts: Customers (implemented, 2026-11-20)
+All endpoints need an onboarded business. Another business's id returns 404 `customer.not_found`.
+
+| Method & path | Request | Success | Errors |
+|---|---|---|---|
+| GET `customers` | `search` (name, or ≥ 3 digits of the number in any format), `segment=vip\|owes\|new\|dormant`, `archived`, `sort=-spent\|name\|-createdAt`, `page`, `pageSize ≤ 100` | 200 paged `{ id, name, phone (E.164 or null), channel, city, area, orderCount, totalSpent, balanceDue, lastOrderOn, segments[], isArchived, createdAt }` | 422 |
+| GET `customers/summary` | — | 200 `{ total, activeThisMonth, averageSpent, totalDue, customersWithDue, segments: { vip, owes, new, dormant } }` | — |
+| GET `customers/{id}` | — | 200 `CustomerDetails` = list fields + `notes, averageOrder, updatedAt` | 404 |
+| POST `customers` | `{ name ≤100, phone?, channel (sales channel code), city? (governorate code), area? ≤100, notes? ≤500 }` | 201 `CustomerDetails` | 409 `customer.duplicate_phone` (+ `existingCustomerId`, `existingCustomerName`) · 422 `customer.invalid_phone` · 422 `validation.failed` |
+| PUT `customers/{id}` | same body | 200 `CustomerDetails` | 404 · 409 · 422 |
+| POST `customers/{id}/archive` · `/restore` | — | 200 `CustomerDetails` | 404 |
+
+**Rules:**
+- Phones are stored as E.164 (D-116). Jordanian input such as `0791234567` or `+962 79 123 4567` becomes `+962791234567`.
+- City codes are the 12 governorates: `amman, irbid, zarqa, balqa, mafraq, jerash, ajloun, madaba, karak, tafilah, maan, aqaba` (D-117).
+- **The figures and segments are derived** (D-033, D-114, D-115). Until orders exist (Phase 5) they are `0`, `null` and `["new"]`.

@@ -12,7 +12,7 @@ public static class Problems
     public const string ContentType = "application/problem+json";
     private const string TypeBase = "https://lamma.app/errors/";
 
-    public static ProblemDetails Create(HttpContext http, int status, string code, string detail, IReadOnlyDictionary<string, string[]>? errors = null)
+    public static ProblemDetails Create(HttpContext http, int status, string code, string detail, IReadOnlyDictionary<string, string[]>? errors = null, IReadOnlyDictionary<string, object?>? extensions = null)
     {
         ProblemDetails problem = errors is { Count: > 0 }
             ? new ValidationProblemDetails(errors.ToDictionary(kv => kv.Key, kv => kv.Value))
@@ -24,16 +24,21 @@ public static class Problems
         problem.Detail = detail;
         problem.Extensions["code"] = code;
         problem.Extensions["traceId"] = Activity.Current?.Id ?? http.TraceIdentifier;
+        foreach (var (key, value) in extensions ?? new Dictionary<string, object?>())
+        {
+            problem.Extensions.TryAdd(key, value);
+        }
+
         return problem;
     }
 
     public static ObjectResult Result(HttpContext http, int status, string code, string detail)
         => new(Create(http, status, code, detail)) { StatusCode = status, ContentTypes = { ContentType } };
 
-    public static async Task WriteAsync(HttpContext http, int status, string code, string detail, IReadOnlyDictionary<string, string[]>? errors = null)
+    public static async Task WriteAsync(HttpContext http, int status, string code, string detail, IReadOnlyDictionary<string, string[]>? errors = null, IReadOnlyDictionary<string, object?>? extensions = null)
     {
         http.Response.StatusCode = status;
-        var problem = Create(http, status, code, detail, errors);
+        var problem = Create(http, status, code, detail, errors, extensions);
 
         // Serialize the runtime type so ValidationProblemDetails.Errors is included.
         await http.Response.WriteAsJsonAsync(problem, problem.GetType(), options: null, contentType: ContentType);

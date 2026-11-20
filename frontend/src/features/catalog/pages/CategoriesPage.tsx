@@ -3,11 +3,10 @@ import { Link } from "react-router";
 import { errorMessage } from "@/services/api/apiClient";
 import { Illustration } from "@/shared/ui/brand/Illustration";
 import { Button, IconButton } from "@/shared/ui/Button";
+import { useConfirm } from "@/shared/ui/confirm/ConfirmProvider";
 import { EmptyState } from "@/shared/ui/feedback/EmptyState";
 import { ErrorState } from "@/shared/ui/feedback/ErrorState";
 import { PageSkeleton } from "@/shared/ui/feedback/Skeleton";
-import { FormAlert } from "@/shared/ui/form/FormAlert";
-import { Dialog } from "@/shared/ui/overlay/Dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
 import { useCategories, useDeleteCategory, useSaveCategory } from "../api/catalogApi";
@@ -21,8 +20,7 @@ export function CategoriesPage() {
   const remove = useDeleteCategory();
   const toast = useToast();
   const [drawer, setDrawer] = useState<Category | "new" | null>(null);
-  const [deleting, setDeleting] = useState<Category | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const header = (
     <PageHeader
@@ -41,16 +39,18 @@ export function CategoriesPage() {
     />
   );
 
-  const confirmDelete = async () => {
-    if (!deleting) return;
-    setDeleteError(null);
-    try {
-      await remove.mutateAsync(deleting.id);
-      toast(`انحذف تصنيف «${deleting.name}»`);
-      setDeleting(null);
-    } catch (error) {
-      setDeleteError(errorMessage(error)); // e.g. category.has_products with the product count
-    }
+  // A blocked delete (category.has_products, with the count) is shown inside the confirmation (D-095).
+  const deleteCategory = async (category: Category) => {
+    const done = await confirm({
+      tone: "danger",
+      icon: "trash",
+      title: "حذف التصنيف؟",
+      subject: category.name,
+      message: "المنتجات المؤرشفة بتضل محفوظة باسم التصنيف.",
+      confirmLabel: "حذف",
+      action: () => remove.mutateAsync(category.id),
+    });
+    if (done) toast(`انحذف تصنيف «${category.name}»`);
   };
 
   return (
@@ -87,10 +87,7 @@ export function CategoriesPage() {
                   icon="trash"
                   size="sm"
                   label={`حذف ${c.name}`}
-                  onClick={() => {
-                    setDeleteError(null);
-                    setDeleting(c);
-                  }}
+                  onClick={() => void deleteCategory(c)}
                 />
               </div>
             </div>
@@ -109,23 +106,6 @@ export function CategoriesPage() {
           toast(isNew ? `انضاف تصنيف «${name}»` : "انحفظ التصنيف");
         }}
       />
-      <Dialog
-        open={deleting !== null}
-        onClose={() => setDeleting(null)}
-        title={`حذف تصنيف «${deleting?.name ?? ""}»؟`}
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setDeleting(null)}>
-              إلغاء
-            </Button>
-            <Button variant="danger" loading={remove.isPending} onClick={() => void confirmDelete()}>
-              حذف
-            </Button>
-          </>
-        }
-      >
-        {deleteError ? <FormAlert>{deleteError}</FormAlert> : <p className="muted">المنتجات المؤرشفة بتضل محفوظة باسم التصنيف.</p>}
-      </Dialog>
     </>
   );
 }

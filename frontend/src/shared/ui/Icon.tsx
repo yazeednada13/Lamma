@@ -1,5 +1,14 @@
 import { LAMMA_ICONS } from "@/assets/icons/iconData";
 
+/**
+ * App-level additions to the design-system icon set (same Tabler source, MIT). The generated set stays untouched;
+ * add here only icons the prototype does not ship.
+ */
+const APP_ICONS: Record<string, string> = {
+  archive:
+    '<path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /> <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /> <path d="M10 12l4 0" />',
+};
+
 /** The 53 Tabler icons shipped with the Lamma design system (MIT). */
 export type IconName =
   | "adjustments" | "alert-triangle" | "arrow-back-up" | "arrow-left" | "arrow-right" | "bell" | "brand-facebook"
@@ -7,7 +16,8 @@ export type IconName =
   | "check" | "chevron-down" | "chevron-left" | "chevron-right" | "circle-check" | "clock" | "cloud-off" | "credit-card"
   | "dots-vertical" | "eye" | "filter" | "gift" | "home" | "info-circle" | "language" | "layout-grid" | "layout-kanban"
   | "list" | "lock" | "logout" | "map-pin" | "package" | "palette" | "pencil" | "phone" | "photo" | "plus" | "receipt"
-  | "ruler" | "search" | "settings" | "tag" | "trash" | "truck" | "upload" | "user-circle" | "users" | "wallet" | "x";
+  | "ruler" | "search" | "settings" | "tag" | "trash" | "truck" | "upload" | "user-circle" | "users" | "wallet" | "x"
+  | "archive";
 
 const DIRECTIONAL = new Set<string>(["chevron-right", "chevron-left", "arrow-right", "arrow-left", "arrow-back-up"]);
 
@@ -30,7 +40,7 @@ export function Icon({ name, size = 20, className = "" }: IconProps) {
       viewBox="0 0 24 24"
       aria-hidden="true"
       data-icon={name}
-      dangerouslySetInnerHTML={{ __html: LAMMA_ICONS[name] ?? "" }}
+      dangerouslySetInnerHTML={{ __html: LAMMA_ICONS[name] ?? APP_ICONS[name] ?? "" }}
     />
   );
 }

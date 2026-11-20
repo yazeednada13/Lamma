@@ -59,6 +59,7 @@ frontend/
       settings/                account page, business settings page (with extra-section slots), business types (API labels, D-103), domain code lists
       catalog/                 products list/details/form, variant matrix, categories, templates & custom fields settings section (Phase 2)
       inventory/               stock levels, receive, adjust dialog, movement log, expiry (Phase 3)
+      customers/               customers list with segments, profile, quick-add/edit drawer (Phase 4; drawer exported for Phase 5)
     shared/                    reusable, business-agnostic code
       ui/                      Button, Icon, Menu, Badge, Chip, Money, PageHeader
         brand/  form/ (incl. MoneyField, ImagePicker)  feedback/  overlay/  toast/  charts/ (Donut)  MetricCard
@@ -96,7 +97,7 @@ Create only the sub-folders a feature needs.
 | `test/`, `*.test.ts(x)` | anything |
 
 - **Alias:** `@/` → `src/` (`tsconfig.app.json` `paths` + `vite.config.ts` `resolve.alias`). Inside one folder use relative imports (`./`, `../`); across top-level folders always use `@/…`. **`../../` is banned.**
-- **Cross-feature edges (current):** `settings → auth`, `onboarding → auth, settings`, `dashboard → auth, settings`, `subscription → auth`, `catalog → auth, settings, inventory`. All point one way; **no cycles** are allowed.
+- **Cross-feature edges (current):** `settings → auth`, `onboarding → auth, settings`, `dashboard → auth, settings`, `subscription → auth`, `catalog → auth, settings, inventory`, `customers → settings`. All point one way; **no cycles** are allowed.
 - **Plugging a feature into another feature's screen:** when feature B must show a section on feature A's page and A must not depend on B, A exposes a slot and the **app layer composes them**. Example: `createSettingsRoutes({ extraSections: [productTemplatesSettingsSection] })` in `app/router/routes.tsx`. This is the same pattern as the AppShell slots (§6).
 - **Enforcement:** ESLint `no-restricted-imports` per folder (`eslint.config.js`) and `npm run check:architecture` (layer violations, deep feature imports, feature imports in the AppShell, `../../`, unresolved imports, import cycles). Both must report 0 before any frontend checkpoint.
 
@@ -164,11 +165,14 @@ Split a file only along a real responsibility boundary, never just to cut lines:
 | E-10 | `public/logo/favicon.svg` duplicates `public/favicon.svg` | Keeps the logo folder a mirror of the reference set; removal only on founder request |
 
 | E-11 | `features/catalog/components/` is flat (17 files) instead of sub-folders | `../../` imports are banned (§4), and deep `@/features/catalog/...` self-imports are banned too; sub-folders inside `components/` would need one of them. Files carry their area in the name (`ProductHero`, `VariantsSection`, …) |
+| E-13 | `shared/ui/Icon.tsx` has a small `APP_ICONS` map (`archive`) next to the generated set | The prototype's icon set has no archive icon; the generated file must not be edited. Same Tabler source and MIT licence |
 | E-12 | `ProductFormPage.tsx` is 202 lines | Within the page guide (~250). Mapping between the form and the API bodies is already split out into the unit-tested `domain/productFormModel.ts` |
 
 **Audit results (2026-11-17):** 0 layer or public-API violations, 0 import cycles (`check:architecture`, 125 files). No UI file calls the API client directly. There are no duplicate type names. No business rule lives in `app/`, `shared/` or the app-shell. The largest files are `apiClient.ts` (194 lines) and `BusinessSettingsPage.tsx` (131 lines).
 
 - **Stock changes across features:** inventory mutations invalidate only `["inventory"]`. Catalog screens refetch on mount (`staleTime` 0), and the shared `AdjustStockDialog` takes an `onDone` callback so the catalog refreshes its own product. Neither feature imports the other's query keys.
+- **Confirmations (D-120):** every confirm-worthy action (archive, delete, …) calls `useConfirm()` from `shared/ui/confirm/ConfirmProvider.tsx` (mounted once in `AppProviders`). Pass `action` so the dialog shows the spinner and keeps a server error (e.g. a blocked delete) inside it. Never build an ad-hoc confirm dialog.
+- **Error extensions:** `ApiError.problem` keeps the whole ProblemDetails body, so a screen can read error-specific members (e.g. `existingCustomerId` on `customer.duplicate_phone`).
 - **Idempotent actions:** `useActionKey()` (inventory) keeps one `Idempotency-Key` per request body; retries reuse it, a changed body gets a new one, and success clears it (D-112).
 
 **Audit after Phase 2 frontend (2026-11-18):** `check:architecture` reports 0 violations and 0 cycles over 165 files. No UI file calls the API client directly. Largest files: `ProductFormPage.tsx` 202, `apiClient.ts` 197 (multipart upload added), `ProductsPage.tsx` 182, `VariantsSection.tsx` 161.

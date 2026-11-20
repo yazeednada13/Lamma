@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 3: Inventory** |
-| Current gate | **Gate 6 → 7.** Phase 3 frontend done; the founder's manual browser check passed (21/21). Waiting for the frontend push, then the PR |
-| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Branch `feature/phase3-inventory` created (2026-11-18) |
-| Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Commit and push the frontend, open and merge the Phase 3 PR, confirm |
+| Current phase | **Phase 4: Customers** |
+| Current gate | **Gate 6 → 7.** Phase 4 frontend done; the founder reviewed it in the browser and approved the duplicate-phone notice and the confirmation dialog (D-120). Waiting for the frontend push, then the PR |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20) |
+| Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers` applied by the founder (verified read-only in `Lamma_Dev`) |
+| Next expected founder action | Commit and push the frontend, open and merge the Phase 4 PR, confirm |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -29,8 +29,8 @@
 | 0 Discovery & planning | **Merged into develop (founder-reported 2026-11-10)** |
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
-| 3 Inventory | **Backend pushed; Frontend done (gate 6 checkpoint)** |
-| 4 Customers | Pending |
+| 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
+| 4 Customers | **Backend pushed; Frontend done (gate 6 checkpoint)** |
 | 5 Orders core | Pending |
 | 6 Payments & receivables | Pending |
 | 7 Courier & expenses | Pending |
@@ -75,6 +75,10 @@
 | 2026-11-18 | Phase 3 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 178 files, 0 violations, 0 cycles |
 | 2026-11-18 | Phase 3 frontend: `vitest run` | **78 passed, 0 failed** (24 files; 5 new logic tests) |
 | 2026-11-20 | Phase 3 manual browser check by the founder (D-106 checklist, 21 cases on the real API: summary, receive incl. double-submit, weighted cost, adjust rules, movement filters, low/out, expiry rule, 4 widths, RTL) | **21/21 passed** |
+| 2026-11-20 | Phase 4 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; **274 passed, 0 failed**: Domain 111, Application 58, Infrastructure 19, Architecture 8, API integration 78 (28 new) |
+| 2026-11-20 | Phase 4 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 187 files, 0 violations, 0 cycles |
+| 2026-11-20 | Phase 4 frontend: `vitest run` (after the review fixes) | **83 passed, 0 failed** (5 new: customer logic + shared confirmation dialog) |
+| 2026-11-20 | Phase 4 manual browser check by the founder (D-106) | Approved after two review fixes: duplicate-phone notice card; unified confirmation dialog (D-120) |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -101,3 +105,8 @@
 | 2026-11-18 | Founder applied `AddInventory` and pushed the backend; `Frontend` given |
 | 2026-11-18 | Phase 3 Frontend 3.B1–3.B7 implemented; automated checks pass |
 | 2026-11-20 | Founder's manual browser check passed (21/21) |
+| 2026-11-20 | Founder pushed the Phase 3 frontend and merged the Phase 3 PR into `develop`; Phase 3 closed, at gate 8 |
+| 2026-11-20 | Founder created `feature/phase4-customers`; Phase 4 plan approved and decisions D-114–D-119 recorded on the founder's confirmation; waiting at gate 3 |
+| 2026-11-20 | Phase 4 Backend 4.A1–4.A4 implemented and verified |
+| 2026-11-20 | Founder applied `AddCustomers` and pushed the backend; `Frontend` given |
+| 2026-11-20 | Phase 4 Frontend 4.B1–4.B4 implemented; founder review → duplicate-phone notice redesigned and unified confirmation dialog added (D-120); approved |

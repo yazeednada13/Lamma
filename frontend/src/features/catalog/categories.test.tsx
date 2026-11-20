@@ -48,7 +48,8 @@ describe("categories", () => {
     const { user } = renderApp("/products/categories");
 
     await user.click(await screen.findByRole("button", { name: "حذف عطور" }));
-    const dialog = await screen.findByRole("dialog", { name: "حذف تصنيف «عطور»؟" });
+    const dialog = await screen.findByRole("alertdialog", { name: "حذف التصنيف؟" });
+    expect(within(dialog).getByText("عطور")).toBeInTheDocument();
     await user.click(within(dialog).getByRole("button", { name: "حذف" }));
 
     expect(await within(dialog).findByText(/التصنيف فيه 1 منتج/)).toBeInTheDocument();
