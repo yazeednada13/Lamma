@@ -97,6 +97,10 @@ public static class DependencyInjection
         services.AddScoped<Lamma.Application.Orders.IOrderRepository, OrderRepository>();
         services.AddScoped<Lamma.Application.Orders.IOrderQueries, OrderQueries>();
 
+        // Payments (Phase 6)
+        services.AddScoped<Lamma.Application.Payments.IPaymentRepository, PaymentRepository>();
+        services.AddScoped<Lamma.Application.Payments.IPaymentQueries, PaymentQueries>();
+
         // Accounts module
         services.AddScoped<IAccountQueries, AccountQueries>();
         return services;

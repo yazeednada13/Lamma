@@ -6,6 +6,7 @@ using Lamma.Domain.Catalog;
 using Lamma.Domain.Common;
 using Lamma.Domain.Customers;
 using Lamma.Domain.Orders;
+using Lamma.Domain.Payments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -176,6 +177,8 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
                        Channel = o.Channel,
                        Status = o.Status,
                        Total = o.Total,
+                       PaymentMethodHint = o.PaymentMethodHint,
+                       Paid = db.PaymentAllocations.Where(a => a.OrderId == o.Id && !a.IsReversed).Sum(a => (decimal?)a.Amount) ?? 0m,
                        CreatedAt = o.CreatedAt,
                        DeliveredAt = o.DeliveredAt,
                    };
@@ -210,7 +213,10 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
                     lines.Select(i => new OrderItemSummaryDto(i.ProductName, i.VariantLabel, i.Quantity)).ToList(),
                     p.Total,
                     p.CreatedAt,
-                    p.DeliveredAt);
+                    p.DeliveredAt,
+                    p.Paid,
+                    p.Total - p.Paid,
+                    PaymentStatusPolicy.For(p.Status, p.PaymentMethodHint, p.Total, p.Paid)?.ToCode());
             })
             .ToList();
         return new PagedResult<OrderListItemDto>(result, query.Page, query.PageSize, total);
@@ -250,11 +256,30 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
             .Where(p => productIds.Contains(p.Id))
             .Select(p => new { p.Id, p.ImagePath })
             .ToDictionaryAsync(p => p.Id, p => p.ImagePath, cancellationToken);
+        var payments = await db.PaymentAllocations.AsNoTracking()
+            .Where(a => a.OrderId == id)
+            .Join(db.Payments.AsNoTracking(), a => a.PaymentId, p => p.Id, (a, p) => new
+            {
+                p.Id,
+                a.Amount,
+                PaymentAmount = p.Amount,
+                p.Method,
+                p.PaidOn,
+                p.RecordedAt,
+                p.Note,
+                IsCustomerLevel = p.OrderId == null,
+                a.IsReversed,
+                p.ReversedAt,
+                p.ReversalReason,
+            })
+            .OrderBy(p => p.PaidOn).ThenBy(p => p.RecordedAt)
+            .ToListAsync(cancellationToken);
 
         return OrderMapping.ToDetails(
             order,
             new OrderCustomerDto(customer.Id, customer.Name, customer.PhoneE164, customer.City?.ToCode(), customer.Area, customer.IsArchived),
             images,
+            payments.Select(p => new OrderPaymentDto(p.Id, p.Amount, p.PaymentAmount, p.Method.ToCode(), p.PaidOn, p.RecordedAt, p.Note, p.IsCustomerLevel, p.IsReversed, p.ReversedAt, p.ReversalReason)).ToList(),
             nowUtc);
     }
 
@@ -323,6 +348,10 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
         public OrderStatus Status { get; init; }
 
         public decimal Total { get; init; }
+
+        public PaymentMethod? PaymentMethodHint { get; init; }
+
+        public decimal Paid { get; init; }
 
         public DateTime CreatedAt { get; init; }
 

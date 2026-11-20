@@ -235,12 +235,12 @@ The **quantity limit** [A] is checked inside the transaction against the freshly
 | Variant Available | OnHand − Reserved |
 | Product Sold | Σ OrderItem.Quantity on delivered orders (− returned quantities [P]) |
 | Product Reserved (display) | Σ Variant.Reserved |
-| Order Paid | Σ PaymentAllocation.Amount (net of refunds/reversals) |
+| Order Paid | Σ PaymentAllocation.Amount of non-reversed allocations [A D-131, D-136] |
 | Order Remaining | Total − Paid (− Returned value [O]) |
-| Payment status [P P-012] | `courier` if COD, delivered, Remaining > 0, and not yet settled; `paid` if Remaining ≤ 0; `partial` if 0 < Paid < Total; `unpaid` if Paid = 0. Computed in queries; it may be persisted only as a recomputed cache column, never edited by hand |
+| Payment status [A D-133] | first match: `paid` if Remaining ≤ 0; `courier` if COD, status courier or delivered, Remaining > 0 (Phase 7 adds "not yet settled"); `partial` if Paid > 0; else `unpaid`. Cancelled: none. Computed in queries, never stored |
 | Customer OrderCount | count of non-cancelled orders [O OQ-031] |
 | Customer TotalSpent | Σ Total of delivered orders − returns |
-| Customer BalanceDue | Σ Remaining over qualifying orders [O OQ-053] |
+| Customer BalanceDue | Σ Remaining over delivered, non-COD orders [A D-134] |
 | Customer LastOrderAt | max(Order.CreatedAt) of non-cancelled orders |
 | Segments | VIP: Spent ≥ X and/or delivered count ≥ Y [O OQ-030] · OwesMoney: BalanceDue > 0 · New: OrderCount ≤ 2 · Dormant: LastOrderAt < today − 14 days [A], counting rules [O OQ-031]. Thresholds live in one `CustomerSegmentPolicy` with options |
 | Courier money held | Σ Remaining (at delivery) of delivered COD orders assigned to the courier and not in any `CourierSettlementOrder` |
@@ -250,7 +250,7 @@ The **quantity limit** [A] is checked inside the transaction against the freshly
 | Gross / Net profit | D-034 [A] |
 | Expenses by category | Σ Expense.Amount by category in the period |
 | Cash received | Σ Payment.Amount (kind payment or deposit) by PaidOn − refunds [P] |
-| Receivables aging | Remaining grouped by age = today − DeliveredAt (or CreatedAt if not delivered [O]) into 0–7, 8–30, >30 [A buckets] |
+| Receivables aging | Remaining of receivable orders grouped by age = business today − business-local DeliveredAt into 0–7, 8–30, >30 [A D-038, D-134] |
 
 All of these are implemented once, in Infrastructure query services, and tested against fixed datasets.
 
@@ -303,6 +303,14 @@ Indexes are reviewed against the actual query plans in each phase.
 | `BusinessMemberships` | `UserId` FK → AspNetUsers (**unique** `UX_BusinessMemberships_UserId`), `BusinessId` FK → Businesses, `Role varchar(32)`; FKs are Restrict |
 | `BusinessSalesChannels` | PK (BusinessId, Channel); `IsEnabled`; tenant-filtered; cascades from Business |
 | `BusinessPaymentMethods` | PK (BusinessId, Method); `IsEnabled`; tenant-filtered; cascades from Business |
+
+## 12f. Implemented in Phase 6: Payments (code only; migration `AddPayments` pending founder)
+| Table | Notes |
+|---|---|
+| `Payments` | `CustomerId` (FK Restrict), `OrderId null` (FK Restrict; set for order-level payments and deposits), `Amount decimal(19,3)` (CHECK > 0), `Method varchar(32)` (model convention), `PaidOn date`, `RecordedAt`, `Note nvarchar(200) null`, `OperationId` (**unique `(BusinessId, OperationId)`**), `ReversedAt null`, `ReversalReason nvarchar(200) null`, `ReversalOperationId null`. Indexes `(BusinessId, PaidOn)`, `(BusinessId, CustomerId)` |
+| `PaymentAllocations` | `PaymentId` (FK, cascade from the aggregate), `OrderId` (FK Restrict), `Amount` (CHECK > 0), `IsReversed bit` (copied from the payment on reversal, in the same transaction). Index `(OrderId) INCLUDE (Amount, IsReversed)` |
+
+Both tables are business-owned (tenant filter and write guard). **Order paid = Σ active allocations**; remaining, payment status, customer balance and courier-held money are never stored (D-033, D-133). A reversal is a void flag on the payment and its allocations (D-136); this replaces the proposed `ReversalOfPaymentId` row and `Kind` column (refunds add a kind in Phase 8). Writes lock with a no-op `UPDATE` (the order row; or the customer row and then the customer's delivered orders; or the payment row), held until commit. On `Orders` this also bumps the rowversion, so a status change that loaded the order before a payment fails its save, retries, and then sees the payment (this keeps the cancel guard D-137 correct).
 
 ## 13. Migration guidance
 - The first migration is created in Phase 1 and is named `InitialIdentityAndBusiness`. The founder runs these from the repo root, after setting the connection string with user-secrets (LOCAL-DEVELOPMENT §3):

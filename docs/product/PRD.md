@@ -37,7 +37,7 @@
 | **Expenses** | Σ expense records in the period, by category (including automatic courier-settlement differences) | [A]; [O] purchases (OQ-020) |
 | **Net profit** | Gross profit − Expenses | [A] |
 | **Cash received** | Σ payments actually received by the business in the period (by payment date), minus refunds; it excludes money the courier still holds | [P] definition; refunds [O] |
-| **Customer receivables (balance due)** | Σ(order total − payments) for qualifying orders that are not courier-held | [P]; [O] which statuses qualify (OQ-053) |
+| **Customer receivables (balance due)** | Σ(order total − payments) over delivered orders that are not courier-held (not COD) | [A] D-134 |
 | **Courier receivables (money held)** | Σ amounts collected by a courier on delivered COD orders that have not yet been settled | [A] concept; [O] courier fee deduction (OQ-061) |
 | **Cash flow** | Cash in (payments and settlements) − cash out (expenses and refunds) per period | [P] definition |
 | **Profit margin (product)** | (unit price − unit cost) / unit price | [P] |
@@ -112,8 +112,8 @@ Arabic labels: جديد · مؤكد · قيد التجهيز · مع المند�
 | Req | Status |
 |---|---|
 | Overview: sales, cash received, profit, receivables, courier receivables, cash flow | [A] |
-| Record a payment against an order or a customer: amount, method, date | [A]; [O] allocation (OQ-050), editing (OQ-055) |
-| Receivables aging: 0–7, 8–30, >30 days | [A]; [P] the age is counted from `deliveredAt` (prototype behaviour) |
+| Record a payment against an order or a customer: amount, method, date | [A]; FIFO allocation (D-131), no overpayment (D-132), deposits (D-135), back-dating and reversal only (D-136), no COD by hand (D-138) |
+| Receivables aging: 0–7, 8–30, >30 days | [A]; age counted from the business-local delivery date (D-134) |
 | Courier: money held for delivered COD orders; settlement (expected, received, difference); the difference becomes a delivery expense automatically | [A]; [O] edge cases (OQ-060–062) |
 | Expenses: date, category, amount, note; totals by category | [A]; [O] categories (OQ-063) |
 | Payment methods are enabled per business | [A] |
@@ -144,7 +144,6 @@ Arabic labels: جديد · مؤكد · قيد التجهيز · مع المند�
 - Partial returns and refunds (OQ-070–073).
 - The full transition matrix (OQ-040).
 - Undo semantics (OQ-041).
-- Customer payment allocation (OQ-050).
 - Courier assignment and fees (OQ-060–061).
 - Pre-order rules (OQ-074).
 - Template catalogue (OQ-011).

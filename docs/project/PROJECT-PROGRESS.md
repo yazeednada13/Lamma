@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 5: Orders core, closed (merged into `develop`)** |
-| Current gate | **Gate 8: Next phase.** Waiting for the founder's `Next Phase` to start Phase 6 (Payments & receivables) planning |
+| Current phase | **Phase 6: Payments & receivables** (branch `feature/phase6-payments`) |
+| Current gate | **Gate 4: Backend checkpoint.** 6.A1–6.A7 implemented and verified; waiting for the founder to add and apply migration `AddPayments` and push the backend ([PHASE-6-PLAN.md](../roadmap/PHASE-6-PLAN.md)) |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Create the Phase 6 branch from the latest `develop`, commit these doc updates, and write `Next Phase` in a new session |
+| Next expected founder action | Run the `AddPayments` migration commands, commit and push the backend, then write `Frontend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -32,7 +32,7 @@
 | 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
 | 4 Customers | **Merged into develop (founder-reported 2026-11-20)** |
 | 5 Orders core | **Merged into develop (founder-reported 2026-11-21)** |
-| 6 Payments & receivables | Pending |
+| 6 Payments & receivables | **Backend done (2026-11-21); at gate 4** |
 | 7 Courier & expenses | Pending |
 | 8 Returns & pre-orders | Pending |
 | 9 Dashboard | Pending |
@@ -83,6 +83,7 @@
 | 2026-11-20 | Phase 4 frontend: `vitest run` (after the review fixes) | **83 passed, 0 failed** (5 new: customer logic + shared confirmation dialog) |
 | 2026-11-20 | Phase 4 manual browser check by the founder (D-106) | Approved after two review fixes: duplicate-phone notice card; unified confirmation dialog (D-120) |
 | 2026-11-20 | Phase 5 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; 350 passed, 1 failed (architecture rule: public `init` setters on two Domain records). Fixed; Architecture 8/8 and Order domain 69/69 re-run green → **351 passing** (Domain 180, Application 58, Infrastructure 19, Architecture 8, API integration 86; 77 new) |
+| 2026-11-21 | Phase 6 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; **382 passed, 0 failed**: Domain 206, Application 58, Infrastructure 19, Architecture 8, API integration 91 (31 new: 26 payment rules, 5 payment API) |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -121,3 +122,5 @@
 | 2026-11-20 | Phase 5 Frontend 5.B1–5.B6 implemented; automated checks pass; waiting at gate 6 |
 | 2026-11-21 | Founder's manual check passed (after two fixes) and the frontend was pushed; at gate 7 |
 | 2026-11-21 | Founder pushed `feature/phase5-orders` and merged the Phase 5 PR into `develop`; Phase 5 closed, at gate 8 |
+| 2026-11-21 | `Next Phase` given on `feature/phase6-payments`; Phase 6 plan approved (D-131–D-138, OQ-050…055 resolved); waiting at gate 3 |
+| 2026-11-21 | Phase 6 Backend 6.A1–6.A7 implemented and verified; waiting at gate 4 (migration `AddPayments`) |

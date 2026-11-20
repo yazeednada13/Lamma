@@ -292,7 +292,7 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 5. `Frontend` started | ☑ | 2026-11-20 | 4.B1–4.B4 done in one run; verification per D-106 |
 | 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-20 | Founder review approved |
 | 7. PR merged into `develop` (founder) | ☑ | 2026-11-20 | Founder-reported |
-| 8. `Next Phase` given | ☐ | | |
+| 8. `Next Phase` given | ☑ | 2026-11-20 | |
 
 **Draft task tables (Phase 0, superseded by the approved plan):**
 
@@ -325,9 +325,9 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-20 | 5.A1–5.A9 implemented and verified |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-20 | migration `AddOrders` applied |
 | 5. `Frontend` started | ☑ | 2026-11-20 | 5.B1–5.B6 implemented; automated checks pass |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
-| 7. PR merged into `develop` (founder) | ☐ | | |
-| 8. `Next Phase` given | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-21 | Founder's manual check passed after two fixes |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-21 | Founder-reported |
+| 8. `Next Phase` given | ☑ | 2026-11-21 | |
 
 **Draft task tables (Phase 0, superseded by the approved plan):**
 
@@ -356,7 +356,23 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 ---
 
 ## Phase 6 — Payments & receivables
-**Depends on:** 5. **Blocking:** OQ-050…055.
+**Depends on:** 5. **Blocking:** none (OQ-050…055 resolved as D-131–D-136; D-137, D-138 added).
+
+**Approved plan (2026-11-21):** [`PHASE-6-PLAN.md`](PHASE-6-PLAN.md), tasks 6.A1–6.A7 and 6.B1–6.B5, decisions D-131–D-138, verification per D-106. It supersedes the draft tables below.
+
+### Phase 6 gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-21 | `feature/phase6-payments` |
+| 2. Plan approved | ☑ | 2026-11-21 | D-131–D-138 |
+| 3. `Backend` started | ☑ | 2026-11-21 | 6.A1–6.A7 implemented and verified |
+| 4. Backend pushed (founder confirmed) | ☐ | | migration `AddPayments` |
+| 5. `Frontend` started | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
+
+**Draft task tables (Phase 0, superseded by the approved plan):**
 
 | ID | Backend task | Acceptance / tests |
 |---|---|---|

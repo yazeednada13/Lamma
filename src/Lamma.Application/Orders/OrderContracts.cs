@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using Lamma.Application.Catalog;
 using Lamma.Application.Common.Serialization;
+using Lamma.Application.Payments;
 using Lamma.Domain.Businesses;
 using Lamma.Domain.Common;
 using Lamma.Domain.Orders;
@@ -18,7 +19,7 @@ public sealed record OrderItemRequest(
 
 /// <summary>
 /// Creates an order (D-128: <c>Status</c> = new | confirmed). Requires an Idempotency-Key (D-112).
-/// The server computes every total from the line snapshots.
+/// The server computes every total from the line snapshots. <c>Payment</c> is an optional deposit dated today (D-135).
 /// </summary>
 public sealed record CreateOrderRequest(
     Guid CustomerId,
@@ -33,7 +34,8 @@ public sealed record CreateOrderRequest(
     string? RecipientPhone,
     string? GiftMessage,
     string? Note,
-    string Status);
+    string Status,
+    InitialPaymentRequest? Payment = null);
 
 /// <summary>Full edit of a new order (D-127): items, fee, discount, channel, payment method and details.</summary>
 public sealed record UpdateOrderRequest(
@@ -110,7 +112,10 @@ public sealed record OrderListItemDto(
     IReadOnlyList<OrderItemSummaryDto> Items,
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Total,
     DateTime CreatedAt,
-    DateTime? DeliveredAt);
+    DateTime? DeliveredAt,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Paid,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Remaining,
+    string? PaymentStatus);
 
 public sealed record OrderStatusCountsDto(int All, int New, int Confirmed, int Preparing, int Courier, int Delivered, int Cancelled, int Returned);
 
@@ -132,6 +137,23 @@ public sealed record OrderStatusChangeDto(Guid Id, string? From, string To, Date
 
 /// <summary>The change that can be undone now, and until when (server clock).</summary>
 public sealed record OrderUndoDto(Guid ChangeId, string From, string To, DateTime AvailableUntil);
+
+/// <summary>
+/// A payment applied to the order (D-131). <c>Amount</c> is the part on this order; <c>PaymentAmount</c> the whole
+/// payment (differs for a customer-level payment split over several orders). Reversed payments are listed and flagged.
+/// </summary>
+public sealed record OrderPaymentDto(
+    Guid PaymentId,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Amount,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal PaymentAmount,
+    string Method,
+    DateOnly PaidOn,
+    DateTime RecordedAt,
+    string? Note,
+    bool IsCustomerLevel,
+    bool IsReversed,
+    DateTime? ReversedAt,
+    string? ReversalReason);
 
 public sealed record OrderDetailsDto(
     Guid Id,
@@ -166,7 +188,11 @@ public sealed record OrderDetailsDto(
     DateTime? ConfirmedAt,
     DateTime? DeliveredAt,
     DateTime? CancelledAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Paid,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Remaining,
+    string? PaymentStatus,
+    IReadOnlyList<OrderPaymentDto> Payments);
 
 // ---------- Validators ----------
 
@@ -227,6 +253,7 @@ public sealed class CreateOrderRequestValidator : AbstractValidator<CreateOrderR
         OrderValidation.Items(this, x => x.Items);
         RuleForEach(x => x.Items).SetValidator(new OrderItemRequestValidator());
         OrderValidation.Details(this, x => x.DeliveryAddress, x => x.IsGift, x => x.RecipientName, x => x.GiftMessage, x => x.Note);
+        RuleFor(x => x.Payment!).SetValidator(new InitialPaymentRequestValidator()).When(x => x.Payment is not null);
     }
 }
 
