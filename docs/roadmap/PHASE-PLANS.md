@@ -17,7 +17,7 @@ Copy this block into each phase when it starts, and keep it current.
 | 4. Backend pushed (founder confirmed) | ☐ | | migrations applied by founder: ☐ |
 | 5. `Frontend` started | ☐ | | |
 | 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-21 | manual checklist passed |
-| 7. PR merged into `develop` (founder) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-21 | |
 | 8. `Next Phase` given | ☐ | | |
 
 Each gate-2 plan must include:
