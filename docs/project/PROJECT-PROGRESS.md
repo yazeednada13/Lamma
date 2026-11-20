@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 4: Customers** |
-| Current gate | **Gate 6 → 7.** Phase 4 frontend done; the founder reviewed it in the browser and approved the duplicate-phone notice and the confirmation dialog (D-120). Waiting for the frontend push, then the PR |
+| Current phase | **Phase 4: Customers, closed (merged into `develop`)** |
+| Current gate | **Gate 8: Next phase.** Waiting for the founder's `Next Phase` to start Phase 5 (Orders core) planning |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Commit and push the frontend, open and merge the Phase 4 PR, confirm |
+| Next expected founder action | Create the Phase 5 branch from the latest `develop` (stash/pop these doc updates), commit them, and write `Next Phase`; Phase 5 open questions OQ-040+ |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -30,7 +30,7 @@
 | 1 Foundation | **Merged into develop (founder-reported 2026-11-17)** |
 | 2 Catalog | **Merged into develop (founder-reported 2026-11-18)** |
 | 3 Inventory | **Merged into develop (founder-reported 2026-11-20)** |
-| 4 Customers | **Backend pushed; Frontend done (gate 6 checkpoint)** |
+| 4 Customers | **Merged into develop (founder-reported 2026-11-20)** |
 | 5 Orders core | Pending |
 | 6 Payments & receivables | Pending |
 | 7 Courier & expenses | Pending |
@@ -110,3 +110,4 @@
 | 2026-11-20 | Phase 4 Backend 4.A1–4.A4 implemented and verified |
 | 2026-11-20 | Founder applied `AddCustomers` and pushed the backend; `Frontend` given |
 | 2026-11-20 | Phase 4 Frontend 4.B1–4.B4 implemented; founder review → duplicate-phone notice redesigned and unified confirmation dialog added (D-120); approved |
+| 2026-11-20 | Founder pushed the Phase 4 frontend and merged the Phase 4 PR into `develop`; Phase 4 closed, at gate 8 |
