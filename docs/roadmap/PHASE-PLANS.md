@@ -366,8 +366,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 1. Branch created by founder | ☑ | 2026-11-21 | `feature/phase6-payments` |
 | 2. Plan approved | ☑ | 2026-11-21 | D-131–D-138 |
 | 3. `Backend` started | ☑ | 2026-11-21 | 6.A1–6.A7 implemented and verified |
-| 4. Backend pushed (founder confirmed) | ☐ | | migration `AddPayments` |
-| 5. `Frontend` started | ☐ | | |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-21 | migration `AddPayments` applied (verified read-only) |
+| 5. `Frontend` started | ☑ | 2026-11-21 | 6.B1–6.B5 implemented; automated checks pass |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |

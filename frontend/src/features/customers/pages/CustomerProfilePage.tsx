@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
+import { CustomerPaymentsSection, RecordPaymentDrawer } from "@/features/payments";
 import { channelLabel } from "@/features/settings";
 import { errorMessage } from "@/services/api/apiClient";
 import { formatMoneyNumber, toFils } from "@/shared/lib/money";
@@ -28,6 +29,7 @@ export function CustomerProfilePage({ ordersSection }: { ordersSection?: Custome
   const toast = useToast();
   const confirm = useConfirm();
   const [editing, setEditing] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (customer.error) {
@@ -110,6 +112,11 @@ export function CustomerProfilePage({ ordersSection }: { ordersSection?: Custome
               طلب جديد
             </ButtonLink>
           )}
+          {toFils(c.balanceDue) > 0 && (
+            <Button variant="outline" icon="cash" onClick={() => setPaying(true)}>
+              تسجيل دفعة
+            </Button>
+          )}
           <Button variant="outline" icon="pencil" onClick={() => setEditing(true)}>
             تعديل
           </Button>
@@ -134,10 +141,12 @@ export function CustomerProfilePage({ ordersSection }: { ordersSection?: Custome
           label="المستحق"
           value={formatMoneyNumber(c.balanceDue)}
           unit="د.أ"
-          foot={toFils(c.balanceDue) > 0 ? "من طلبات غير مدفوعة" : "ما عليه إشي"}
+          foot={toFils(c.balanceDue) > 0 ? "من طلبات توصّلت وما اندفعت كاملة" : "ما عليه إشي"}
         />
       </div>
       {ordersSection?.({ customerId: c.id, orderCount: c.orderCount })}
+      <CustomerPaymentsSection customerId={c.id} />
+      <RecordPaymentDrawer open={paying} onClose={() => setPaying(false)} target={{ kind: "customer", customerId: c.id, customerName: c.name, balance: c.balanceDue }} />
       <CustomerFormDrawer
         open={editing}
         customer={c}

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { channelIcon, channelLabel } from "@/features/settings";
+import { PaymentBadge } from "@/features/payments";
 import { Button } from "@/shared/ui/Button";
 import { Icon } from "@/shared/ui/Icon";
 import { Money } from "@/shared/ui/Money";
@@ -44,6 +45,7 @@ export function OrdersTable({ orders, move, movingId }: { orders: OrderListItem[
           <th className="hide-md">المنتجات</th>
           <th>الحالة</th>
           <th className="hide-md">المسار</th>
+          <th className="hide-sm">الدفع</th>
           <th className="num">المجموع</th>
           <th className="num hide-sm">
             <span className="sr-only">الخطوة الجاية</span>
@@ -99,6 +101,9 @@ export function OrdersTable({ orders, move, movingId }: { orders: OrderListItem[
               </td>
               <td className="hide-md">
                 <Track status={o.status} />
+              </td>
+              <td className="hide-sm">
+                <PaymentBadge status={o.paymentStatus} />
               </td>
               <td className="num">
                 <Money value={o.total} />

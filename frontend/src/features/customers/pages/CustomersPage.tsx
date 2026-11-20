@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { RecordPaymentDrawer, type PaymentTarget } from "@/features/payments";
 import { channelIcon } from "@/features/settings";
 import { errorMessage } from "@/services/api/apiClient";
 import { formatMoneyNumber, toFils } from "@/shared/lib/money";
@@ -31,6 +32,7 @@ export function CustomersPage() {
   const [searchText, setSearchText] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [paying, setPaying] = useState<PaymentTarget | null>(null);
   const summary = useCustomersSummary();
   const list = useCustomers({ search: search || undefined, segment, archived, page, pageSize: PAGE_SIZE });
   const top = useCustomers({ pageSize: 3 });
@@ -153,6 +155,9 @@ export function CustomersPage() {
                     <th className="num hide-sm">مجموع الشراء</th>
                     <th className="hide-sm">آخر طلب</th>
                     <th className="num">المستحق</th>
+                    <th className="num hide-sm">
+                      <span className="sr-only">إجراء</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -182,6 +187,22 @@ export function CustomersPage() {
                       </td>
                       <td className="hide-sm">{c.lastOrderOn ? date.format(new Date(`${c.lastOrderOn}T00:00:00Z`)) : "—"}</td>
                       <td className="num">{toFils(c.balanceDue) > 0 ? <Money value={c.balanceDue} tone="neg" /> : "—"}</td>
+                      <td className="num hide-sm">
+                        {toFils(c.balanceDue) > 0 && !c.isArchived && (
+                          <span className="row-act">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPaying({ kind: "customer", customerId: c.id, customerName: c.name, balance: c.balanceDue });
+                              }}
+                            >
+                              دفعة
+                            </Button>
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -203,6 +224,7 @@ export function CustomersPage() {
           )}
         </>
       )}
+      <RecordPaymentDrawer open={paying !== null} target={paying} onClose={() => setPaying(null)} />
       <CustomerFormDrawer
         open={adding}
         onClose={() => navigate("/customers", { replace: true })}

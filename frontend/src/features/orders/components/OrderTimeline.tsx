@@ -1,4 +1,7 @@
-import { channelLabel } from "@/features/settings";
+import { paidOnLabel } from "@/features/payments";
+import { channelLabel, paymentMethodLabel } from "@/features/settings";
+import type { ReactNode } from "react";
+import { Money } from "@/shared/ui/Money";
 import { Icon } from "@/shared/ui/Icon";
 import type { OrderDetails, OrderStatusChange } from "../api/ordersApi";
 import { cancelReasonLabel, STATUS } from "../domain/orderDomain";
@@ -58,8 +61,41 @@ function TimelineEntry({ entry, order }: { entry: OrderStatusChange; order: Orde
   );
 }
 
-/** The order "thread" (prototype feed), built from the server's status log. */
+type PaymentLine = OrderDetails["payments"][number];
+
+/** A payment (or its reversal) in the thread (prototype «دفعة … · المتبقي …»). */
+function PaymentEntry({ payment, reversal }: { payment: PaymentLine; reversal: boolean }) {
+  return (
+    <li className={reversal ? "tone-brick" : "tone-green"}>
+      <span className="feed__ic">
+        <Icon name={reversal ? "arrow-back-up" : "cash"} size={16} />
+      </span>
+      <div>
+        <b>
+          {reversal ? "انلغت دفعة " : "دفعة "}
+          <Money value={payment.amount} />
+        </b>
+        <span>
+          {paymentMethodLabel[payment.method]} · {paidOnLabel(payment.paidOn)}
+          {payment.isCustomerLevel ? " · من دفعة على الحساب" : ""}
+          {reversal ? ` · ${orderDateTime(payment.reversedAt!)}` : ""}
+        </span>
+      </div>
+    </li>
+  );
+}
+
+type ThreadItem = { at: string; key: string; node: ReactNode };
+
+/** The order "thread" (prototype feed): the server's status log plus payments and reversals, in time order. */
 export function OrderTimeline({ order }: { order: OrderDetails }) {
+  const items: ThreadItem[] = [
+    ...order.timeline.map((entry) => ({ at: entry.changedAt, key: entry.id, node: <TimelineEntry key={entry.id} entry={entry} order={order} /> })),
+    ...order.payments.map((p) => ({ at: p.recordedAt, key: `p-${p.paymentId}`, node: <PaymentEntry key={`p-${p.paymentId}`} payment={p} reversal={false} /> })),
+    ...order.payments
+      .filter((p) => p.isReversed && p.reversedAt)
+      .map((p) => ({ at: p.reversedAt!, key: `r-${p.paymentId}`, node: <PaymentEntry key={`r-${p.paymentId}`} payment={p} reversal /> })),
+  ].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
   return (
     <article className="card">
       <div className="shead">
@@ -69,9 +105,7 @@ export function OrderTimeline({ order }: { order: OrderDetails }) {
         </div>
       </div>
       <ul className="feed">
-        {order.timeline.map((entry) => (
-          <TimelineEntry key={entry.id} entry={entry} order={order} />
-        ))}
+        {items.map((item) => item.node)}
       </ul>
     </article>
   );

@@ -28,12 +28,16 @@ export interface OrderFormState {
   giftMessage: string;
   paymentMethod: PaymentMethodCode | null;
   note: string;
+  /** «المدفوع هلأ»: an optional deposit taken with a new order (D-135). Empty = none. */
+  depositAmount: string;
+  /** Null = the default (the expected method when it can be recorded, else the first recordable one). */
+  depositMethod: PaymentMethodCode | null;
 }
 
 export const newLineKey = (): string => crypto.randomUUID();
 
 export function emptyOrderForm(customerId: string | null, lines: Line[] = []): OrderFormState {
-  return { customerId, channel: null, lines, fee: "0", discount: "0", address: "", isGift: false, recipientName: "", recipientPhone: "", giftMessage: "", paymentMethod: null, note: "" };
+  return { customerId, channel: null, lines, fee: "0", discount: "0", address: "", isGift: false, recipientName: "", recipientPhone: "", giftMessage: "", paymentMethod: null, note: "", depositAmount: "", depositMethod: null };
 }
 
 /** A new line for a product: its first active variant with stock that is not already on another line. */
@@ -67,6 +71,8 @@ export function formFromOrder(o: OrderDetails, products: ReadonlyMap<string, Pro
     giftMessage: o.giftMessage ?? "",
     paymentMethod: o.paymentMethod,
     note: o.note ?? "",
+    depositAmount: "",
+    depositMethod: null,
   };
 }
 
