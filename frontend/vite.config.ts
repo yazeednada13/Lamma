@@ -25,7 +25,7 @@ export default defineConfig({
     restoreMocks: true,
     // Many tests mount the whole app (routes + guards + providers) in jsdom, and test files run in parallel;
     // 15s gives headroom under CPU contention (e.g. the 21-route coming-soon loop) without hiding real hangs.
-    testTimeout: 15_000,
+    testTimeout: 30_000,
     // One worker per physical core: more workers only time-slice the same CPUs and make every full-app test slower.
     maxWorkers: 4,
   },

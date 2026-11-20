@@ -38,5 +38,6 @@ public static class DependencyInjection
             .AddScoped<ICategoryService, CategoryService>()
             .AddScoped<IProductTemplateService, ProductTemplateService>()
             .AddScoped<IProductService, ProductService>()
-            .AddScoped<IProductImageService, ProductImageService>();
+            .AddScoped<IProductImageService, ProductImageService>()
+            .AddScoped<Inventory.IInventoryService, Inventory.InventoryService>();
 }

@@ -84,6 +84,11 @@ public static class DependencyInjection
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IProductQueries, ProductQueries>();
 
+        // Inventory module
+        services.AddScoped<Lamma.Application.Inventory.IInventoryRepository, InventoryRepository>();
+        services.AddScoped<Lamma.Application.Inventory.IInventoryQueries, InventoryQueries>();
+        services.AddScoped<IIdempotencyService, Persistence.Idempotency.IdempotencyService>();
+
         // Accounts module
         services.AddScoped<IAccountQueries, AccountQueries>();
         return services;

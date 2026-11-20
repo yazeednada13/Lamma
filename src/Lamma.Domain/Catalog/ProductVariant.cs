@@ -97,6 +97,10 @@ public sealed class ProductVariant : Entity, IBusinessOwned
 
     internal void SetArchived(bool archived) => IsArchived = archived;
 
+    internal void SetCost(decimal cost) => CostOverride = cost;
+
+    internal void SetExpiry(DateOnly? expiryDate) => ExpiryDate = expiryDate;
+
     internal void ApplyOnHand(int delta)
     {
         var result = OnHand + delta;

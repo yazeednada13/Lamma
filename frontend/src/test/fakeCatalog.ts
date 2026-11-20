@@ -285,6 +285,36 @@ export function createCatalogHandlers({ base, withBusiness, problem, json }: Dep
       v.isArchived = params.action === "archive";
       return json(details(catalog, p));
     })),
+    // Inventory summary (Phase 3, D-113), computed from the fake catalog.
+    http.get(`${base}/inventory/summary`, withBusiness(({ catalog }) => {
+      const active = catalog.products.filter((p) => !p.isArchived);
+      let cost = 0;
+      let retail = 0;
+      let pieces = 0;
+      const available = active.map((p) => {
+        const vs = p.variants.filter((v) => !v.isArchived);
+        vs.forEach((v) => {
+          cost += v.onHand * Number(v.costOverride ?? p.cost);
+          retail += v.onHand * Number(v.priceOverride ?? p.sellingPrice);
+          pieces += v.onHand;
+        });
+        return { name: p.name, threshold: p.lowStockThreshold, available: vs.reduce((s, v) => s + v.onHand - v.reserved, 0) };
+      });
+      const low = available.filter((a) => a.available > 0 && a.available <= a.threshold);
+      const out = available.filter((a) => a.available <= 0);
+      return json({
+        stockValueAtCost: cost.toFixed(3),
+        retailValue: retail.toFixed(3),
+        expectedProfit: (retail - cost).toFixed(3),
+        pieces,
+        reserved: 0,
+        productCount: active.length,
+        lowCount: low.length,
+        outCount: out.length,
+        lowNames: low.slice(0, 2).map((a) => a.name),
+        outNames: out.slice(0, 2).map((a) => a.name),
+      });
+    })),
     http.put(`${base}/products/:id/image`, withBusiness(({ catalog }, _b, _r, params) => {
       const p = find(catalog, params.id!);
       if (!p) return notFound();

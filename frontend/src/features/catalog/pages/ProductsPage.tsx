@@ -9,7 +9,9 @@ import { Icon } from "@/shared/ui/Icon";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { useCategories, useProducts } from "../api/catalogApi";
 import type { ProductListParams } from "../api/catalogTypes";
+import { CatalogSummaryCards } from "../components/CatalogSummaryCards";
 import { ProductCard } from "../components/ProductCard";
+import { ProductStockAdjust } from "../components/ProductStockAdjust";
 import { ProductsTable } from "../components/ProductsTable";
 
 const PAGE_SIZE = 24;
@@ -50,6 +52,7 @@ export function ProductsPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [view, setView] = useState<"grid" | "list">(readView);
+  const [adjustingId, setAdjustingId] = useState<string | null>(null);
   const categories = useCategories();
   const products = useProducts(toParams(filter, search, page));
 
@@ -96,6 +99,7 @@ export function ProductsPage() {
           </>
         }
       />
+      <CatalogSummaryCards />
       <div className="toolbar card" style={{ padding: "12px 16px", borderRadius: 16 }}>
         <span className="control control--search" style={{ height: 40, width: "min(280px, 100%)" }}>
           <Icon name="search" />
@@ -156,7 +160,7 @@ export function ProductsPage() {
           {view === "grid" ? (
             <div className="products-grid stagger">
               {data.items.map((p, i) => (
-                <ProductCard key={p.id} product={{ ...p, optionLabel: p.variantCount > 0 ? `${p.variantCount} نسخة` : undefined }} index={i} />
+                <ProductCard key={p.id} product={{ ...p, optionLabel: p.variantCount > 0 ? `${p.variantCount} نسخة` : undefined }} index={i} onAdjust={p.isArchived ? undefined : () => setAdjustingId(p.id)} />
               ))}
             </div>
           ) : (
@@ -177,6 +181,7 @@ export function ProductsPage() {
           )}
         </>
       )}
+      <ProductStockAdjust productId={adjustingId} onClose={() => setAdjustingId(null)} />
     </>
   );
 }

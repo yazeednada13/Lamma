@@ -117,7 +117,7 @@ public static class DependencyInjection
             cors.AddPolicy(CorsPolicy, p => p
                 .WithOrigins(origins.Value.AllowedOrigins)
                 .AllowCredentials()
-                .WithHeaders("Content-Type", "X-XSRF-TOKEN")
+                .WithHeaders("Content-Type", "X-XSRF-TOKEN", "Idempotency-Key")
                 .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")));
         return services;
     }
