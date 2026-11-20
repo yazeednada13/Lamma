@@ -93,6 +93,7 @@
   - `shared/ui/form/ImagePicker.test.tsx`: type and size pre-check
 - The catalog fake (`src/test/fakeCatalog.ts`, test-only) implements the API-DESIGN §12 contracts; state lives on each fake business.
 - Vitest runs with `maxWorkers: 4` (one per physical core of the dev machine; E-9).
+- **Phase 3 (inventory), D-106:** `features/inventory/domain/inventoryDomain.test.ts` covers reason rules, the adjust preview, receipt totals in fils, day grouping in Asia/Amman, and idempotency-key reuse. The MSW fake gained `GET inventory/summary` for the products page. Screens are verified by the founder with the gate-6 checklist.
 - `npm run check:architecture` and `npm run lint` are part of every frontend checkpoint.
 - Manual: a real-API browser pass and a 4-width RTL check at each Frontend checkpoint.
 

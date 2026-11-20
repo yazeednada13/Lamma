@@ -24,7 +24,8 @@ describe("product details", () => {
     expect(screen.getByTitle("S · زيتي: موجود 3، محجوز 0")).toHaveTextContent("3");
     expect(screen.getByTitle("M · زيتي: موجود 0، محجوز 0")).toHaveTextContent("نفد");
     expect(screen.getAllByText("كمية افتتاحية")).toHaveLength(2);
-    expect(screen.getByRole("button", { name: /تعديل المخزون/ })).toBeDisabled(); // Phase 3
+    expect(screen.getByRole("button", { name: /تعديل المخزون/ })).toBeEnabled(); // Phase 3: adjust dialog
+    expect(screen.getByRole("link", { name: "استلام" })).toHaveAttribute("href", `/inventory/receive?productId=${p.id}`);
     expect(screen.getByRole("link", { name: "تعديل" })).toHaveAttribute("href", `/products/${p.id}/edit`);
   });
 

@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import type { StockMovement } from "../api/catalogTypes";
 import { Icon } from "@/shared/ui/Icon";
 
@@ -13,7 +14,7 @@ const TYPE_LABEL: Record<StockMovement["type"], string> = {
 const dateFormat = new Intl.DateTimeFormat("ar-JO-u-nu-latn", { day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZone: "Asia/Amman" });
 
 /** Latest stock movements of the product (prototype product details `.mrow`). The full log comes in Phase 3. */
-export function MovementsCard({ movements }: { movements: readonly StockMovement[] }) {
+export function MovementsCard({ movements, allHref }: { movements: readonly StockMovement[]; allHref?: string }) {
   return (
     <article className="card">
       <div className="shead">
@@ -21,6 +22,11 @@ export function MovementsCard({ movements }: { movements: readonly StockMovement
           <span className="overline">آخر الحركات</span>
           <h2>المخزون</h2>
         </div>
+        {allHref && (
+          <Link className="shead__more" to={allHref}>
+            الكل <Icon name="arrow-left" size={16} />
+          </Link>
+        )}
       </div>
       {movements.length === 0 ? (
         <p className="muted">ما في حركات.</p>
@@ -31,7 +37,7 @@ export function MovementsCard({ movements }: { movements: readonly StockMovement
               <Icon name={m.onHandDelta > 0 ? "upload" : "package"} size={16} />
             </span>
             <span>
-              <b style={{ font: "var(--lamma-type-label)" }}>{m.referenceKind === "opening" ? "كمية افتتاحية" : TYPE_LABEL[m.type]}</b>
+              <b style={{ font: "var(--lamma-type-label)" }}>{m.referenceKind === "opening" ? "كمية افتتاحية" : (m.label ?? TYPE_LABEL[m.type])}</b>
               <br />
               <span className="caption">
                 {dateFormat.format(new Date(m.createdAt))}

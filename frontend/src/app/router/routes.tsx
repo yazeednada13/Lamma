@@ -1,6 +1,7 @@
 import type { RouteObject } from "react-router";
 import { authRoutes, resetPasswordRoute } from "@/features/auth";
 import { catalogRoutes, productTemplatesSettingsSection } from "@/features/catalog";
+import { inventoryRoutes } from "@/features/inventory";
 import { dashboardRoute } from "@/features/dashboard";
 import { onboardingRoute } from "@/features/onboarding";
 import { createSettingsRoutes } from "@/features/settings";
@@ -39,7 +40,7 @@ export const routes: RouteObject[] = [
             children: [
               {
                 element: <AuthenticatedLayout />,
-                children: [dashboardRoute, ...catalogRoutes, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
+                children: [dashboardRoute, ...catalogRoutes, ...inventoryRoutes, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
               },
             ],
           },

@@ -246,8 +246,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 1. Branch created by founder | ☑ | 2026-11-18 | `feature/phase3-inventory` |
 | 2. Plan approved | ☑ | 2026-11-18 | D-107–D-113 |
 | 3. `Backend` started | ☑ | 2026-11-18 | 3.A1–3.A8 done in one run (D-087) |
-| 4. Backend pushed (founder confirmed) | ☐ | | migration `AddInventory`: waiting for the founder |
-| 5. `Frontend` started | ☐ | | |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-18 | migration `AddInventory` applied by the founder (verified read-only) |
+| 5. `Frontend` started | ☑ | 2026-11-18 | 3.B1–3.B7 done in one run; verification per D-106 |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |

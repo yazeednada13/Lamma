@@ -12,7 +12,7 @@ export type ProductCardData = Pick<
 > & { cost?: string; optionLabel?: string };
 
 /** Product card (prototype `App.productCard`). Margin shows only when the cost is known (details/preview). */
-export function ProductCard({ product, index = 0, preview }: { product: ProductCardData; index?: number; preview?: boolean }) {
+export function ProductCard({ product, index = 0, preview, onAdjust }: { product: ProductCardData; index?: number; preview?: boolean; onAdjust?: () => void }) {
   const { stockStatus: status } = product;
   const margin = product.cost !== undefined ? toFils(product.minPrice) - toFils(product.cost) : null;
   const marginPercent = margin !== null && toFils(product.minPrice) > 0 ? Math.round((margin / toFils(product.minPrice)) * 100) : 0;
@@ -59,6 +59,11 @@ export function ProductCard({ product, index = 0, preview }: { product: ProductC
             <Link to={`/products/${product.id}/edit`} aria-label={`تعديل ${product.name}`}>
               <Icon name="pencil" size={16} />
             </Link>
+            {onAdjust && (
+              <button type="button" aria-label={`تعديل مخزون ${product.name}`} onClick={onAdjust}>
+                <Icon name="adjustments" size={16} />
+              </button>
+            )}
           </span>
         )}
       </div>

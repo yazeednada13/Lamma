@@ -7,7 +7,7 @@ import { renderApp } from "@/test/renderApp";
 const catalog = () => fake.businesses.get("reem@example.com")!.catalog;
 // Saving navigates to the details page and loads it; under parallel full-app renders that chain can exceed
 // the default 3s wait (FRONTEND-ARCHITECTURE §11 E-9).
-const AFTER_SAVE = { timeout: 10_000 };
+const AFTER_SAVE = { timeout: 20_000 };
 const posted = (path: string) => fake.requests.filter((r) => r.method === "POST" && r.path === path).map((r) => r.body as Record<string, unknown>);
 
 describe("products list", () => {
@@ -58,10 +58,10 @@ describe("new product", () => {
     await user.type(quantity, "6");
     await user.click(screen.getByRole("button", { name: "حفظ المنتج" }));
 
-    expect(await screen.findByRole("heading", { name: "كريم ترطيب" }, AFTER_SAVE)).toBeInTheDocument();
+    expect(await screen.findByText(/انضاف «كريم ترطيب»/, {}, AFTER_SAVE)).toBeVisible(); // shown at save time, before navigation
     const [body] = posted("/products");
     expect(body).toMatchObject({ name: "كريم ترطيب", templateCode: "beauty", sellingPrice: "12.000", cost: "5.000", lowStockThreshold: 5, options: [], variants: [{ values: [], openingQuantity: 6 }] });
-    expect(await screen.findByText(/انضاف «كريم ترطيب»/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "كريم ترطيب" }, AFTER_SAVE)).toBeInTheDocument();
   });
 
   it("builds a size × colour matrix and sends every combination with its quantity", async () => {

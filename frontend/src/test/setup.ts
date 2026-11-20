@@ -5,7 +5,7 @@ import { resetCsrfToken } from "@/services/api/apiClient";
 import { fake, server } from "./fakeApi";
 
 // findBy*/waitFor default to 1s; full-app renders in parallel test files can take longer under CPU load.
-configure({ asyncUtilTimeout: 3000 });
+configure({ asyncUtilTimeout: 10_000 });
 
 // jsdom gaps used by the UI.
 if (!window.matchMedia) {

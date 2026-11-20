@@ -58,9 +58,10 @@ frontend/
       dashboard/               dashboard page
       settings/                account page, business settings page (with extra-section slots), business types (API labels, D-103), domain code lists
       catalog/                 products list/details/form, variant matrix, categories, templates & custom fields settings section (Phase 2)
+      inventory/               stock levels, receive, adjust dialog, movement log, expiry (Phase 3)
     shared/                    reusable, business-agnostic code
       ui/                      Button, Icon, Menu, Badge, Chip, Money, PageHeader
-        brand/  form/ (incl. MoneyField, ImagePicker)  feedback/  overlay/  toast/  charts/ (Donut)
+        brand/  form/ (incl. MoneyField, ImagePicker)  feedback/  overlay/  toast/  charts/ (Donut)  MetricCard
       lib/                     money, personName, formErrors
       validation/              fieldSchemas (emailSchema, personNameSchema)
     services/                  infrastructure: api/apiClient.ts, query/queryClient.ts
@@ -95,7 +96,7 @@ Create only the sub-folders a feature needs.
 | `test/`, `*.test.ts(x)` | anything |
 
 - **Alias:** `@/` → `src/` (`tsconfig.app.json` `paths` + `vite.config.ts` `resolve.alias`). Inside one folder use relative imports (`./`, `../`); across top-level folders always use `@/…`. **`../../` is banned.**
-- **Cross-feature edges (current):** `settings → auth`, `onboarding → auth, settings`, `dashboard → auth, settings`, `subscription → auth`, `catalog → auth, settings`. All point one way; **no cycles** are allowed.
+- **Cross-feature edges (current):** `settings → auth`, `onboarding → auth, settings`, `dashboard → auth, settings`, `subscription → auth`, `catalog → auth, settings, inventory`. All point one way; **no cycles** are allowed.
 - **Plugging a feature into another feature's screen:** when feature B must show a section on feature A's page and A must not depend on B, A exposes a slot and the **app layer composes them**. Example: `createSettingsRoutes({ extraSections: [productTemplatesSettingsSection] })` in `app/router/routes.tsx`. This is the same pattern as the AppShell slots (§6).
 - **Enforcement:** ESLint `no-restricted-imports` per folder (`eslint.config.js`) and `npm run check:architecture` (layer violations, deep feature imports, feature imports in the AppShell, `../../`, unresolved imports, import cycles). Both must report 0 before any frontend checkpoint.
 
@@ -159,13 +160,16 @@ Split a file only along a real responsibility boundary, never just to cut lines:
 | E-6 | Unused primitives kept: `Chip`, `Dialog`, `Money` and the money helpers (used only in tests today) | Approved primitives (plan 1.B3) needed from Phase 2 onward |
 | E-7 | Some exported types are used only inside their own module | They are the module's contract (for example DTO and props types) |
 | E-8 | Business-type labels exist both in the API (`labelAr`) and the client (`features/settings/domain/businessTypes.ts`) | Unifying them would change behaviour; tracked as **OQ-091** |
-| E-9 | Vitest `testTimeout: 15_000`, `asyncUtilTimeout: 3000`, **`maxWorkers: 4`**, and a 10 s wait after saving in the product-form tests | Many test files mount the full app in jsdom. With 7 workers on 4 physical cores each full-app test ran ~7× slower and flaked. Each file passes alone with the defaults |
+| E-9 | Vitest `testTimeout: 30_000`, `asyncUtilTimeout: 10_000`, **`maxWorkers: 4`**, and a 20 s wait after saving in the product-form tests (raised in Phase 3: the dev machine runs at 40–60% CPU from other apps, which slowed the full-app tests ~5×) | Many test files mount the full app in jsdom. With 7 workers on 4 physical cores each full-app test ran ~7× slower and flaked. Each file passes alone with the defaults |
 | E-10 | `public/logo/favicon.svg` duplicates `public/favicon.svg` | Keeps the logo folder a mirror of the reference set; removal only on founder request |
 
 | E-11 | `features/catalog/components/` is flat (17 files) instead of sub-folders | `../../` imports are banned (§4), and deep `@/features/catalog/...` self-imports are banned too; sub-folders inside `components/` would need one of them. Files carry their area in the name (`ProductHero`, `VariantsSection`, …) |
 | E-12 | `ProductFormPage.tsx` is 202 lines | Within the page guide (~250). Mapping between the form and the API bodies is already split out into the unit-tested `domain/productFormModel.ts` |
 
 **Audit results (2026-11-17):** 0 layer or public-API violations, 0 import cycles (`check:architecture`, 125 files). No UI file calls the API client directly. There are no duplicate type names. No business rule lives in `app/`, `shared/` or the app-shell. The largest files are `apiClient.ts` (194 lines) and `BusinessSettingsPage.tsx` (131 lines).
+
+- **Stock changes across features:** inventory mutations invalidate only `["inventory"]`. Catalog screens refetch on mount (`staleTime` 0), and the shared `AdjustStockDialog` takes an `onDone` callback so the catalog refreshes its own product. Neither feature imports the other's query keys.
+- **Idempotent actions:** `useActionKey()` (inventory) keeps one `Idempotency-Key` per request body; retries reuse it, a changed body gets a new one, and success clears it (D-112).
 
 **Audit after Phase 2 frontend (2026-11-18):** `check:architecture` reports 0 violations and 0 cycles over 165 files. No UI file calls the API client directly. Largest files: `ProductFormPage.tsx` 202, `apiClient.ts` 197 (multipart upload added), `ProductsPage.tsx` 182, `VariantsSection.tsx` 161.
 

@@ -1,5 +1,7 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
+import { AdjustStockDialog } from "@/features/inventory";
 import { errorMessage } from "@/services/api/apiClient";
 import { Button, ButtonLink } from "@/shared/ui/Button";
 import { EmptyState } from "@/shared/ui/feedback/EmptyState";
@@ -8,7 +10,7 @@ import { PageSkeleton } from "@/shared/ui/feedback/Skeleton";
 import { FormAlert } from "@/shared/ui/form/FormAlert";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
-import { useProduct, useProductTemplates, useSetProductArchived, useSetVariantArchived, useUpdateVariant } from "../api/catalogApi";
+import { catalogKeys, useProduct, useProductTemplates, useSetProductArchived, useSetVariantArchived, useUpdateVariant } from "../api/catalogApi";
 import type { ProductVariant } from "../api/catalogTypes";
 import { MovementsCard } from "../components/MovementsCard";
 import { ProductHero } from "../components/ProductHero";
@@ -27,6 +29,8 @@ export function ProductDetailsPage() {
   const toast = useToast();
   const [editing, setEditing] = useState<ProductVariant | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [adjusting, setAdjusting] = useState(false);
+  const queryClient = useQueryClient();
 
   if (product.error) {
     return (
@@ -53,7 +57,6 @@ export function ProductDetailsPage() {
     }
   };
 
-  const soon = "قريبًا";
   return (
     <>
       <PageHeader
@@ -64,12 +67,12 @@ export function ProductDetailsPage() {
         }
         actions={
           <>
-            <Button variant="outline" icon="adjustments" disabled title={soon}>
-              تعديل المخزون <span className="caption">({soon})</span>
+            <Button variant="outline" icon="adjustments" disabled={data.isArchived} onClick={() => setAdjusting(true)}>
+              تعديل المخزون
             </Button>
-            <Button variant="outline" icon="truck" disabled title={soon}>
-              استلام <span className="caption">({soon})</span>
-            </Button>
+            <ButtonLink to={`/inventory/receive?productId=${data.id}`} variant="outline" icon="truck">
+              استلام
+            </ButtonLink>
             <ButtonLink to={`/products/${data.id}/edit`} variant="outline" icon="pencil">
               تعديل
             </ButtonLink>
@@ -107,9 +110,16 @@ export function ProductDetailsPage() {
           <EmptyState title="حركة البيع" text="رح تظهر مبيعات المنتج هون بعد ما تبلّش تسجّل طلبات." />
         </div>
         <div className="col" style={{ gap: 16 }}>
-          <MovementsCard movements={data.recentMovements} />
+          <MovementsCard movements={data.recentMovements} allHref={`/inventory/movements?productId=${data.id}`} />
         </div>
       </div>
+      <AdjustStockDialog
+        open={adjusting}
+        productName={data.name}
+        variants={data.variants.filter((v) => !v.isArchived).map((v) => ({ variantId: v.id, label: v.isDefault ? data.name : v.label, onHand: v.onHand, reserved: v.reserved }))}
+        onClose={() => setAdjusting(false)}
+        onDone={() => void queryClient.invalidateQueries({ queryKey: catalogKeys.all })}
+      />
       <VariantEditDrawer
         variant={editing}
         supportsExpiry={template?.supportsExpiry ?? false}
