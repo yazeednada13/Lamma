@@ -47,6 +47,7 @@ export function PaymentsTable({ payments, showCustomer = true }: { payments: Pay
               <td>
                 <OrdersCell payment={p} />
                 {p.orderId === null && <span className="caption" style={{ display: "block" }}>على الحساب</span>}
+                {p.settlementId && <span className="caption" style={{ display: "block" }}>تسوية شركة التوصيل</span>}
               </td>
               {showCustomer && (
                 <td>
@@ -64,7 +65,7 @@ export function PaymentsTable({ payments, showCustomer = true }: { payments: Pay
                 <Money value={p.amount} tone={p.isReversed ? undefined : "pos"} />
               </td>
               <td className="num">
-                {!p.isReversed && (
+                {!p.isReversed && !p.settlementId && (
                   <Button variant="ghost" size="sm" onClick={() => void reverse({ id: p.id, amount: p.amount, method: p.method, spread: p.allocations.length > 1 })}>
                     إلغاء الدفعة
                   </Button>

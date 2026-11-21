@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 7: Courier & expenses** (branch `feature/phase7-courier-expenses`) |
-| Current gate | **Gate 4: Backend checkpoint.** 7.A1–7.A6 implemented and verified; waiting for the founder to add and apply migration `AddCourierAndExpenses` and push the backend ([PHASE-7-PLAN.md](../roadmap/PHASE-7-PLAN.md)) |
+| Current gate | **Gate 6: Frontend checkpoint.** 7.B1–7.B5 implemented; automated checks pass; waiting for the founder's manual check ([PHASE-7-PLAN.md](../roadmap/PHASE-7-PLAN.md)) |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21) |
-| Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Stop the running API, run the `AddCourierAndExpenses` migration commands, commit and push the backend, then write `Frontend` |
+| Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses` applied by the founder (verified read-only in `Lamma_Dev`) |
+| Next expected founder action | Run the Phase 7 manual checklist in the browser, then push the frontend |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -33,7 +33,7 @@
 | 4 Customers | **Merged into develop (founder-reported 2026-11-20)** |
 | 5 Orders core | **Merged into develop (founder-reported 2026-11-21)** |
 | 6 Payments & receivables | **Merged into develop (founder-reported 2026-11-21)** |
-| 7 Courier & expenses | **Backend done (2026-11-21); at gate 4** |
+| 7 Courier & expenses | **Frontend done (2026-11-21); at gate 6** |
 | 8 Returns & pre-orders | Pending |
 | 9 Dashboard | Pending |
 | 10 Reports | Pending |
@@ -87,6 +87,8 @@
 | 2026-11-21 | Phase 6 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 228 files, 0 violations, 0 cycles; JS 738 kB (216 kB gzip) |
 | 2026-11-21 | Phase 6 frontend: `vitest run` | **101 passed, 0 failed** (29 files; 9 new payment logic tests) |
 | 2026-11-21 | Phase 7 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106; built to a separate output folder because the founder's API was running) | 0 warnings; 392 passed, 1 failed (architecture rule: a positional record in Domain). Fixed; Architecture 8/8 and Domain 212/212 re-run green → **393 passing** (Domain 212, Application 58, Infrastructure 19, Architecture 8, API integration 96; 11 new) |
+| 2026-11-21 | Phase 7 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 239 files, 0 violations, 0 cycles; JS 769 kB (224 kB gzip) |
+| 2026-11-21 | Phase 7 frontend: `vitest run` | **108 passed, 0 failed** (30 files; 6 new finance logic tests; 1 settings assertion flipped from «no expense section until Phase 7» to «present») |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -133,3 +135,7 @@
 | 2026-11-21 | `Next Phase` given on `feature/phase7-courier-expenses`; Phase 7 plan approved (D-139–D-144, OQ-060…063 resolved); waiting at gate 3 |
 | 2026-11-21 | Founder-approved UX fix on receive stock (before Phase 7 Backend): visible labels «الكمية اللي وصلت» / «تكلفة القطعة (سعر الشراء)», live weighted-average cost preview (D-109) when the cost changes, unit cost on the receipt. Frontend only; `tsc`, `eslint`, `check:architecture` clean; inventory tests 6/6 (1 new) |
 | 2026-11-21 | Phase 7 Backend 7.A1–7.A6 implemented and verified; waiting at gate 4 (migration `AddCourierAndExpenses`) |
+| 2026-11-21 | Founder applied `AddCourierAndExpenses` and pushed the backend; `Frontend` given |
+| 2026-11-21 | Phase 7 Frontend 7.B1–7.B5 implemented; automated checks pass; waiting at gate 6 |
+| 2026-11-21 | Phase 7 smoke test on the real API (throwaway business): overview figures exact (sales 58, COGS 20, expenses 9, net 29, cash in 30, out 5, dues 12, courier-held 12); received > expected blocked; settlement drawer prefill, live difference notice, save and toast; expenses, courier and overview screens read correctly. Not covered: reversal from the UI, settings sections, widths |
+| 2026-11-21 | Phase 7 checklist cases 10–21 run by Claude on the real API (founder request): partial settlement, reversal from the UI, settlement payment protected, period switch, ?add/?pay links, categories (locked delivery, add, duplicate, archive, restore), courier name, 375px no horizontal scroll: all passed. Two fixes from the founder review: deduction steps in the finance hero use white instead of the reference pink (app-additions.css); settlement payments show «من تسوية شركة التوصيل» and no cancel button. 768px not measured |

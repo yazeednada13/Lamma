@@ -12,7 +12,7 @@ describe("business settings", () => {
     expect(name).toHaveValue("بوتيك ريم");
     expect(screen.getByRole("switch", { name: "إنستغرام" })).toBeChecked();
     expect(screen.getByRole("switch", { name: "زين كاش" })).not.toBeChecked();
-    expect(screen.queryByText("تصنيفات المصاريف")).not.toBeInTheDocument(); // Phase 7
+    expect(screen.getByText("تصنيفات المصاريف")).toBeInTheDocument(); // Phase 7 section, composed by the app layer
 
     await user.clear(name);
     await user.type(name, "بوتيك ريم الجديد");

@@ -404,8 +404,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 1. Branch created by founder | ☑ | 2026-11-21 | `feature/phase7-courier-expenses` |
 | 2. Plan approved | ☑ | 2026-11-21 | D-139–D-144 |
 | 3. `Backend` started | ☑ | 2026-11-21 | 7.A1–7.A6 implemented and verified |
-| 4. Backend pushed (founder confirmed) | ☐ | | migration `AddCourierAndExpenses` |
-| 5. `Frontend` started | ☐ | | |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-21 | migration `AddCourierAndExpenses` applied (verified read-only) |
+| 5. `Frontend` started | ☑ | 2026-11-21 | 7.B1–7.B5 implemented; automated checks pass |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |

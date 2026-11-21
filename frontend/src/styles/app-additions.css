@@ -82,3 +82,7 @@
 .dup-notice { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--lamma-radius-md); background: var(--lamma-apricot-100); border: 1px solid color-mix(in srgb, var(--lamma-apricot-500) 35%, transparent); }
 .dup-notice__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: start; }
 .dup-notice__text b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Finance hero (founder request, 2026-11-21): the deduction steps («− تكلفة البضاعة», «− المصاريف») use the same
+   white numbers as the other steps instead of the reference's pink; the «−» in their labels already marks them. */
+.fstep.minus b { color: var(--lamma-white); }
