@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 7: Courier & expenses** (branch `feature/phase7-courier-expenses`) |
-| Current gate | **Gate 6: Frontend checkpoint.** 7.B1–7.B5 implemented; automated checks pass; waiting for the founder's manual check ([PHASE-7-PLAN.md](../roadmap/PHASE-7-PLAN.md)) |
+| Current gate | **Gate 7: PR.** Frontend pushed (founder-confirmed); PR `feature/phase7-courier-expenses` → `develop` to be opened by the founder |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Run the Phase 7 manual checklist in the browser, then push the frontend |
+| Next expected founder action | Commit these doc updates, open and merge the Phase 7 PR into `develop`, then confirm the merge |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -139,3 +139,4 @@
 | 2026-11-21 | Phase 7 Frontend 7.B1–7.B5 implemented; automated checks pass; waiting at gate 6 |
 | 2026-11-21 | Phase 7 smoke test on the real API (throwaway business): overview figures exact (sales 58, COGS 20, expenses 9, net 29, cash in 30, out 5, dues 12, courier-held 12); received > expected blocked; settlement drawer prefill, live difference notice, save and toast; expenses, courier and overview screens read correctly. Not covered: reversal from the UI, settings sections, widths |
 | 2026-11-21 | Phase 7 checklist cases 10–21 run by Claude on the real API (founder request): partial settlement, reversal from the UI, settlement payment protected, period switch, ?add/?pay links, categories (locked delivery, add, duplicate, archive, restore), courier name, 375px no horizontal scroll: all passed. Two fixes from the founder review: deduction steps in the finance hero use white instead of the reference pink (app-additions.css); settlement payments show «من تسوية شركة التوصيل» and no cancel button. 768px not measured |
+| 2026-11-21 | Founder approved the screens and pushed the Phase 7 frontend; at gate 7 |
