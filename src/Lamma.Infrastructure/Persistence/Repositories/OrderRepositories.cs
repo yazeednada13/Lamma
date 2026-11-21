@@ -52,6 +52,7 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             t.HasCheckConstraint("CK_Orders_Discount", "[Discount] >= 0 AND [Discount] <= [ItemsSubtotal]");
             t.HasCheckConstraint("CK_Orders_DeliveryFee", "[DeliveryFee] >= 0");
             t.HasCheckConstraint("CK_Orders_OrderNumber", $"[OrderNumber] >= {Order.FirstNumber}");
+            t.HasCheckConstraint("CK_Orders_ReturnedAmount", "[ReturnedAmount] >= 0 AND [ReturnedAmount] <= [Total]");
         });
         builder.HasKey(o => o.Id);
         builder.Property(o => o.Id).ValueGeneratedNever();
@@ -65,6 +66,11 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Ignore(o => o.Label);
         builder.Ignore(o => o.ItemsCost);
         builder.Ignore(o => o.Profit);
+        builder.Ignore(o => o.NetTotal);
+        builder.Ignore(o => o.IsPreOrder);
+        builder.Ignore(o => o.IsPartiallyReturned);
+        builder.Property(o => o.ReturnedAmount).HasDefaultValue(0m);
+        builder.HasIndex(o => new { o.BusinessId, o.ExpectedDeliveryOn }).HasFilter("[ExpectedDeliveryOn] IS NOT NULL");
 
         builder.HasIndex(o => new { o.BusinessId, o.OrderNumber }).IsUnique().HasDatabaseName(UniqueNumberIndex);
         builder.HasIndex(o => new { o.BusinessId, o.Status, o.CreatedAt }).IsDescending(false, false, true);
@@ -79,6 +85,36 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Navigation(o => o.Items).UsePropertyAccessMode(PropertyAccessMode.Field);
         builder.HasMany(o => o.StatusLogs).WithOne().HasForeignKey(l => l.OrderId).OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(o => o.StatusLogs).UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.HasMany(o => o.Returns).WithOne().HasForeignKey(r => r.OrderId).OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(o => o.Returns).UsePropertyAccessMode(PropertyAccessMode.Field);
+    }
+}
+
+internal sealed class OrderReturnConfiguration : IEntityTypeConfiguration<OrderReturn>
+{
+    public void Configure(EntityTypeBuilder<OrderReturn> builder)
+    {
+        builder.ToTable("OrderReturns", t => t.HasCheckConstraint("CK_OrderReturns_Amount", "[Amount] >= 0"));
+        builder.HasKey(r => r.Id);
+        builder.Property(r => r.Id).ValueGeneratedNever();
+        builder.Property(r => r.Reason).HasMaxLength(OrderReturn.ReasonMaxLength);
+        builder.HasIndex(r => new { r.BusinessId, r.OperationId }).IsUnique();
+        builder.HasIndex(r => new { r.BusinessId, r.ReturnedOn });
+        builder.HasOne<Lamma.Domain.Payments.Payment>().WithMany().HasForeignKey(r => r.RefundPaymentId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasMany(r => r.Lines).WithOne().HasForeignKey(l => l.ReturnId).OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(r => r.Lines).UsePropertyAccessMode(PropertyAccessMode.Field);
+    }
+}
+
+internal sealed class OrderReturnLineConfiguration : IEntityTypeConfiguration<OrderReturnLine>
+{
+    public void Configure(EntityTypeBuilder<OrderReturnLine> builder)
+    {
+        builder.ToTable("OrderReturnLines", t => t.HasCheckConstraint("CK_OrderReturnLines_Quantity", "[Quantity] > 0"));
+        builder.HasKey(l => l.Id);
+        builder.Property(l => l.Id).ValueGeneratedNever();
+        builder.HasIndex(l => l.OrderItemId);
+        builder.HasOne<OrderItem>().WithMany().HasForeignKey(l => l.OrderItemId).OnDelete(DeleteBehavior.Restrict);
     }
 }
 
@@ -122,7 +158,7 @@ internal sealed class OrderStatusLogConfiguration : IEntityTypeConfiguration<Ord
 internal sealed class OrderRepository(LammaDbContext db, ICurrentBusiness currentBusiness) : IOrderRepository
 {
     public Task<Order?> GetForUpdateAsync(Guid id, CancellationToken cancellationToken)
-        => db.Orders.Include(o => o.Items).Include(o => o.StatusLogs).AsSplitQuery().FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+        => db.Orders.Include(o => o.Items).Include(o => o.StatusLogs).Include(o => o.Returns).ThenInclude(r => r.Lines).AsSplitQuery().FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
     /// <summary>
     /// MERGE under HOLDLOCK: the first order of a business inserts the counter row, later ones increment it. The lock is
@@ -177,6 +213,9 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
                        Channel = o.Channel,
                        Status = o.Status,
                        Total = o.Total,
+                       ReturnedAmount = o.ReturnedAmount,
+                       ExpectedDeliveryOn = o.ExpectedDeliveryOn,
+                       ExpectedDeliveryTime = o.ExpectedDeliveryTime,
                        PaymentMethodHint = o.PaymentMethodHint,
                        Paid = db.PaymentAllocations.Where(a => a.OrderId == o.Id && !a.IsReversed).Sum(a => (decimal?)a.Amount) ?? 0m,
                        CreatedAt = o.CreatedAt,
@@ -215,8 +254,11 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
                     p.CreatedAt,
                     p.DeliveredAt,
                     p.Paid,
-                    p.Total - p.Paid,
-                    PaymentStatusPolicy.For(p.Status, p.PaymentMethodHint, p.Total, p.Paid)?.ToCode());
+                    p.Total - p.ReturnedAmount - p.Paid,
+                    PaymentStatusPolicy.For(p.Status, p.PaymentMethodHint, p.Total - p.ReturnedAmount, p.Paid)?.ToCode(),
+                    p.ReturnedAmount,
+                    p.ExpectedDeliveryOn,
+                    p.ExpectedDeliveryTime?.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture));
             })
             .ToList();
         return new PagedResult<OrderListItemDto>(result, query.Page, query.PageSize, total);
@@ -240,7 +282,7 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
 
     public async Task<OrderDetailsDto?> GetAsync(Guid id, DateTime nowUtc, CancellationToken cancellationToken)
     {
-        var order = await db.Orders.AsNoTracking().Include(o => o.Items).Include(o => o.StatusLogs).AsSplitQuery()
+        var order = await db.Orders.AsNoTracking().Include(o => o.Items).Include(o => o.StatusLogs).Include(o => o.Returns).ThenInclude(r => r.Lines).AsSplitQuery()
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
         if (order is null)
         {
@@ -272,6 +314,7 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
                 p.ReversedAt,
                 p.ReversalReason,
                 p.SettlementId,
+                p.Kind,
             })
             .OrderBy(p => p.PaidOn).ThenBy(p => p.RecordedAt)
             .ToListAsync(cancellationToken);
@@ -280,14 +323,42 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
             order,
             new OrderCustomerDto(customer.Id, customer.Name, customer.PhoneE164, customer.City?.ToCode(), customer.Area, customer.IsArchived),
             images,
-            payments.Select(p => new OrderPaymentDto(p.Id, p.Amount, p.PaymentAmount, p.Method.ToCode(), p.PaidOn, p.RecordedAt, p.Note, p.IsCustomerLevel, p.IsReversed, p.ReversedAt, p.ReversalReason, p.SettlementId)).ToList(),
+            payments.Select(p => new OrderPaymentDto(p.Id, p.Amount, p.PaymentAmount, p.Method.ToCode(), p.PaidOn, p.RecordedAt, p.Note, p.IsCustomerLevel, p.IsReversed, p.ReversedAt, p.ReversalReason, p.SettlementId, p.Kind.ToCode())).ToList(),
             nowUtc);
+    }
+
+    public async Task<IReadOnlyList<PreOrderDto>> PreOrdersAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken)
+    {
+        // D-151: open pre-orders on the calendar (delivered, cancelled and returned ones are done).
+        var rows = await db.Orders.AsNoTracking()
+            .Where(o => o.ExpectedDeliveryOn != null && o.ExpectedDeliveryOn >= from && o.ExpectedDeliveryOn <= to
+                && o.Status != OrderStatus.Delivered && o.Status != OrderStatus.Cancelled && o.Status != OrderStatus.Returned)
+            .Join(db.Customers.AsNoTracking(), o => o.CustomerId, c => c.Id, (o, c) => new { o.Id, o.OrderNumber, o.CustomerId, c.Name, o.Status, On = o.ExpectedDeliveryOn!.Value, o.ExpectedDeliveryTime, o.Total })
+            .OrderBy(o => o.On).ThenBy(o => o.ExpectedDeliveryTime).ThenBy(o => o.OrderNumber)
+            .Take(500)
+            .ToListAsync(cancellationToken);
+        var ids = rows.Select(r => r.Id).ToList();
+        var items = await db.OrderItems.AsNoTracking()
+            .Where(i => ids.Contains(i.OrderId))
+            .Select(i => new { i.OrderId, i.Id, i.ProductName, i.VariantLabel, i.Quantity })
+            .ToListAsync(cancellationToken);
+        return rows.Select(r => new PreOrderDto(
+                r.Id, r.OrderNumber, r.CustomerId, r.Name, r.Status.ToCode(), r.On,
+                r.ExpectedDeliveryTime?.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture),
+                items.Where(i => i.OrderId == r.Id).OrderBy(i => i.Id).Select(i => new OrderItemSummaryDto(i.ProductName, i.VariantLabel, i.Quantity)).ToList(),
+                r.Total))
+            .ToList();
     }
 
     /// <summary>Search (number, customer name or ≥ 3 phone digits), business-local date range, customer and product filters.</summary>
     private IQueryable<Order> Filter(OrderListQuery query)
     {
         var orders = db.Orders.AsNoTracking();
+        if (query.IsPreOrder is true)
+        {
+            orders = orders.Where(o => o.ExpectedDeliveryOn != null);
+        }
+
         if (query.CustomerId is { } customerId)
         {
             orders = orders.Where(o => o.CustomerId == customerId);
@@ -349,6 +420,12 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
         public OrderStatus Status { get; init; }
 
         public decimal Total { get; init; }
+
+        public decimal ReturnedAmount { get; init; }
+
+        public DateOnly? ExpectedDeliveryOn { get; init; }
+
+        public TimeOnly? ExpectedDeliveryTime { get; init; }
 
         public PaymentMethod? PaymentMethodHint { get; init; }
 

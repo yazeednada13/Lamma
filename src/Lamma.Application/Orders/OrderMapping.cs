@@ -32,7 +32,25 @@ public static class OrderMapping
                 i.Quantity,
                 i.UnitPrice,
                 i.UnitCost,
-                i.LineTotal))
+                i.LineTotal,
+                order.ReturnedQuantity(i.Id)))
+            .ToList();
+        var itemsById = order.Items.ToDictionary(i => i.Id);
+        var returns = order.Returns
+            .OrderBy(r => r.RecordedAt)
+            .Select(r =>
+            {
+                var refund = r.RefundPaymentId is { } refundId ? payments.FirstOrDefault(p => p.PaymentId == refundId) : null;
+                return new OrderReturnDto(
+                    r.Id,
+                    r.ReturnedOn,
+                    r.Amount,
+                    r.Reason,
+                    refund is null || refund.IsReversed ? 0 : refund.PaymentAmount,
+                    refund?.Method,
+                    r.RecordedAt,
+                    r.Lines.Select(l => new OrderReturnLineDto(l.OrderItemId, itemsById[l.OrderItemId].ProductName, itemsById[l.OrderItemId].VariantLabel, l.Quantity, l.Restocked)).ToList());
+            })
             .ToList();
 
         return new OrderDetailsDto(
@@ -70,8 +88,15 @@ public static class OrderMapping
             order.CancelledAt,
             order.UpdatedAt,
             paid,
-            order.Total - paid,
-            PaymentStatusPolicy.For(order.Status, order.PaymentMethodHint, order.Total, paid)?.ToCode(),
-            payments);
+            order.NetTotal - paid,
+            PaymentStatusPolicy.For(order.Status, order.PaymentMethodHint, order.NetTotal, paid)?.ToCode(),
+            payments,
+            order.ReturnedAmount,
+            order.NetTotal,
+            order.IsPartiallyReturned,
+            order.Status == OrderStatus.Delivered,
+            returns,
+            order.ExpectedDeliveryOn,
+            order.ExpectedDeliveryTime?.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture));
     }
 }

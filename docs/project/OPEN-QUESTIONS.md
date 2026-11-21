@@ -180,19 +180,19 @@ Recommendation:
 
 ## P1 — before Phase 8 (Returns & Pre-orders)
 
-**OQ-070 · P1 · Phase 8: full versus partial returns.** Can a single line, or part of a line's quantity, be returned? Recommendation: support line-level return quantities, with a full return as the special case of all lines.
+**OQ-070 · P1 · Phase 8: full versus partial returns.** Can a single line, or part of a line's quantity, be returned? Recommendation: support line-level return quantities, with a full return as the special case of all lines. **Resolved (2026-11-21) → D-146.**
 
-**OQ-071 · P1 · Phase 8: refund handling.** The prototype's return dialog shows an editable "refunded amount" and a checkbox "return items to stock (good condition)". These need decisions:
+**OQ-071 · P1 · Phase 8: refund handling.** The prototype's return dialog shows an editable "refunded amount" and a checkbox "return items to stock (good condition)". These need decisions: **Resolved (2026-11-21) → D-147, D-148.**
 - whether the refund is recorded as a Refund entity, which reduces cash received
 - whether the refund can differ from the item value
 - whether the delivery fee is refunded
 - whether non-restocked (damaged) items create a write-off movement
 
-**OQ-072 · P1 · Phase 8: return eligibility.** Can only delivered orders be returned? Is there a time window? Can an order be returned more than once (several partial returns)?
+**OQ-072 · P1 · Phase 8: return eligibility.** Can only delivered orders be returned? Is there a time window? Can an order be returned more than once (several partial returns)? **Resolved (2026-11-21) → D-145.**
 
-**OQ-073 · P1 · Phase 8: how returns affect revenue and COGS.** Returned value reduces Net Sales in the **return's** period, not the original delivery period. Is the COGS of restocked items reversed? Recommendation: yes on both counts.
+**OQ-073 · P1 · Phase 8: how returns affect revenue and COGS.** Returned value reduces Net Sales in the **return's** period, not the original delivery period. Is the COGS of restocked items reversed? Recommendation: yes on both counts. **Resolved (2026-11-21) → D-149.**
 
-**OQ-074 · P1 · Phase 8: pre-order rules.** The prototype shows pre-orders with a delivery date **and time**, a **daily capacity limit** ("4 orders/day"), and a **default deposit of 30%**. None of these are in the spec. Needed:
+**OQ-074 · P1 · Phase 8: pre-order rules.** The prototype shows pre-orders with a delivery date **and time**, a **daily capacity limit** ("4 orders/day"), and a **default deposit of 30%**. None of these are in the spec. Needed: **Resolved (2026-11-21) → D-151, D-152.**
 - Which products allow pre-order: a template flag, a product flag, or any out-of-stock product?
 - Is the deposit required, as a fixed amount or a percentage?
 - Does a pre-order reserve stock when stock arrives, or only on confirmation?

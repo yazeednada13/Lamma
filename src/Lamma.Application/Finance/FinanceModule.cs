@@ -42,7 +42,11 @@ public sealed record FinanceOverviewDto(
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal CustomerDues,
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal CourierHeld,
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal ExpectedSales,
-    IReadOnlyList<ExpenseShareDto> ExpensesByCategory);
+    IReadOnlyList<ExpenseShareDto> ExpensesByCategory,
+    /// <summary>Value returned in the period (by return date, D-149).</summary>
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Returns,
+    /// <summary>Sales − returns (D-034).</summary>
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal NetSales);
 
 public sealed class FinanceOverviewQueryValidator : AbstractValidator<FinanceOverviewQuery>
 {

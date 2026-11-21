@@ -4,6 +4,13 @@ using Lamma.Domain.Common;
 
 namespace Lamma.Domain.Payments;
 
+/// <summary>A payment brings money in; a refund gives it back on a return (D-148).</summary>
+public enum PaymentKind
+{
+    Payment,
+    Refund,
+}
+
 /// <summary>One part of a payment applied to one order (D-131). The reversal flag mirrors the payment's (D-136).</summary>
 public readonly record struct AllocationLine(Guid OrderId, decimal Amount);
 
@@ -40,6 +47,9 @@ public sealed class Payment : Entity, IBusinessOwned
     public decimal Amount { get; private set; }
 
     public PaymentMethod Method { get; private set; }
+
+    /// <summary>Refunds have a negative allocation, so order paid = Σ active allocations stays net of refunds.</summary>
+    public PaymentKind Kind { get; private set; } = PaymentKind.Payment;
 
     /// <summary>The business-local date the money was received (back-dating allowed, D-136).</summary>
     public DateOnly PaidOn { get; private set; }
@@ -146,9 +156,28 @@ public sealed class Payment : Entity, IBusinessOwned
         return payment;
     }
 
+    /// <summary>
+    /// The money given back on a return (D-148): a «استرداد» with a recordable method (never COD) and one negative
+    /// allocation on the order. Created only with its return, in the same transaction.
+    /// </summary>
+    public static Payment ForRefund(Guid businessId, Guid customerId, Guid orderId, decimal amount, PaymentMethod method, DateOnly refundedOn, DateOnly today, Guid operationId, DateTime nowUtc)
+    {
+        Guard.NotEmpty(orderId, nameof(orderId));
+        var payment = Create(businessId, customerId, amount, method, refundedOn, today, "استرداد مرتجع", operationId, nowUtc);
+        payment.Kind = PaymentKind.Refund;
+        payment.OrderId = orderId;
+        payment._allocations.Add(new PaymentAllocation(payment, orderId, -amount));
+        return payment;
+    }
+
     /// <summary>Voids the payment and all its allocations (D-136). A second reversal is a conflict.</summary>
     public void Reverse(string? reason, Guid operationId, DateTime nowUtc)
     {
+        if (Kind == PaymentKind.Refund)
+        {
+            throw new DomainConflictException("payment.from_return", "هاد استرداد مرتجع، والمرتجع نهائي (ما بينلغى).");
+        }
+
         if (SettlementId is not null)
         {
             throw new DomainConflictException("payment.from_settlement", "هاي الدفعة من تسوية شركة التوصيل. ألغِ التسوية نفسها من صفحة شركة التوصيل.");

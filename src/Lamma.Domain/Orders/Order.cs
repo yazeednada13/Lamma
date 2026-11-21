@@ -91,6 +91,7 @@ public sealed class Order : Entity, IBusinessOwned, IHasTimestamps
 
     private readonly List<OrderItem> _items = [];
     private readonly List<OrderStatusLog> _statusLogs = [];
+    private readonly List<OrderReturn> _returns = [];
 
     private Order(Guid id, Guid businessId)
         : base(id)
@@ -151,6 +152,31 @@ public sealed class Order : Entity, IBusinessOwned, IHasTimestamps
     public DateTime UpdatedAt { get; private set; }
 
     public byte[] RowVersion { get; private set; } = [];
+
+    /// <summary>
+    /// Σ value of every returned piece (pieces × unit price − their discount share, D-148), recomputed by
+    /// <see cref="Return"/> from the return lines, like <see cref="Total"/> from the items.
+    /// </summary>
+    public decimal ReturnedAmount { get; private set; }
+
+    /// <summary>Pre-order (D-151): the expected delivery date, business-local. Null for a normal order.</summary>
+    public DateOnly? ExpectedDeliveryOn { get; private set; }
+
+    /// <summary>Optional expected delivery time of a pre-order.</summary>
+    public TimeOnly? ExpectedDeliveryTime { get; private set; }
+
+    public IReadOnlyCollection<OrderReturn> Returns => _returns;
+
+    /// <summary>Total − returned value: what the customer owes in the end (D-148). Remaining = NetTotal − paid.</summary>
+    public decimal NetTotal => Total - ReturnedAmount;
+
+    public bool IsPreOrder => ExpectedDeliveryOn is not null;
+
+    /// <summary>Pieces of <paramref name="orderItemId"/> already returned (all returns).</summary>
+    public int ReturnedQuantity(Guid orderItemId) => _returns.SelectMany(r => r.Lines).Where(l => l.OrderItemId == orderItemId).Sum(l => l.Quantity);
+
+    /// <summary>Some pieces are back but the order is still delivered (D-146).</summary>
+    public bool IsPartiallyReturned => Status == OrderStatus.Delivered && _returns.Count > 0;
 
     public IReadOnlyCollection<OrderItem> Items => _items;
 
@@ -269,11 +295,136 @@ public sealed class Order : Entity, IBusinessOwned, IHasTimestamps
         return movements;
     }
 
-    /// <summary>The latest status change, if it can still be undone now (D-122).</summary>
+    /// <summary>The latest status change, if it can still be undone now (D-122). A return is final (D-150).</summary>
     public OrderStatusLog? UndoableChange(DateTime nowUtc)
     {
         var latest = LatestLog();
-        return latest is { IsUndo: false, FromStatus: not null } && nowUtc - latest.ChangedAt <= OrderStatusPolicy.UndoWindow ? latest : null;
+        return latest is { IsUndo: false, FromStatus: not null } && latest.ToStatus != OrderStatus.Returned && nowUtc - latest.ChangedAt <= OrderStatusPolicy.UndoWindow ? latest : null;
+    }
+
+    /// <summary>
+    /// Sets or clears the pre-order schedule (D-151). A new or changed date must be today or later; a time needs a date.
+    /// Editable until the order is delivered or closed.
+    /// </summary>
+    public void Schedule(DateOnly? expectedOn, TimeOnly? expectedAt, DateOnly today)
+    {
+        if (expectedOn == ExpectedDeliveryOn && expectedAt == ExpectedDeliveryTime)
+        {
+            return;
+        }
+
+        if (!OrderStatusPolicy.CanEditDetails(Status))
+        {
+            throw new DomainConflictException("order.locked", "الطلب مسكّر، ما بنقدر نعدّل موعده.");
+        }
+
+        if (expectedOn is null && expectedAt is not null)
+        {
+            throw new DomainException("order.invalid_schedule", "اختار تاريخ التسليم قبل الوقت.");
+        }
+
+        if (expectedOn is { } on && on != ExpectedDeliveryOn && on < today)
+        {
+            throw new DomainException("order.invalid_schedule", "تاريخ التسليم لازم يكون اليوم أو بعده.");
+        }
+
+        ExpectedDeliveryOn = expectedOn;
+        ExpectedDeliveryTime = expectedOn is null ? null : expectedAt;
+    }
+
+    /// <summary>
+    /// Returns pieces of a delivered order (D-145–D-150): validates every line first, then records the return,
+    /// recomputes <see cref="ReturnedAmount"/> exactly, writes a <c>return</c> movement per restocked line, and moves the
+    /// order to «مرتجع» once every piece is back. <paramref name="variants"/> must hold the restocked lines' variants.
+    /// </summary>
+    public (OrderReturn Return, IReadOnlyList<StockMovement> Movements) Return(
+        IReadOnlyList<ReturnLineRequest> lines,
+        IReadOnlyDictionary<Guid, ProductVariant> variants,
+        DateOnly returnedOn,
+        DateOnly today,
+        DateOnly deliveredOn,
+        string? reason,
+        Guid operationId,
+        DateTime nowUtc)
+    {
+        if (Status != OrderStatus.Delivered)
+        {
+            throw new DomainConflictException("return.not_delivered", "بس الطلبات اللي توصّلت بتترجّع.");
+        }
+
+        if (lines.Count == 0)
+        {
+            throw new DomainException("return.lines_required", "اختار قطعة وحدة على الأقل.");
+        }
+
+        if (lines.Select(l => l.OrderItemId).Distinct().Count() != lines.Count)
+        {
+            throw new DomainException("return.duplicate_line", "المنتج مكرر بالمرتجع.");
+        }
+
+        if (returnedOn > today || returnedOn < deliveredOn)
+        {
+            throw new DomainException("return.invalid_date", "تاريخ المرتجع لازم يكون بين يوم التوصيل واليوم.");
+        }
+
+        var cleanReason = Clean(reason, OrderReturn.ReasonMaxLength, "سبب المرتجع");
+        var picked = new List<(OrderItem Item, ReturnLineRequest Line)>(lines.Count);
+        foreach (var line in lines)
+        {
+            var item = _items.FirstOrDefault(i => i.Id == line.OrderItemId)
+                ?? throw new DomainException("return.item_not_found", "المنتج مش من هالطلب.");
+            if (line.Quantity < 1)
+            {
+                throw new DomainException("return.invalid_quantity", "الكمية لازم تكون 1 أو أكثر.");
+            }
+
+            var left = item.Quantity - ReturnedQuantity(item.Id);
+            if (line.Quantity > left)
+            {
+                throw new DomainConflictException("return.quantity_too_high", $"من «{item.DisplayName}» بيضل {left} قطعة بس للإرجاع.");
+            }
+
+            picked.Add((item, line));
+        }
+
+        var orderReturn = new OrderReturn(this, returnedOn, cleanReason, operationId, nowUtc);
+        foreach (var (item, line) in picked)
+        {
+            orderReturn.AddLine(item, line.Quantity, line.Restock);
+        }
+
+        var before = ReturnedAmount;
+        _returns.Add(orderReturn);
+        ReturnedAmount = ComputeReturnedAmount();
+        orderReturn.SetAmount(ReturnedAmount - before);
+
+        var movements = new List<StockMovement>();
+        foreach (var (item, line) in picked.Where(p => p.Line.Restock))
+        {
+            var variant = variants.GetValueOrDefault(item.VariantId) ?? throw new InvalidOperationException("The restocked lines' variants must be loaded.");
+            variant.ApplyOrderEffect(line.Quantity, 0);
+            movements.Add(StockMovement.ForOrder(BusinessId, item.ProductId, item.VariantId, StockMovementType.Return, line.Quantity, 0, item.UnitCost, Id, "مرتجع " + Label, operationId, nowUtc));
+        }
+
+        if (_items.All(i => ReturnedQuantity(i.Id) >= i.Quantity))
+        {
+            Status = OrderStatus.Returned;
+            _statusLogs.Add(OrderStatusLog.Create(this, OrderStatus.Delivered, OrderStatus.Returned, operationId, nowUtc, isUndo: false, undoOfLogId: null, reason: null, note: cleanReason));
+        }
+
+        return (orderReturn, movements);
+    }
+
+    /// <summary>
+    /// Returned value of all returns (D-148): returned pieces × unit price, minus the same share of the order discount,
+    /// computed on the cumulative value so that a full return removes exactly the discount (no rounding drift). The share
+    /// is rounded to 2 decimals like every input (D-080), so the refund bounds are 2-decimal and an exact refund is possible.
+    /// </summary>
+    private decimal ComputeReturnedAmount()
+    {
+        var value = MoneyMath.Round(_items.Sum(i => ReturnedQuantity(i.Id) * i.UnitPrice));
+        var share = ItemsSubtotal == 0 ? 0 : Math.Round(Discount * value / ItemsSubtotal, 2, MidpointRounding.AwayFromZero);
+        return value - share;
     }
 
     /// <summary>
@@ -288,7 +439,7 @@ public sealed class Order : Entity, IBusinessOwned, IHasTimestamps
             throw new DomainConflictException("order.undo_not_latest", "صار على الطلب تغيير بعد هاد، ما بنقدر نتراجع عنه.");
         }
 
-        if (latest.IsUndo || latest.FromStatus is null)
+        if (latest.IsUndo || latest.FromStatus is null || latest.ToStatus == OrderStatus.Returned)
         {
             throw new DomainConflictException("order.undo_not_available", "ما في تغيير نتراجع عنه.");
         }

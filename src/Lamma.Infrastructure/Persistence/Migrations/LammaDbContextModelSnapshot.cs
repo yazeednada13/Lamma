@@ -831,6 +831,12 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .HasPrecision(19, 3)
                         .HasColumnType("decimal(19,3)");
 
+                    b.Property<DateOnly?>("ExpectedDeliveryOn")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly?>("ExpectedDeliveryTime")
+                        .HasColumnType("time");
+
                     b.Property<string>("GiftMessage")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
@@ -863,6 +869,12 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(16)");
 
+                    b.Property<decimal>("ReturnedAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)")
+                        .HasDefaultValue(0m);
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -892,6 +904,9 @@ namespace Lamma.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("BusinessId", "DeliveredAt");
 
+                    b.HasIndex("BusinessId", "ExpectedDeliveryOn")
+                        .HasFilter("[ExpectedDeliveryOn] IS NOT NULL");
+
                     b.HasIndex("BusinessId", "OrderNumber")
                         .IsUnique()
                         .HasDatabaseName("UX_Orders_BusinessId_OrderNumber");
@@ -908,6 +923,8 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_Orders_Discount", "[Discount] >= 0 AND [Discount] <= [ItemsSubtotal]");
 
                             t.HasCheckConstraint("CK_Orders_OrderNumber", "[OrderNumber] >= 1001");
+
+                            t.HasCheckConstraint("CK_Orders_ReturnedAmount", "[ReturnedAmount] >= 0 AND [ReturnedAmount] <= [Total]");
 
                             t.HasCheckConstraint("CK_Orders_Total", "[Total] = [ItemsSubtotal] + [DeliveryFee] - [Discount]");
                         });
@@ -969,6 +986,87 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_OrderItems_UnitCost", "[UnitCost] >= 0");
 
                             t.HasCheckConstraint("CK_OrderItems_UnitPrice", "[UnitPrice] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Orders.OrderReturn", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<Guid?>("RefundPaymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("ReturnedOn")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("RefundPaymentId");
+
+                    b.HasIndex("BusinessId", "OperationId")
+                        .IsUnique();
+
+                    b.HasIndex("BusinessId", "ReturnedOn");
+
+                    b.ToTable("OrderReturns", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_OrderReturns_Amount", "[Amount] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Orders.OrderReturnLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrderItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Restocked")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ReturnId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderItemId");
+
+                    b.HasIndex("ReturnId");
+
+                    b.ToTable("OrderReturnLines", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_OrderReturnLines_Quantity", "[Quantity] > 0");
                         });
                 });
 
@@ -1041,6 +1139,14 @@ namespace Lamma.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)")
+                        .HasDefaultValue("payment");
 
                     b.Property<string>("Method")
                         .IsRequired()
@@ -1133,7 +1239,7 @@ namespace Lamma.Infrastructure.Persistence.Migrations
 
                     b.ToTable("PaymentAllocations", null, t =>
                         {
-                            t.HasCheckConstraint("CK_PaymentAllocations_Amount", "[Amount] > 0");
+                            t.HasCheckConstraint("CK_PaymentAllocations_Amount", "[Amount] <> 0");
                         });
                 });
 
@@ -1598,6 +1704,35 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Orders.OrderReturn", b =>
+                {
+                    b.HasOne("Lamma.Domain.Orders.Order", null)
+                        .WithMany("Returns")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Payments.Payment", null)
+                        .WithMany()
+                        .HasForeignKey("RefundPaymentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Orders.OrderReturnLine", b =>
+                {
+                    b.HasOne("Lamma.Domain.Orders.OrderItem", null)
+                        .WithMany()
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Orders.OrderReturn", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("ReturnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Lamma.Domain.Orders.OrderStatusLog", b =>
                 {
                     b.HasOne("Lamma.Domain.Orders.Order", null)
@@ -1737,7 +1872,14 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                 {
                     b.Navigation("Items");
 
+                    b.Navigation("Returns");
+
                     b.Navigation("StatusLogs");
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Orders.OrderReturn", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("Lamma.Domain.Payments.Payment", b =>

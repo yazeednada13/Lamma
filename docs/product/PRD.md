@@ -30,9 +30,9 @@
 |---|---|---|
 | **Sales (revenue)** | Σ order totals of orders **delivered** within the period (recognized at `deliveredAt`) | [A] recognition rule; [O] whether the delivery fee is included (OQ-044) |
 | **Expected sales** | Σ totals of orders in confirmed, preparing, or courier status (not revenue) | [A] |
-| **Returns** | Value of returned items, counted in the period of the return | [A] concept; [O] partial returns and refunds (OQ-070–073) |
+| **Returns** | Value of returned pieces (minus their discount share), counted in the period of the return | [A] D-146, D-148, D-149 |
 | **Net sales** | Sales − Returns | [A] |
-| **COGS** | Σ(qty × unit cost snapshot) of delivered items, net of restocked returns | [A] formula; [O] return reversal (OQ-073) |
+| **COGS** | Σ(qty × unit cost snapshot) of delivered items, net of restocked returns | [A] D-149 |
 | **Gross profit** | Net sales − COGS | [A] |
 | **Expenses** | Σ active expense records in the period, by category (including automatic courier-settlement differences) | [A]; no purchases expense (D-107) |
 | **Net profit** | Gross profit − Expenses | [A] |
@@ -74,7 +74,7 @@
 | Kanban board: move between valid statuses, with Undo for a limited time | [A]; matrix D-121, undo D-122 |
 | Create order in 4 steps: customer (pick or quick-add) → products (variant, qty ≤ available) → delivery and payment (fee, discount, method, amount paid, channel, note, gift message) → review with a live receipt | [A]; address and gift fields D-129, discount D-126, save as new or confirmed D-128; amount paid is Phase 6 |
 | Details: items, customer, total, paid, remaining, timeline, change status, record payment, cancel with reason, return | [A]; cancel reasons D-130, editing D-127; paid, remaining and payments are Phase 6, returns Phase 8 |
-| Pre-orders: out-of-stock or made-to-order products, deposit, expected delivery date | [A]; [O] all rules (OQ-074) |
+| Pre-orders: out-of-stock or made-to-order products, deposit, expected delivery date | [A]; D-151, D-152 |
 | 7 order statuses and 4 payment statuses, with Arabic labels | [A] |
 | Channels: Instagram, WhatsApp, Facebook, Other | [A] |
 
@@ -141,10 +141,8 @@ Arabic labels: جديد · مؤكد · قيد التجهيز · مع المند�
 ## 6. Missing requirements identified (all tracked in OPEN-QUESTIONS)
 - Delivery-fee treatment (OQ-044).
 - Purchases-versus-COGS double counting (OQ-020).
-- Partial returns and refunds (OQ-070–073).
 - The full transition matrix (OQ-040).
 - Undo semantics (OQ-041).
-- Pre-order rules (OQ-074).
 - Template catalogue (OQ-011).
 - Sign-up verification provider (OQ-003).
 - Hosting (OQ-086).

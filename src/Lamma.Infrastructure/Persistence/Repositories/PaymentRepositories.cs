@@ -18,6 +18,7 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
     public void Configure(EntityTypeBuilder<Payment> builder)
     {
         builder.ToTable("Payments", t => t.HasCheckConstraint("CK_Payments_Amount", "[Amount] > 0"));
+        builder.Property(p => p.Kind).HasDefaultValue(PaymentKind.Payment).HasSentinel((PaymentKind)(-1));
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id).ValueGeneratedNever();
         builder.Property(p => p.Note).HasMaxLength(Payment.NoteMaxLength);
@@ -43,7 +44,8 @@ internal sealed class PaymentAllocationConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<PaymentAllocation> builder)
     {
-        builder.ToTable("PaymentAllocations", t => t.HasCheckConstraint("CK_PaymentAllocations_Amount", "[Amount] > 0"));
+        // Refunds are negative allocations (D-148), so order paid = Σ active allocations stays net.
+        builder.ToTable("PaymentAllocations", t => t.HasCheckConstraint("CK_PaymentAllocations_Amount", "[Amount] <> 0"));
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Id).ValueGeneratedNever();
 
@@ -89,14 +91,15 @@ internal sealed class PaymentRepository(LammaDbContext db, ICurrentBusiness curr
         }
 
         var delivered = OrderStatus.Delivered.ToCode();
+        var returned = OrderStatus.Returned.ToCode();
         await db.Database.ExecuteSqlAsync(
-            $"UPDATE [Orders] SET [UpdatedAt] = [UpdatedAt] WHERE [BusinessId] = {businessId} AND [CustomerId] = {customerId} AND [Status] = {delivered}",
+            $"UPDATE [Orders] SET [UpdatedAt] = [UpdatedAt] WHERE [BusinessId] = {businessId} AND [CustomerId] = {customerId} AND [Status] IN ({delivered}, {returned})",
             cancellationToken);
         return true;
     }
 
     public async Task<IReadOnlyList<OrderPaymentState>> DeliveredOrdersAsync(Guid customerId, CancellationToken cancellationToken)
-        => await States(db.Orders.AsNoTracking().Where(o => o.CustomerId == customerId && o.Status == OrderStatus.Delivered)).ToListAsync(cancellationToken);
+        => await States(db.Orders.AsNoTracking().Where(o => o.CustomerId == customerId && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Returned))).ToListAsync(cancellationToken);
 
     public async Task<Payment?> LockForUpdateAsync(Guid paymentId, CancellationToken cancellationToken)
     {
@@ -124,7 +127,7 @@ internal sealed class PaymentRepository(LammaDbContext db, ICurrentBusiness curr
             o.OrderNumber,
             o.Status,
             o.PaymentMethodHint,
-            o.Total,
+            o.Total - o.ReturnedAmount, // net total (D-148)
             db.PaymentAllocations.Where(a => a.OrderId == o.Id && !a.IsReversed).Sum(a => (decimal?)a.Amount) ?? 0m,
             o.CreatedAt,
             o.DeliveredAt));
@@ -240,8 +243,8 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
 
         // D-133: COD orders with the courier or delivered, something still due. Settled through the courier in Phase 7.
         var held = await db.Orders.AsNoTracking()
-            .Where(o => o.PaymentMethodHint == PaymentMethod.Cod && (o.Status == OrderStatus.Courier || o.Status == OrderStatus.Delivered))
-            .Select(o => o.Total - (db.PaymentAllocations.Where(a => a.OrderId == o.Id && !a.IsReversed).Sum(a => (decimal?)a.Amount) ?? 0m))
+            .Where(o => o.PaymentMethodHint == PaymentMethod.Cod && (o.Status == OrderStatus.Courier || o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Returned))
+            .Select(o => o.Total - o.ReturnedAmount - (db.PaymentAllocations.Where(a => a.OrderId == o.Id && !a.IsReversed).Sum(a => (decimal?)a.Amount) ?? 0m))
             .Where(remaining => remaining > 0)
             .ToListAsync(cancellationToken);
 
@@ -267,7 +270,7 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
                 o.OrderNumber,
                 o.Status,
                 o.PaymentMethodHint,
-                o.Total,
+                Total = o.Total - o.ReturnedAmount,
                 Paid = db.PaymentAllocations.Where(a => a.OrderId == o.Id && !a.IsReversed).Sum(a => (decimal?)a.Amount) ?? 0m,
             })
             .OrderBy(o => o.OrderNumber)
@@ -286,7 +289,7 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
     /// </summary>
     private IQueryable<ReceivableRow> Receivables()
         => db.Orders.AsNoTracking()
-            .Where(o => o.Status == OrderStatus.Delivered && o.DeliveredAt != null && (o.PaymentMethodHint == null || o.PaymentMethodHint != PaymentMethod.Cod))
+            .Where(o => (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Returned) && o.DeliveredAt != null && (o.PaymentMethodHint == null || o.PaymentMethodHint != PaymentMethod.Cod))
             .Join(db.Customers.AsNoTracking(), o => o.CustomerId, c => c.Id, (o, c) => new ReceivableRow
             {
                 OrderId = o.Id,
@@ -294,7 +297,7 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
                 CustomerId = c.Id,
                 CustomerName = c.Name,
                 CustomerPhone = c.PhoneE164,
-                Total = o.Total,
+                Total = o.Total - o.ReturnedAmount,
                 Paid = db.PaymentAllocations.Where(a => a.OrderId == o.Id && !a.IsReversed).Sum(a => (decimal?)a.Amount) ?? 0m,
                 DeliveredAt = o.DeliveredAt!.Value,
             })
@@ -315,6 +318,7 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
             ReversedAt = p.ReversedAt,
             ReversalReason = p.ReversalReason,
             SettlementId = p.SettlementId,
+            Kind = p.Kind,
         });
 
     private async Task<List<PaymentDto>> ToDtosAsync(IReadOnlyList<PaymentRow> rows, CancellationToken cancellationToken)
@@ -329,7 +333,7 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
             var lines = allocations.Where(a => a.PaymentId == r.Id).OrderBy(a => a.OrderNumber).Select(a => new PaymentAllocationDto(a.OrderId, a.OrderNumber, a.Amount)).ToList();
             return new PaymentDto(
                 r.Id, r.CustomerId, r.CustomerName, r.OrderId, r.OrderId is { } orderId ? lines.FirstOrDefault(l => l.OrderId == orderId)?.OrderNumber : null,
-                r.Amount, r.Method.ToCode(), r.PaidOn, r.RecordedAt, r.Note, r.ReversedAt is not null, r.ReversedAt, r.ReversalReason, lines, r.SettlementId);
+                r.Amount, r.Method.ToCode(), r.PaidOn, r.RecordedAt, r.Note, r.ReversedAt is not null, r.ReversedAt, r.ReversalReason, lines, r.SettlementId, r.Kind.ToCode());
         }).ToList();
     }
 
@@ -379,5 +383,7 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
         public string? ReversalReason { get; init; }
 
         public Guid? SettlementId { get; init; }
+
+        public PaymentKind Kind { get; init; }
     }
 }

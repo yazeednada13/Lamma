@@ -174,10 +174,15 @@ internal sealed class ProductQueries(LammaDbContext db) : IProductQueries
             .Take(recentMovements)
             .ToListAsync(cancellationToken);
 
-        var sold = await (from i in db.OrderItems.AsNoTracking()
-                          join o in db.Orders.AsNoTracking() on i.OrderId equals o.Id
-                          where i.ProductId == id && o.Status == OrderStatus.Delivered
-                          select (int?)i.Quantity).SumAsync(cancellationToken) ?? 0;
+        var delivered = await (from i in db.OrderItems.AsNoTracking()
+                               join o in db.Orders.AsNoTracking() on i.OrderId equals o.Id
+                               where i.ProductId == id && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Returned)
+                               select (int?)i.Quantity).SumAsync(cancellationToken) ?? 0;
+        var returned = await (from l in db.OrderReturnLines.AsNoTracking()
+                              join i in db.OrderItems.AsNoTracking() on l.OrderItemId equals i.Id
+                              where i.ProductId == id
+                              select (int?)l.Quantity).SumAsync(cancellationToken) ?? 0;
+        var sold = delivered - returned; // D-149
 
         return new ProductDetailsRow(product, categoryName, movements, sold);
     }

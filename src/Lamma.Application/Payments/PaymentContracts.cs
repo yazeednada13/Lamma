@@ -87,7 +87,9 @@ public sealed record PaymentDto(
     string? ReversalReason,
     IReadOnlyList<PaymentAllocationDto> Allocations,
     /// <summary>Set for a payment created by a courier settlement (D-141): reversed only with its settlement.</summary>
-    Guid? SettlementId);
+    Guid? SettlementId,
+    /// <summary>payment | refund (D-148).</summary>
+    string Kind);
 
 /// <summary>Server-computed payment figures of one order after a write (D-133).</summary>
 public sealed record OrderPaymentSummaryDto(

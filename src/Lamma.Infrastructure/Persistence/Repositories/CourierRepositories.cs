@@ -75,11 +75,11 @@ internal sealed class CourierQueries(LammaDbContext db) : ICourierQueries
     public async Task<CourierOverviewDto> OverviewAsync(string companyName, DateOnly monthStart, CancellationToken cancellationToken)
     {
         // D-140: delivered COD orders with something left are waiting for the courier's transfer.
-        var waiting = await CodOrders(OrderStatus.Delivered)
+        var waiting = await CodOrders(OrderStatus.Delivered, OrderStatus.Returned)
             .Join(db.Customers.AsNoTracking(), o => o.CustomerId, c => c.Id, (o, c) => new { o.Id, o.OrderNumber, o.CustomerId, c.Name, o.Total, o.Paid, o.DeliveredAt })
             .OrderBy(o => o.DeliveredAt).ThenBy(o => o.OrderNumber)
             .ToListAsync(cancellationToken);
-        var onTheWay = await CodOrders(OrderStatus.Courier).Select(o => o.Total - o.Paid).ToListAsync(cancellationToken);
+        var onTheWay = await CodOrders(OrderStatus.Courier, OrderStatus.Courier).Select(o => o.Total - o.Paid).ToListAsync(cancellationToken);
         var fees = await db.Expenses.AsNoTracking()
             .Where(e => e.VoidedAt == null && e.Source == ExpenseSource.CourierSettlement && e.SpentOn >= monthStart)
             .SumAsync(e => (decimal?)e.Amount, cancellationToken) ?? 0m;
@@ -117,15 +117,15 @@ internal sealed class CourierQueries(LammaDbContext db) : ICourierQueries
         => (await ToDtosAsync([id], cancellationToken)).FirstOrDefault();
 
     /// <summary>COD orders in <paramref name="status"/> with something still due (paid = Σ active allocations).</summary>
-    private IQueryable<CodRow> CodOrders(OrderStatus status)
+    private IQueryable<CodRow> CodOrders(OrderStatus status, OrderStatus orStatus)
         => db.Orders.AsNoTracking()
-            .Where(o => o.Status == status && o.PaymentMethodHint == PaymentMethod.Cod)
+            .Where(o => (o.Status == status || o.Status == orStatus) && o.PaymentMethodHint == PaymentMethod.Cod)
             .Select(o => new CodRow
             {
                 Id = o.Id,
                 OrderNumber = o.OrderNumber,
                 CustomerId = o.CustomerId,
-                Total = o.Total,
+                Total = o.Total - o.ReturnedAmount,
                 Paid = db.PaymentAllocations.Where(a => a.OrderId == o.Id && !a.IsReversed).Sum(a => (decimal?)a.Amount) ?? 0m,
                 DeliveredAt = o.DeliveredAt,
             })
@@ -183,13 +183,21 @@ internal sealed class FinanceQueries(LammaDbContext db, IPaymentQueries payments
         var endUtc = TimeZoneInfo.ConvertTimeToUtc(to.AddDays(1).ToDateTime(TimeOnly.MinValue), Zone);
 
         // D-030: revenue is recognised on delivery.
-        var delivered = db.Orders.AsNoTracking().Where(o => o.Status == OrderStatus.Delivered && o.DeliveredAt >= startUtc && o.DeliveredAt < endUtc);
+        // A returned order was still a sale in its delivery period; its return counts in the return's period (D-149).
+        var delivered = db.Orders.AsNoTracking().Where(o => (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Returned) && o.DeliveredAt >= startUtc && o.DeliveredAt < endUtc);
         var sales = await delivered.SumAsync(o => (decimal?)o.Total, cancellationToken) ?? 0m;
         var deliveredCount = await delivered.CountAsync(cancellationToken);
         var cogs = MoneyMath.Round(await db.OrderItems.AsNoTracking()
             .Where(i => delivered.Any(o => o.Id == i.OrderId))
             .SumAsync(i => (decimal?)(i.Quantity * i.UnitCost), cancellationToken) ?? 0m);
 
+        var returns = await db.OrderReturns.AsNoTracking().Where(r => r.ReturnedOn >= from && r.ReturnedOn <= to).SumAsync(r => (decimal?)r.Amount, cancellationToken) ?? 0m;
+        var restockedCost = MoneyMath.Round(await (from l in db.OrderReturnLines.AsNoTracking()
+                                                  join r in db.OrderReturns.AsNoTracking() on l.ReturnId equals r.Id
+                                                  join i in db.OrderItems.AsNoTracking() on l.OrderItemId equals i.Id
+                                                  where l.Restocked && r.ReturnedOn >= @from && r.ReturnedOn <= to
+                                                  select (decimal?)(l.Quantity * i.UnitCost)).SumAsync(cancellationToken) ?? 0m);
+        cogs -= restockedCost; // D-149: only restocked pieces give their cost back
         var expenses = db.Expenses.AsNoTracking().Where(e => e.VoidedAt == null && e.SpentOn >= from && e.SpentOn <= to);
         var byCategory = await expenses
             .GroupBy(e => e.CategoryId)
@@ -202,7 +210,7 @@ internal sealed class FinanceQueries(LammaDbContext db, IPaymentQueries payments
         // Cash in: manual payments by their date + what the courier actually transferred (D-144).
         var manualIn = await db.Payments.AsNoTracking()
             .Where(p => p.ReversedAt == null && p.SettlementId == null && p.PaidOn >= from && p.PaidOn <= to)
-            .SumAsync(p => (decimal?)p.Amount, cancellationToken) ?? 0m;
+            .SumAsync(p => (decimal?)(p.Kind == Lamma.Domain.Payments.PaymentKind.Refund ? -p.Amount : p.Amount), cancellationToken) ?? 0m; // refunds go out (D-148)
         var settledIn = await db.CourierSettlements.AsNoTracking()
             .Where(s => s.ReversedAt == null && s.SettledOn >= from && s.SettledOn <= to)
             .SumAsync(s => (decimal?)s.ReceivedAmount, cancellationToken) ?? 0m;
@@ -211,7 +219,8 @@ internal sealed class FinanceQueries(LammaDbContext db, IPaymentQueries payments
             .SumAsync(o => (decimal?)o.Total, cancellationToken) ?? 0m;
         var aging = await payments.AgingAsync(today, cancellationToken);
 
-        var gross = sales - cogs;
+        var netSales = sales - returns;
+        var gross = netSales - cogs;
         var cashIn = manualIn + settledIn;
         return new FinanceOverviewDto(
             from,
@@ -228,6 +237,8 @@ internal sealed class FinanceQueries(LammaDbContext db, IPaymentQueries payments
             aging.Total,
             aging.CourierHeld,
             expected,
-            byCategory.OrderByDescending(c => c.Amount).ThenBy(c => c.Name).Select(c => new ExpenseShareDto(c.CategoryId, c.Name, c.Code?.ToCode(), c.Amount)).ToList());
+            byCategory.OrderByDescending(c => c.Amount).ThenBy(c => c.Name).Select(c => new ExpenseShareDto(c.CategoryId, c.Name, c.Code?.ToCode(), c.Amount)).ToList(),
+            returns,
+            netSales);
     }
 }

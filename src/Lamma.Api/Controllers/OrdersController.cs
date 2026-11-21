@@ -20,6 +20,14 @@ public sealed class OrdersController(IOrderService orders) : ControllerBase
     public async Task<ActionResult<OrderStatusCountsDto>> StatusCounts([FromQuery] OrderListQuery query, CancellationToken cancellationToken)
         => Ok(await orders.StatusCountsAsync(query, cancellationToken));
 
+    [HttpGet("preorders")]
+    public async Task<ActionResult<IReadOnlyList<PreOrderDto>>> PreOrders([FromQuery] PreOrderQuery query, CancellationToken cancellationToken)
+        => Ok(await orders.PreOrdersAsync(query, cancellationToken));
+
+    [HttpPost("{id:guid}/returns")]
+    public async Task<ActionResult<OrderDetailsDto>> Return(Guid id, ReturnOrderRequest request, [FromHeader(Name = InventoryController.IdempotencyHeader)] string? idempotencyKey, CancellationToken cancellationToken)
+        => Ok(await orders.ReturnAsync(id, IdempotencyKeys.Parse(idempotencyKey), request, cancellationToken));
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<OrderDetailsDto>> Get(Guid id, CancellationToken cancellationToken)
         => Ok(await orders.GetAsync(id, cancellationToken));

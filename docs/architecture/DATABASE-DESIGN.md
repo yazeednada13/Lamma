@@ -324,6 +324,17 @@ Both tables are business-owned (tenant filter and write guard). **Order paid = �
 
 All new tables are business-owned (tenant filter and write guard). Courier-held money is never stored: it is the remaining of delivered COD orders, which settlement payments bring to zero (D-033). A reversal voids the settlement, its lines, its payments and its expense in one transaction.
 
+## 12h. Implemented in Phase 8: Returns & pre-orders (code only; migration `AddReturnsAndPreOrders` pending founder)
+| Table | Notes |
+|---|---|
+| `OrderReturns` | `OrderId` (FK, cascade from the order aggregate), `ReturnedOn date`, `Reason nvarchar(200) null`, `Amount` (CHECK ≥ 0), `RefundPaymentId null` (FK Restrict to `Payments`), `OperationId` (unique per business), `RecordedAt`. Index `(BusinessId, ReturnedOn)` |
+| `OrderReturnLines` | `ReturnId` (FK cascade), `OrderItemId` (FK Restrict, indexed), `Quantity` (CHECK > 0), `Restocked bit` |
+| `Orders` | + `ReturnedAmount` (default 0, CHECK 0 ≤ ReturnedAmount ≤ Total; recomputed by the aggregate like `Total`), + `ExpectedDeliveryOn date null`, + `ExpectedDeliveryTime time null`, filtered index `(BusinessId, ExpectedDeliveryOn)` |
+| `Payments` | + `Kind varchar(32)` (`payment` default, `refund`) |
+| `PaymentAllocations` | CHECK changes from `Amount > 0` to `Amount <> 0`: a refund is a negative allocation, so order paid = Σ active allocations stays net of refunds |
+
+Returned value, net total, remaining and «sold» are derived from the return lines and allocations (D-033); `ReturnedAmount` is the aggregate's own recomputed figure, never set by hand. A return, its lines, the restock movements, the variant stock and the refund payment are written in **one transaction** against the versioned order and variants.
+
 ## 13. Migration guidance
 - The first migration is created in Phase 1 and is named `InitialIdentityAndBusiness`. The founder runs these from the repo root, after setting the connection string with user-secrets (LOCAL-DEVELOPMENT §3):
   - `dotnet ef migrations add <Name> --project src/Lamma.Infrastructure --startup-project src/Lamma.Api --output-dir Persistence/Migrations -- --environment Development`
