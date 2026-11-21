@@ -31,6 +31,8 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.HasOne<Business>().WithMany().HasForeignKey(p => p.BusinessId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Customer>().WithMany().HasForeignKey(p => p.CustomerId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Order>().WithMany().HasForeignKey(p => p.OrderId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(p => p.SettlementId).HasFilter("[SettlementId] IS NOT NULL");
+        builder.HasOne<Lamma.Domain.Courier.CourierSettlement>().WithMany().HasForeignKey(p => p.SettlementId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(p => p.Allocations).WithOne().HasForeignKey(a => a.PaymentId).OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(p => p.Allocations).UsePropertyAccessMode(PropertyAccessMode.Field);
@@ -105,6 +107,9 @@ internal sealed class PaymentRepository(LammaDbContext db, ICurrentBusiness curr
             cancellationToken);
         return locked == 0 ? null : await db.Payments.Include(p => p.Allocations).FirstOrDefaultAsync(p => p.Id == paymentId, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Payment>> BySettlementForUpdateAsync(Guid settlementId, CancellationToken cancellationToken)
+        => await db.Payments.Include(p => p.Allocations).Where(p => p.SettlementId == settlementId).ToListAsync(cancellationToken);
 
     public Task<bool> HasActivePaymentsAsync(Guid orderId, CancellationToken cancellationToken)
         => db.PaymentAllocations.AnyAsync(a => a.OrderId == orderId && !a.IsReversed, cancellationToken);
@@ -309,6 +314,7 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
             Note = p.Note,
             ReversedAt = p.ReversedAt,
             ReversalReason = p.ReversalReason,
+            SettlementId = p.SettlementId,
         });
 
     private async Task<List<PaymentDto>> ToDtosAsync(IReadOnlyList<PaymentRow> rows, CancellationToken cancellationToken)
@@ -323,7 +329,7 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
             var lines = allocations.Where(a => a.PaymentId == r.Id).OrderBy(a => a.OrderNumber).Select(a => new PaymentAllocationDto(a.OrderId, a.OrderNumber, a.Amount)).ToList();
             return new PaymentDto(
                 r.Id, r.CustomerId, r.CustomerName, r.OrderId, r.OrderId is { } orderId ? lines.FirstOrDefault(l => l.OrderId == orderId)?.OrderNumber : null,
-                r.Amount, r.Method.ToCode(), r.PaidOn, r.RecordedAt, r.Note, r.ReversedAt is not null, r.ReversedAt, r.ReversalReason, lines);
+                r.Amount, r.Method.ToCode(), r.PaidOn, r.RecordedAt, r.Note, r.ReversedAt is not null, r.ReversedAt, r.ReversalReason, lines, r.SettlementId);
         }).ToList();
     }
 
@@ -371,5 +377,7 @@ internal sealed class PaymentQueries(LammaDbContext db) : IPaymentQueries
         public DateTime? ReversedAt { get; init; }
 
         public string? ReversalReason { get; init; }
+
+        public Guid? SettlementId { get; init; }
     }
 }

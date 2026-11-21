@@ -287,3 +287,30 @@ All endpoints need an onboarded business. Another business's order, customer or 
 - **Methods** (D-138): enabled methods only, never `cod`. **Dates** (D-136): back-dating allowed, never the future.
 - **Concurrency:** each write locks what it reads (the order; or the customer and then their delivered orders; or the payment) until commit, so concurrent payments can never exceed what is due. The loser gets `payment.exceeds_remaining` or `payment.exceeds_balance`.
 - **Reversal** (D-136) keeps the payment in history and removes it (and all its allocations) from every sum. It is also the «تراجع» of the payment toast.
+
+## 17. Phase 7 contracts: Courier & expenses (implemented, 2026-11-21)
+All endpoints need an onboarded business; another business's records return 404. `POST expenses`, `POST expenses/{id}/void`, `POST courier/settlements` and `POST courier/settlements/{id}/reverse` require an `Idempotency-Key` (D-112). Dates are business-local `yyyy-MM-dd` (Asia/Amman).
+
+| Method & path | Request | Success | Errors |
+|---|---|---|---|
+| GET `expense-categories` | `includeArchived?` | 200 `[{ id, name, code (ads\|delivery\|packaging\|rent\|other\|null), isSystem, isArchived }]`, defaults first (created on first use, D-142) | — |
+| POST `expense-categories` | `{ name ≤40 }` | 201 category | 409 `expense_category.duplicate` · 409 `expense_category.limit` (30 custom) · 422 |
+| PUT `expense-categories/{id}` | `{ name }` | 200 category | 404 · 409 `expense_category.system` («توصيل») · 409 `expense_category.duplicate` |
+| POST `expense-categories/{id}/archive` · `/restore` | — | 200 category | 404 · 409 `expense_category.system` |
+| GET `expenses` | `from`/`to` (spentOn), `categoryId`, `page`, `pageSize` | 200 paged `{ id, categoryId, categoryName, categoryCode, amount, spentOn, note, source (manual\|courier_settlement), settlementId, recordedAt, isVoided, voidedAt, voidReason }`, newest first; voided included | 422 |
+| GET `expenses/summary` | `from`/`to` (default: this month) | 200 `{ from, to, total, count, byCategory[{ categoryId, name, code, amount, count }], lastCategoryId }` (active only, biggest first) | 422 |
+| POST `expenses` | `{ amount, categoryId, spentOn, note? ≤200 }` | 201 expense | 404 `expense_category.not_found` · 409 `expense_category.archived` · 422 `expense.invalid_date` (future) |
+| POST `expenses/{id}/void` | `{ reason? }` | 200 expense | 404 `expense.not_found` · 409 `expense.from_settlement` · 409 `expense.already_voided` |
+| GET `courier` | — | 200 `{ companyName, held, waitingCount, onTheWay, onTheWayCount, monthFees, lastSettlement, waiting[{ orderId, number, customerId, customerName, total, paid, remaining, deliveredAt }] }` | — |
+| PUT `courier/settings` | `{ companyName ≤60 }` | 200 courier overview | 422 |
+| GET `courier/settlements` | `page`, `pageSize` | 200 paged `Settlement`, newest first | — |
+| POST `courier/settlements` | `{ orderIds[] (1–200, distinct), receivedAmount ≥0, settledOn, note? }` | 201 `Settlement` | 404 `order.not_found` · 409 `settlement.order_not_held` · 409 `settlement.received_too_high` · 422 `settlement.invalid_date` (future, or before a delivery) |
+| POST `courier/settlements/{id}/reverse` | `{ reason? }` | 200 `Settlement` | 404 `settlement.not_found` · 409 `settlement.already_reversed` |
+| GET `finance/overview` | `from`/`to` (default: this month) | 200 `{ from, to, sales, deliveredCount, cogs, grossProfit, expenses, netProfit, cashReceived, cashOut, cashFlow, customerDues, courierHeld, expectedSales, expensesByCategory[{ categoryId, name, code, amount }] }` | 422 |
+
+**`Settlement`:** `{ id, settledOn, expectedAmount, receivedAmount, difference, note, recordedAt, isReversed, reversedAt, reversalReason, expenseId, orders[{ orderId, number, customerName, expectedAmount }] }`.
+
+**Rules:**
+- **Settlement** (D-141): every picked order must be delivered, COD and still due. Expected = Σ their remaining; 0 ≤ received ≤ expected. It writes, in one transaction: the settlement, its order lines, one COD payment per order covering its remaining (the order becomes `paid`), and, when the difference is > 0, one «توصيل» expense (`source: courier_settlement`). The orders are locked in id order, so two settlements of the same order cannot both pass. Reversal voids its payments and expense; the orders become courier-held again and can be settled anew.
+- A settlement's payment (`Payment.settlementId` / `OrderDetails.payments[].settlementId` set) cannot be reversed alone (409 `payment.from_settlement`), and its expense cannot be voided alone.
+- **Overview** (D-144): sales = Σ totals of orders delivered in the period; cogs = their items' cost; expenses include settlement differences; cash received = manual payments by `paidOn` + settlement received by `settledOn`; cash out = manual expenses; customer dues and courier-held are the current snapshot (§16 aging); expected sales = Σ totals of confirmed, preparing and courier orders.

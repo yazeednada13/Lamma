@@ -243,7 +243,7 @@ The **quantity limit** [A] is checked inside the transaction against the freshly
 | Customer BalanceDue | Σ Remaining over delivered, non-COD orders [A D-134] |
 | Customer LastOrderAt | max(Order.CreatedAt) of non-cancelled orders |
 | Segments | VIP: Spent ≥ X and/or delivered count ≥ Y [O OQ-030] · OwesMoney: BalanceDue > 0 · New: OrderCount ≤ 2 · Dormant: LastOrderAt < today − 14 days [A], counting rules [O OQ-031]. Thresholds live in one `CustomerSegmentPolicy` with options |
-| Courier money held | Σ Remaining (at delivery) of delivered COD orders assigned to the courier and not in any `CourierSettlementOrder` |
+| Courier money held | Σ Remaining of delivered COD orders (settlement payments bring it to 0) [A D-140, D-141] |
 | Sales (period) | Σ Total of orders with DeliveredAt in the period [A]; delivery fee [O OQ-044] |
 | Returns (period) | Σ returned line value with ReturnedAt in the period [P] |
 | COGS (period) | Σ qty × UnitCost of delivered items in the period − restocked returned items [P] |
@@ -268,8 +268,8 @@ All of these are implemented once, in Infrastructure query services, and tested 
 | OrderItem | Immutable after confirmation (editing [O OQ-046]) |
 | StockMovement, OrderStatusLog | Append-only. Never updated or deleted |
 | Payment | Never deleted. It is reversed by a reversing entry |
-| Expense | [O] deletable, or reversal only. Manual expenses: deletable with an audit row [P]. Settlement-generated: never |
-| CourierSettlement | Never deleted. Reversal [O OQ-062] |
+| Expense | Never deleted. Manual: voided, kept in history [A D-143]. Settlement-generated: voided only with its settlement |
+| CourierSettlement | Never deleted. Reversal only [A D-141] |
 | Business / User | Account deletion is out of V1 scope [O]: data retention policy needed before launch |
 
 FKs use `ON DELETE NO ACTION` (Restrict) everywhere except pure child collections owned by their aggregate (e.g. `ProductTemplateField` custom fields).
@@ -311,6 +311,18 @@ Indexes are reviewed against the actual query plans in each phase.
 | `PaymentAllocations` | `PaymentId` (FK, cascade from the aggregate), `OrderId` (FK Restrict), `Amount` (CHECK > 0), `IsReversed bit` (copied from the payment on reversal, in the same transaction). Index `(OrderId) INCLUDE (Amount, IsReversed)` |
 
 Both tables are business-owned (tenant filter and write guard). **Order paid = Σ active allocations**; remaining, payment status, customer balance and courier-held money are never stored (D-033, D-133). A reversal is a void flag on the payment and its allocations (D-136); this replaces the proposed `ReversalOfPaymentId` row and `Kind` column (refunds add a kind in Phase 8). Writes lock with a no-op `UPDATE` (the order row; or the customer row and then the customer's delivered orders; or the payment row), held until commit. On `Orders` this also bumps the rowversion, so a status change that loaded the order before a payment fails its save, retries, and then sees the payment (this keeps the cancel guard D-137 correct).
+
+## 12g. Implemented in Phase 7: Courier & expenses (code only; migration `AddCourierAndExpenses` pending founder)
+| Table | Notes |
+|---|---|
+| `ExpenseCategories` | `Code varchar(32) null` (defaults; **unique `(BusinessId, Code)` where not null**), `Name nvarchar(40)` (**unique `(BusinessId, Name)`**), `IsArchived`, `SortOrder`, timestamps. Defaults are inserted on first use by `MERGE … WITH (HOLDLOCK)` (no data migration) |
+| `Expenses` | `CategoryId` (FK Restrict), `Amount` (CHECK > 0), `SpentOn date`, `Note nvarchar(200) null`, `Source varchar(32)`, `SettlementId null` (FK Restrict; **unique where not null**: one difference expense per settlement, D-035), `RecordedAt`, `OperationId` (unique per business), `VoidedAt null`, `VoidReason null`. Index `(BusinessId, SpentOn)` |
+| `CourierSettlements` | `SettledOn date`, `ExpectedAmount` (CHECK > 0), `ReceivedAmount` (CHECK 0 ≤ received ≤ expected), `Difference` (CHECK = expected − received), `Note`, `RecordedAt`, `OperationId` (unique per business), `ReversedAt null`, `ReversalReason null`. Index `(BusinessId, SettledOn)` |
+| `CourierSettlementOrders` | `SettlementId` (FK cascade from the aggregate), `OrderId` (FK Restrict; **unique where `IsReversed = 0`**: an order is in one active settlement), `ExpectedAmount` (CHECK > 0), `IsReversed` |
+| `Payments` | + `SettlementId null` (FK Restrict, filtered index): set on the COD payments a settlement creates |
+| `Businesses` | + `CourierCompanyName nvarchar(60) null` (null = «شركة التوصيل», D-139) |
+
+All new tables are business-owned (tenant filter and write guard). Courier-held money is never stored: it is the remaining of delivered COD orders, which settlement payments bring to zero (D-033). A reversal voids the settlement, its lines, its payments and its expense in one transaction.
 
 ## 13. Migration guidance
 - The first migration is created in Phase 1 and is named `InitialIdentityAndBusiness`. The founder runs these from the repo root, after setting the connection string with user-secrets (LOCAL-DEVELOPMENT §3):

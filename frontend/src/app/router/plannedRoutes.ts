@@ -4,9 +4,6 @@
 /** Routes of modules planned for later phases (title, phase). */
 export const COMING_SOON_ROUTES: readonly { path: string; title: string; phase: number }[] = [
   { path: "orders/preorders", title: "الطلبات المسبقة", phase: 8 },
-  { path: "finance", title: "نظرة مالية", phase: 7 },
-  { path: "finance/courier", title: "شركة التوصيل", phase: 7 },
-  { path: "finance/expenses", title: "المصاريف", phase: 7 },
   { path: "reports", title: "مركز التقارير", phase: 10 },
   { path: "reports/pnl", title: "الأرباح والخسائر", phase: 10 },
   { path: "reports/sales", title: "المبيعات", phase: 10 },

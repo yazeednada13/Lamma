@@ -33,6 +33,8 @@ export interface Payment {
   reversedAt: string | null;
   reversalReason: string | null;
   allocations: { orderId: string; orderNumber: number; amount: MoneyString }[];
+  /** Set for a payment from a courier settlement (D-141): reversed only with its settlement. */
+  settlementId: string | null;
 }
 
 export interface OrderPaymentSummary {

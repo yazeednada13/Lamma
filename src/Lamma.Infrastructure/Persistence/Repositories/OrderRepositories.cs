@@ -271,6 +271,7 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
                 a.IsReversed,
                 p.ReversedAt,
                 p.ReversalReason,
+                p.SettlementId,
             })
             .OrderBy(p => p.PaidOn).ThenBy(p => p.RecordedAt)
             .ToListAsync(cancellationToken);
@@ -279,7 +280,7 @@ internal sealed class OrderQueries(LammaDbContext db) : IOrderQueries
             order,
             new OrderCustomerDto(customer.Id, customer.Name, customer.PhoneE164, customer.City?.ToCode(), customer.Area, customer.IsArchived),
             images,
-            payments.Select(p => new OrderPaymentDto(p.Id, p.Amount, p.PaymentAmount, p.Method.ToCode(), p.PaidOn, p.RecordedAt, p.Note, p.IsCustomerLevel, p.IsReversed, p.ReversedAt, p.ReversalReason)).ToList(),
+            payments.Select(p => new OrderPaymentDto(p.Id, p.Amount, p.PaymentAmount, p.Method.ToCode(), p.PaidOn, p.RecordedAt, p.Note, p.IsCustomerLevel, p.IsReversed, p.ReversedAt, p.ReversalReason, p.SettlementId)).ToList(),
             nowUtc);
     }
 

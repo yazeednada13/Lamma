@@ -22,6 +22,8 @@ export interface OrderPaymentLine {
   isReversed: boolean;
   reversedAt: string | null;
   reversalReason: string | null;
+  /** Set for a payment from a courier settlement (D-141): reversed only with its settlement. */
+  settlementId: string | null;
 }
 
 /** The order figures the card needs (structurally an `OrderDetails`; the payments feature never imports orders). */
@@ -104,10 +106,11 @@ export function OrderPaymentCard({ order: o }: { order: OrderPaymentInfo }) {
                 <span className="caption" style={{ display: "block" }}>
                   {paymentMethodLabel[p.method]} · {paidOnLabel(p.paidOn)}
                   {p.isCustomerLevel ? " · من دفعة على الحساب" : ""}
+                  {p.settlementId ? " · من تسوية شركة التوصيل" : ""}
                   {p.isReversed ? " · ملغية" : ""}
                 </span>
               </span>
-              {!p.isReversed && (
+              {!p.isReversed && !p.settlementId && (
                 <Button
                   variant="ghost"
                   size="sm"
