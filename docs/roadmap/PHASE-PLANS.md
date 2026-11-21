@@ -407,7 +407,7 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-21 | migration `AddCourierAndExpenses` applied (verified read-only) |
 | 5. `Frontend` started | ☑ | 2026-11-21 | 7.B1–7.B5 implemented; automated checks pass |
 | 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-21 | Founder approved the look; checklist run |
-| 7. PR merged into `develop` (founder) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-21 | Founder-reported |
 | 8. `Next Phase` given | ☐ | | |
 
 **Draft task tables (Phase 0, superseded by the approved plan):**

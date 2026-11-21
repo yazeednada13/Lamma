@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 7: Courier & expenses** (branch `feature/phase7-courier-expenses`) |
-| Current gate | **Gate 7: PR.** Frontend pushed (founder-confirmed); PR `feature/phase7-courier-expenses` → `develop` to be opened by the founder |
-| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21) |
+| Current phase | **Phase 7: Courier & expenses, closed (merged into `develop`)** |
+| Current gate | **Gate 8: Next phase.** Waiting for the founder's `Next Phase` to start Phase 8 (Returns & pre-orders) planning |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Commit these doc updates, open and merge the Phase 7 PR into `develop`, then confirm the merge |
+| Next expected founder action | Create the Phase 8 branch from the latest `develop`, commit these doc updates, and write `Next Phase` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -33,7 +33,7 @@
 | 4 Customers | **Merged into develop (founder-reported 2026-11-20)** |
 | 5 Orders core | **Merged into develop (founder-reported 2026-11-21)** |
 | 6 Payments & receivables | **Merged into develop (founder-reported 2026-11-21)** |
-| 7 Courier & expenses | **Frontend done (2026-11-21); at gate 6** |
+| 7 Courier & expenses | **Merged into develop (founder-reported 2026-11-21)** |
 | 8 Returns & pre-orders | Pending |
 | 9 Dashboard | Pending |
 | 10 Reports | Pending |
@@ -140,3 +140,4 @@
 | 2026-11-21 | Phase 7 smoke test on the real API (throwaway business): overview figures exact (sales 58, COGS 20, expenses 9, net 29, cash in 30, out 5, dues 12, courier-held 12); received > expected blocked; settlement drawer prefill, live difference notice, save and toast; expenses, courier and overview screens read correctly. Not covered: reversal from the UI, settings sections, widths |
 | 2026-11-21 | Phase 7 checklist cases 10–21 run by Claude on the real API (founder request): partial settlement, reversal from the UI, settlement payment protected, period switch, ?add/?pay links, categories (locked delivery, add, duplicate, archive, restore), courier name, 375px no horizontal scroll: all passed. Two fixes from the founder review: deduction steps in the finance hero use white instead of the reference pink (app-additions.css); settlement payments show «من تسوية شركة التوصيل» and no cancel button. 768px not measured |
 | 2026-11-21 | Founder approved the screens and pushed the Phase 7 frontend; at gate 7 |
+| 2026-11-21 | Founder merged the Phase 7 PR into `develop`; Phase 7 closed, at gate 8 |
