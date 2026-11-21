@@ -33,6 +33,10 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(32)");
 
+                    b.Property<string>("CourierCompanyName")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasPrecision(3)
                         .HasColumnType("datetime2(3)");
@@ -510,6 +514,100 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                     b.ToTable("StockReceipts", (string)null);
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Courier.CourierSettlement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Difference")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<decimal>("ExpectedAmount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ReceivedAmount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<string>("ReversalReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("ReversedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<DateOnly>("SettledOn")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId", "OperationId")
+                        .IsUnique();
+
+                    b.HasIndex("BusinessId", "SettledOn");
+
+                    b.ToTable("CourierSettlements", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CourierSettlements_Difference", "[Difference] = [ExpectedAmount] - [ReceivedAmount]");
+
+                            t.HasCheckConstraint("CK_CourierSettlements_Expected", "[ExpectedAmount] > 0");
+
+                            t.HasCheckConstraint("CK_CourierSettlements_Received", "[ReceivedAmount] >= 0 AND [ReceivedAmount] <= [ExpectedAmount]");
+                        });
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Courier.CourierSettlementOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ExpectedAmount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<bool>("IsReversed")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SettlementId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasFilter("[IsReversed] = 0");
+
+                    b.HasIndex("SettlementId");
+
+                    b.ToTable("CourierSettlementOrders", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CourierSettlementOrders_Expected", "[ExpectedAmount] > 0");
+                        });
+                });
+
             modelBuilder.Entity("Lamma.Domain.Customers.Customer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -568,6 +666,115 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .HasFilter("[PhoneE164] IS NOT NULL");
 
                     b.ToTable("Customers", (string)null);
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Expenses.Expense", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<Guid?>("SettlementId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<DateOnly>("SpentOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("VoidReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("VoidedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("SettlementId")
+                        .IsUnique()
+                        .HasFilter("[SettlementId] IS NOT NULL");
+
+                    b.HasIndex("BusinessId", "OperationId")
+                        .IsUnique();
+
+                    b.HasIndex("BusinessId", "SpentOn");
+
+                    b.ToTable("Expenses", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Expenses_Amount", "[Amount] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Expenses.ExpenseCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId", "Code")
+                        .IsUnique()
+                        .HasFilter("[Code] IS NOT NULL");
+
+                    b.HasIndex("BusinessId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("ExpenseCategories", (string)null);
                 });
 
             modelBuilder.Entity("Lamma.Domain.Orders.Order", b =>
@@ -869,11 +1076,17 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .HasPrecision(3)
                         .HasColumnType("datetime2(3)");
 
+                    b.Property<Guid?>("SettlementId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("SettlementId")
+                        .HasFilter("[SettlementId] IS NOT NULL");
 
                     b.HasIndex("BusinessId", "CustomerId");
 
@@ -1287,7 +1500,60 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Courier.CourierSettlement", b =>
+                {
+                    b.HasOne("Lamma.Domain.Businesses.Business", null)
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Courier.CourierSettlementOrder", b =>
+                {
+                    b.HasOne("Lamma.Domain.Orders.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Courier.CourierSettlement", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("SettlementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Lamma.Domain.Customers.Customer", b =>
+                {
+                    b.HasOne("Lamma.Domain.Businesses.Business", null)
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Expenses.Expense", b =>
+                {
+                    b.HasOne("Lamma.Domain.Businesses.Business", null)
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Expenses.ExpenseCategory", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lamma.Domain.Courier.CourierSettlement", null)
+                        .WithMany()
+                        .HasForeignKey("SettlementId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Expenses.ExpenseCategory", b =>
                 {
                     b.HasOne("Lamma.Domain.Businesses.Business", null)
                         .WithMany()
@@ -1358,6 +1624,11 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                     b.HasOne("Lamma.Domain.Orders.Order", null)
                         .WithMany()
                         .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Lamma.Domain.Courier.CourierSettlement", null)
+                        .WithMany()
+                        .HasForeignKey("SettlementId")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
@@ -1455,6 +1726,11 @@ namespace Lamma.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Lamma.Domain.Catalog.Product", b =>
                 {
                     b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Courier.CourierSettlement", b =>
+                {
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("Lamma.Domain.Orders.Order", b =>

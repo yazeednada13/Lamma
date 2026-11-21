@@ -34,12 +34,12 @@
 | **Net sales** | Sales − Returns | [A] |
 | **COGS** | Σ(qty × unit cost snapshot) of delivered items, net of restocked returns | [A] formula; [O] return reversal (OQ-073) |
 | **Gross profit** | Net sales − COGS | [A] |
-| **Expenses** | Σ expense records in the period, by category (including automatic courier-settlement differences) | [A]; [O] purchases (OQ-020) |
+| **Expenses** | Σ active expense records in the period, by category (including automatic courier-settlement differences) | [A]; no purchases expense (D-107) |
 | **Net profit** | Gross profit − Expenses | [A] |
-| **Cash received** | Σ payments actually received by the business in the period (by payment date), minus refunds; it excludes money the courier still holds | [P] definition; refunds [O] |
+| **Cash received** | Σ manual payments in the period (by payment date) + Σ amounts the courier actually transferred (by settlement date); excludes money the courier still holds | [A] D-144; refunds in Phase 8 |
 | **Customer receivables (balance due)** | Σ(order total − payments) over delivered orders that are not courier-held (not COD) | [A] D-134 |
-| **Courier receivables (money held)** | Σ amounts collected by a courier on delivered COD orders that have not yet been settled | [A] concept; [O] courier fee deduction (OQ-061) |
-| **Cash flow** | Cash in (payments and settlements) − cash out (expenses and refunds) per period | [P] definition |
+| **Courier receivables (money held)** | Σ remaining of delivered COD orders not yet settled | [A] D-140; the courier's fee is the settlement difference (D-140, D-141) |
+| **Cash flow** | Cash received − manual expenses in the period | [A] D-144; refunds in Phase 8 |
 | **Profit margin (product)** | (unit price − unit cost) / unit price | [P] |
 | **Average order value** | Sales / number of delivered orders in the period | [P] |
 
@@ -114,8 +114,8 @@ Arabic labels: جديد · مؤكد · قيد التجهيز · مع المند�
 | Overview: sales, cash received, profit, receivables, courier receivables, cash flow | [A] |
 | Record a payment against an order or a customer: amount, method, date | [A]; FIFO allocation (D-131), no overpayment (D-132), deposits (D-135), back-dating and reversal only (D-136), no COD by hand (D-138) |
 | Receivables aging: 0–7, 8–30, >30 days | [A]; age counted from the business-local delivery date (D-134) |
-| Courier: money held for delivered COD orders; settlement (expected, received, difference); the difference becomes a delivery expense automatically | [A]; [O] edge cases (OQ-060–062) |
-| Expenses: date, category, amount, note; totals by category | [A]; [O] categories (OQ-063) |
+| Courier: money held for delivered COD orders; settlement (expected, received, difference); the difference becomes a delivery expense automatically | [A]; one company (D-139), picked orders, received ≤ expected, reversal only (D-141) |
+| Expenses: date, category, amount, note; totals by category | [A]; categories D-142, void only (D-143) |
 | Payment methods are enabled per business | [A] |
 
 ### M8 — Reports
@@ -144,7 +144,6 @@ Arabic labels: جديد · مؤكد · قيد التجهيز · مع المند�
 - Partial returns and refunds (OQ-070–073).
 - The full transition matrix (OQ-040).
 - Undo semantics (OQ-041).
-- Courier assignment and fees (OQ-060–061).
 - Pre-order rules (OQ-074).
 - Template catalogue (OQ-011).
 - Sign-up verification provider (OQ-003).

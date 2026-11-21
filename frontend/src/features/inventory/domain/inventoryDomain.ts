@@ -27,7 +27,10 @@ export function adjustPreview(onHand: number, reserved: number, delta: number) {
 }
 
 /** Receipt totals in integer fils (no floating point): pieces and total cost; invalid costs count as 0. */
-export function receiptTotals(lines: readonly { quantity: number; unitCost: string }[]): { pieces: number; total: MoneyString } {
+export function receiptTotals(lines: readonly { quantity: number; unitCost: string }[]): {
+  pieces: number;
+  total: MoneyString;
+} {
   let fils = 0;
   let pieces = 0;
   for (const line of lines) {
@@ -39,11 +42,36 @@ export function receiptTotals(lines: readonly { quantity: number; unitCost: stri
   return { pieces, total: fromFils(fils) };
 }
 
-const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Amman", year: "numeric", month: "2-digit", day: "2-digit" });
+/**
+ * The variant's unit cost after this receipt (D-109), same formula as the server's `StockRules.WeightedCost`:
+ * with no stock on hand the new cost applies; otherwise (onHand × current + qty × new) ÷ (onHand + qty), in fils,
+ * rounded half away from zero. Returns null while the typed cost is invalid.
+ */
+export function weightedCostPreview(
+  onHand: number,
+  currentCost: MoneyString,
+  quantity: number,
+  unitCost: string,
+): MoneyString | null {
+  const typed = parseMoneyInput(unitCost);
+  if (typed === null) return null;
+  if (onHand <= 0) return typed;
+  return fromFils(Math.round((onHand * toFils(currentCost) + quantity * toFils(typed)) / (onHand + quantity)));
+}
+
+const dayKey = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Amman",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 const dayLabel = new Intl.DateTimeFormat("ar-JO-u-nu-latn", { timeZone: "Asia/Amman", day: "numeric", month: "long" });
 
 /** Groups items by their local day in Asia/Amman, newest first as given; labels "اليوم" and "أمس". */
-export function groupByDay<T extends { createdAt: string }>(items: readonly T[], now: Date = new Date()): { key: string; label: string; items: T[] }[] {
+export function groupByDay<T extends { createdAt: string }>(
+  items: readonly T[],
+  now: Date = new Date(),
+): { key: string; label: string; items: T[] }[] {
   const today = dayKey.format(now);
   const yesterday = dayKey.format(new Date(now.getTime() - 86_400_000));
   const groups: { key: string; label: string; items: T[] }[] = [];
@@ -62,4 +90,8 @@ export function groupByDay<T extends { createdAt: string }>(items: readonly T[],
   return groups;
 }
 
-export const expiryLabel: Record<"expired" | "soon" | "ok", string> = { expired: "منتهي", soon: "قرب ينتهي", ok: "سليم" };
+export const expiryLabel: Record<"expired" | "soon" | "ok", string> = {
+  expired: "منتهي",
+  soon: "قرب ينتهي",
+  ok: "سليم",
+};

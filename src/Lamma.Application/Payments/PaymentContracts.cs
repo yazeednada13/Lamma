@@ -85,7 +85,9 @@ public sealed record PaymentDto(
     bool IsReversed,
     DateTime? ReversedAt,
     string? ReversalReason,
-    IReadOnlyList<PaymentAllocationDto> Allocations);
+    IReadOnlyList<PaymentAllocationDto> Allocations,
+    /// <summary>Set for a payment created by a courier settlement (D-141): reversed only with its settlement.</summary>
+    Guid? SettlementId);
 
 /// <summary>Server-computed payment figures of one order after a write (D-133).</summary>
 public sealed record OrderPaymentSummaryDto(
@@ -168,6 +170,9 @@ public interface IPaymentRepository
     Task<Payment?> LockForUpdateAsync(Guid paymentId, CancellationToken cancellationToken);
 
     Task<bool> HasActivePaymentsAsync(Guid orderId, CancellationToken cancellationToken);
+
+    /// <summary>The payments a settlement created, with allocations, tracked for update.</summary>
+    Task<IReadOnlyList<Payment>> BySettlementForUpdateAsync(Guid settlementId, CancellationToken cancellationToken);
 
     /// <summary>Σ active allocations of the order (D-131).</summary>
     Task<decimal> PaidAsync(Guid orderId, CancellationToken cancellationToken);

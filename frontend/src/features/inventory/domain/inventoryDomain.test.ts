@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { useActionKey } from "../api/inventoryApi";
-import { adjustPreview, groupByDay, reasonsFor, receiptTotals } from "./inventoryDomain";
+import { adjustPreview, groupByDay, reasonsFor, receiptTotals, weightedCostPreview } from "./inventoryDomain";
 
 describe("inventory rules shown in the UI", () => {
   it("offers every reason for a decrease and only count/correction for an increase (D-110)", () => {
@@ -16,8 +16,20 @@ describe("inventory rules shown in the UI", () => {
   });
 
   it("totals a receipt in integer fils and ignores invalid costs", () => {
-    expect(receiptTotals([{ quantity: 3, unitCost: "0.1" }, { quantity: 10, unitCost: "8.25" }])).toEqual({ pieces: 13, total: "82.800" });
+    expect(
+      receiptTotals([
+        { quantity: 3, unitCost: "0.1" },
+        { quantity: 10, unitCost: "8.25" },
+      ]),
+    ).toEqual({ pieces: 13, total: "82.800" });
     expect(receiptTotals([{ quantity: 2, unitCost: "x" }])).toEqual({ pieces: 2, total: "0.000" });
+  });
+
+  it("previews the weighted-average cost like the server (D-109)", () => {
+    expect(weightedCostPreview(10, "4.000", 10, "5")).toBe("4.500");
+    expect(weightedCostPreview(2, "3.000", 1, "4")).toBe("3.333"); // 10 / 3, rounded to the fils
+    expect(weightedCostPreview(0, "4.000", 5, "6.5")).toBe("6.500"); // no stock: the new cost applies
+    expect(weightedCostPreview(10, "4.000", 10, "abc")).toBeNull();
   });
 
   it("groups movements by their day in Asia/Amman with today and yesterday labels", () => {

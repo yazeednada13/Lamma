@@ -101,6 +101,14 @@ public static class DependencyInjection
         services.AddScoped<Lamma.Application.Payments.IPaymentRepository, PaymentRepository>();
         services.AddScoped<Lamma.Application.Payments.IPaymentQueries, PaymentQueries>();
 
+        // Courier & expenses (Phase 7)
+        services.AddScoped<Lamma.Application.Expenses.IExpenseCategoryRepository, ExpenseCategoryRepository>();
+        services.AddScoped<Lamma.Application.Expenses.IExpenseRepository, ExpenseRepository>();
+        services.AddScoped<Lamma.Application.Expenses.IExpenseQueries, ExpenseQueries>();
+        services.AddScoped<Lamma.Application.Courier.ICourierRepository, CourierRepository>();
+        services.AddScoped<Lamma.Application.Courier.ICourierQueries, CourierQueries>();
+        services.AddScoped<Lamma.Application.Finance.IFinanceQueries, FinanceQueries>();
+
         // Accounts module
         services.AddScoped<IAccountQueries, AccountQueries>();
         return services;

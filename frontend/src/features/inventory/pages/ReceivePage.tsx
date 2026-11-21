@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { ApiError, api, errorMessage } from "@/services/api/apiClient";
-import { formatMoneyNumber, parseMoneyInput } from "@/shared/lib/money";
+import { formatMoneyNumber, parseMoneyInput, toFils } from "@/shared/lib/money";
 import { Illustration } from "@/shared/ui/brand/Illustration";
 import { Button, IconButton } from "@/shared/ui/Button";
 import { ErrorState } from "@/shared/ui/feedback/ErrorState";
@@ -15,7 +15,7 @@ import { PageHeader } from "@/shared/ui/PageHeader";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
 import { useInventoryLevels, useReceiveStock, type InventoryLevel } from "../api/inventoryApi";
 import { ItemArt } from "../components/InventoryVisuals";
-import { receiptTotals } from "../domain/inventoryDomain";
+import { receiptTotals, weightedCostPreview } from "../domain/inventoryDomain";
 
 interface Line {
   /** Snapshot of the product when added, so the line keeps its name while the picker is filtered. */
@@ -33,7 +33,12 @@ const plain = (money: string) => formatMoneyNumber(money).replace(/,/g, "");
 function useExpiryTemplates() {
   return useQuery({
     queryKey: ["inventory", "expiry-templates"],
-    queryFn: async () => new Set((await api.get<{ code: string; supportsExpiry: boolean }[]>("/product-templates")).filter((t) => t.supportsExpiry).map((t) => t.code)),
+    queryFn: async () =>
+      new Set(
+        (await api.get<{ code: string; supportsExpiry: boolean }[]>("/product-templates"))
+          .filter((t) => t.supportsExpiry)
+          .map((t) => t.code),
+      ),
     staleTime: 5 * 60_000,
   });
 }
@@ -55,7 +60,16 @@ export function ReceivePage() {
 
   const lineFor = (product: InventoryLevel): Line | null => {
     const variant = product.variants[0];
-    return variant ? { product, productId: product.productId, variantId: variant.variantId, quantity: 1, unitCost: plain(variant.cost), expiryDate: "" } : null;
+    return variant
+      ? {
+          product,
+          productId: product.productId,
+          variantId: variant.variantId,
+          quantity: 1,
+          unitCost: plain(variant.cost),
+          expiryDate: "",
+        }
+      : null;
   };
   const add = (product: InventoryLevel) => {
     const line = lineFor(product);
@@ -71,7 +85,8 @@ export function ReceivePage() {
     if (line) setLines([line]);
   }
 
-  const update = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  const update = (i: number, patch: Partial<Line>) =>
+    setLines((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));
   const totals = receiptTotals(lines);
   const invalid = lines.some((l) => parseMoneyInput(l.unitCost) === null);
 
@@ -82,7 +97,12 @@ export function ReceivePage() {
         receivedOn: receivedOn || null,
         supplier: supplier.trim() || null,
         note: null,
-        lines: lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity, unitCost: parseMoneyInput(l.unitCost)!, expiryDate: l.expiryDate || null })),
+        lines: lines.map((l) => ({
+          variantId: l.variantId,
+          quantity: l.quantity,
+          unitCost: parseMoneyInput(l.unitCost)!,
+          expiryDate: l.expiryDate || null,
+        })),
       });
       toast(`انضافت ${receipt.pieces} قطعة للمخزون`);
       navigate("/inventory");
@@ -92,7 +112,12 @@ export function ReceivePage() {
   };
 
   if (levels.error || expiryTemplates.error) {
-    return <ErrorState message={errorMessage(levels.error ?? expiryTemplates.error)} onRetry={() => void Promise.all([levels.refetch(), expiryTemplates.refetch()])} />;
+    return (
+      <ErrorState
+        message={errorMessage(levels.error ?? expiryTemplates.error)}
+        onRetry={() => void Promise.all([levels.refetch(), expiryTemplates.refetch()])}
+      />
+    );
   }
 
   if (!levels.data || !expiryTemplates.data) return <PageSkeleton />;
@@ -118,11 +143,22 @@ export function ReceivePage() {
             </div>
             <span className="control control--search" style={{ height: 40, maxWidth: 280, marginBottom: 10 }}>
               <Icon name="search" />
-              <input placeholder="ابحث عن منتج" aria-label="ابحث عن منتج" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <input
+                placeholder="ابحث عن منتج"
+                aria-label="ابحث عن منتج"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </span>
             <div className="picker">
               {levels.data.items.map((p) => (
-                <button key={p.productId} type="button" className={`ptile${lines.some((l) => l.productId === p.productId) ? " is-added" : ""}`} onClick={() => add(p)} aria-label={`أضف ${p.name}`}>
+                <button
+                  key={p.productId}
+                  type="button"
+                  className={`ptile${lines.some((l) => l.productId === p.productId) ? " is-added" : ""}`}
+                  onClick={() => add(p)}
+                  aria-label={`أضف ${p.name}`}
+                >
                   <ItemArt imageUrl={p.imageUrl} templateCode={p.templateCode} />
                   <b>{p.name}</b>
                   <small>موجود {p.onHand}</small>
@@ -135,6 +171,12 @@ export function ReceivePage() {
                 const product = line.product;
                 const named = product.variants.filter((v) => v.label !== "—");
                 const costBad = parseMoneyInput(line.unitCost) === null;
+                const variant = product.variants.find((v) => v.variantId === line.variantId);
+                const typed = parseMoneyInput(line.unitCost);
+                const after = variant
+                  ? weightedCostPreview(variant.onHand, variant.cost, line.quantity, line.unitCost)
+                  : null;
+                const changed = variant && typed !== null && after !== null && toFils(typed) !== toFils(variant.cost);
                 return (
                   <div key={line.productId} className="line2">
                     <span className="line2__art">
@@ -144,7 +186,16 @@ export function ReceivePage() {
                       <b>{product.name}</b>
                       {named.length > 0 && (
                         <span className="control" style={{ height: 34, maxWidth: 200 }}>
-                          <select aria-label={`نسخة ${product.name}`} value={line.variantId} onChange={(e) => update(i, { variantId: e.target.value, unitCost: plain(product.variants.find((v) => v.variantId === e.target.value)!.cost) })}>
+                          <select
+                            aria-label={`نسخة ${product.name}`}
+                            value={line.variantId}
+                            onChange={(e) =>
+                              update(i, {
+                                variantId: e.target.value,
+                                unitCost: plain(product.variants.find((v) => v.variantId === e.target.value)!.cost),
+                              })
+                            }
+                          >
                             {named.map((v) => (
                               <option key={v.variantId} value={v.variantId}>
                                 {v.label}
@@ -155,24 +206,92 @@ export function ReceivePage() {
                       )}
                       {expiryTemplates.data.has(product.templateCode) && (
                         <span className="control" style={{ height: 34, maxWidth: 200 }}>
-                          <input type="date" className="ltr" aria-label={`تاريخ انتهاء ${product.name}`} value={line.expiryDate} onChange={(e) => update(i, { expiryDate: e.target.value })} />
+                          <input
+                            type="date"
+                            className="ltr"
+                            aria-label={`تاريخ انتهاء ${product.name}`}
+                            value={line.expiryDate}
+                            onChange={(e) => update(i, { expiryDate: e.target.value })}
+                          />
+                        </span>
+                      )}
+                      {changed && variant && (
+                        // D-109: show what the new purchase cost does to the product's cost before confirming.
+                        <span className="caption" role="status">
+                          {variant.onHand > 0 ? (
+                            <>
+                              التكلفة الحالية <bdi>{formatMoneyNumber(variant.cost)}</bdi> ← بعد الاستلام بتصير{" "}
+                              <b>
+                                <bdi>{formatMoneyNumber(after)}</bdi>
+                              </b>{" "}
+                              د.أ (متوسط مع الـ <bdi>{variant.onHand}</bdi> قطعة الموجودة)
+                            </>
+                          ) : (
+                            <>
+                              ما في مخزون حالي، فتكلفة القطعة بتصير{" "}
+                              <b>
+                                <bdi>{formatMoneyNumber(after)}</bdi>
+                              </b>{" "}
+                              د.أ
+                            </>
+                          )}
                         </span>
                       )}
                     </div>
-                    <span className="stepper">
-                      <button type="button" aria-label={`زيادة ${product.name}`} onClick={() => update(i, { quantity: Math.min(line.quantity + 1, 100_000) })}>
-                        +
-                      </button>
-                      <input className="ltr" aria-label={`كمية ${product.name}`} inputMode="numeric" value={line.quantity} onChange={(e) => update(i, { quantity: Math.max(1, Math.min(100_000, Number.parseInt(e.target.value, 10) || 1)) })} />
-                      <button type="button" aria-label={`نقص ${product.name}`} onClick={() => update(i, { quantity: Math.max(1, line.quantity - 1) })}>
-                        −
-                      </button>
-                    </span>
-                    <span className={`control${costBad ? " is-error" : ""}`} style={{ height: 36, width: 110 }}>
-                      <input className="ltr" inputMode="decimal" aria-label={`تكلفة القطعة ${product.name}`} aria-invalid={costBad || undefined} value={line.unitCost} onChange={(e) => update(i, { unitCost: e.target.value })} />
-                      <span className="control__affix">د.أ</span>
-                    </span>
-                    <IconButton icon="x" size="sm" label={`شيل ${product.name}`} onClick={() => setLines((ls) => ls.filter((_, j) => j !== i))} />
+                    <div className="col" style={{ gap: 4 }}>
+                      <span className="caption" id={`rc-qty-${line.productId}`}>
+                        الكمية اللي وصلت
+                      </span>
+                      <span className="stepper">
+                        <button
+                          type="button"
+                          aria-label={`زيادة ${product.name}`}
+                          onClick={() => update(i, { quantity: Math.min(line.quantity + 1, 100_000) })}
+                        >
+                          +
+                        </button>
+                        <input
+                          className="ltr"
+                          aria-label={`كمية ${product.name}`}
+                          inputMode="numeric"
+                          value={line.quantity}
+                          onChange={(e) =>
+                            update(i, {
+                              quantity: Math.max(1, Math.min(100_000, Number.parseInt(e.target.value, 10) || 1)),
+                            })
+                          }
+                        />
+                        <button
+                          type="button"
+                          aria-label={`نقص ${product.name}`}
+                          onClick={() => update(i, { quantity: Math.max(1, line.quantity - 1) })}
+                        >
+                          −
+                        </button>
+                      </span>
+                    </div>
+                    <div className="col" style={{ gap: 4 }}>
+                      <span className="caption" title="بقديش اشتريت القطعة من المورّد بهالشحنة. مش سعر البيع.">
+                        تكلفة القطعة (سعر الشراء)
+                      </span>
+                      <span className={`control${costBad ? " is-error" : ""}`} style={{ height: 36, width: 110 }}>
+                        <input
+                          className="ltr"
+                          inputMode="decimal"
+                          aria-label={`تكلفة القطعة (سعر الشراء) ${product.name}`}
+                          aria-invalid={costBad || undefined}
+                          value={line.unitCost}
+                          onChange={(e) => update(i, { unitCost: e.target.value })}
+                        />
+                        <span className="control__affix">د.أ</span>
+                      </span>
+                    </div>
+                    <IconButton
+                      icon="x"
+                      size="sm"
+                      label={`شيل ${product.name}`}
+                      onClick={() => setLines((ls) => ls.filter((_, j) => j !== i))}
+                    />
                   </div>
                 );
               })}
@@ -184,8 +303,22 @@ export function ReceivePage() {
               <h2 id="rc-supplier">المورّد</h2>
             </div>
             <div className="grid g-2">
-              <TextField label="المورّد" icon="truck" maxLength={100} value={supplier} onChange={(e) => setSupplier(e.target.value)} />
-              <TextField label="التاريخ" icon="calendar" type="date" ltr help="فاضي = اليوم" value={receivedOn} onChange={(e) => setReceivedOn(e.target.value)} />
+              <TextField
+                label="المورّد"
+                icon="truck"
+                maxLength={100}
+                value={supplier}
+                onChange={(e) => setSupplier(e.target.value)}
+              />
+              <TextField
+                label="التاريخ"
+                icon="calendar"
+                type="date"
+                ltr
+                help="فاضي = اليوم"
+                value={receivedOn}
+                onChange={(e) => setReceivedOn(e.target.value)}
+              />
             </div>
           </section>
         </div>
@@ -208,6 +341,12 @@ export function ReceivePage() {
                   <span>
                     {product.name}
                     {variant && variant.label !== "—" ? ` · ${variant.label}` : ""} × {l.quantity}
+                    {cost !== null && (
+                      <span className="caption">
+                        {" "}
+                        بـ <bdi>{formatMoneyNumber(cost)}</bdi>
+                      </span>
+                    )}
                   </span>
                   {cost !== null ? <Money value={receiptTotals([l]).total} /> : "—"}
                 </div>
@@ -220,7 +359,13 @@ export function ReceivePage() {
             <div className="receipt__barcode" aria-hidden="true" />
           </div>
           {error && <FormAlert>{error}</FormAlert>}
-          <Button size="lg" icon="check" loading={receive.isPending} disabled={lines.length === 0 || invalid} onClick={() => void submit()}>
+          <Button
+            size="lg"
+            icon="check"
+            loading={receive.isPending}
+            disabled={lines.length === 0 || invalid}
+            onClick={() => void submit()}
+          >
             تأكيد الاستلام
           </Button>
         </aside>

@@ -162,11 +162,11 @@ Questions:
 
 ## P1 — before Phase 7 (Courier & Expenses)
 
-**OQ-060 · P1 · Phase 7: courier companies.** Is there one courier company per business (the prototype shows one, "توصيل السريع"), or several? Is the courier assigned per order? Recommendation: support a list, defaulting to one, with a courier assigned to each COD order.
+**OQ-060 · P1 · Phase 7: courier companies.** Is there one courier company per business (the prototype shows one, "توصيل السريع"), or several? Is the courier assigned per order? Recommendation: support a list, defaulting to one, with a courier assigned to each COD order. **Resolved (2026-11-21) → D-139.**
 
-**OQ-061 · P1 · Phase 7: COD flow.** When a COD order is delivered, is its remaining amount automatically "held by courier"? Does the courier deduct its delivery fee before transferring? If so, is that deduction the settlement difference that becomes a delivery expense (D-035)?
+**OQ-061 · P1 · Phase 7: COD flow.** When a COD order is delivered, is its remaining amount automatically "held by courier"? Does the courier deduct its delivery fee before transferring? If so, is that deduction the settlement difference that becomes a delivery expense (D-035)? **Resolved (2026-11-21) → D-140.**
 
-**OQ-062 · P1 · Phase 7: settlement edge cases.** These cases need a decision:
+**OQ-062 · P1 · Phase 7: settlement edge cases.** These cases need a decision: **Resolved (2026-11-21) → D-141.**
 - A partial settlement, covering a subset of orders.
 - A received amount greater than expected (negative difference).
 - Whether a settlement can be undone.
@@ -176,7 +176,7 @@ Recommendation:
 - An overpayment is recorded as other income, or blocked.
 - Undo is a reversal only.
 
-**OQ-063 · P1 · Phase 7: default expense categories.** The prototype uses Ads, Delivery, Packaging, Rent, Purchases, Other. "Purchases" is linked to OQ-020. Can the owner add, rename, or delete categories? Is "Delivery" a system category that the settlement uses?
+**OQ-063 · P1 · Phase 7: default expense categories.** The prototype uses Ads, Delivery, Packaging, Rent, Purchases, Other. "Purchases" is linked to OQ-020. Can the owner add, rename, or delete categories? Is "Delivery" a system category that the settlement uses? **Resolved (2026-11-21) → D-142.**
 
 ## P1 — before Phase 8 (Returns & Pre-orders)
 

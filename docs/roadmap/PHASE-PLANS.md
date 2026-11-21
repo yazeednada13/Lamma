@@ -370,7 +370,7 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 5. `Frontend` started | ☑ | 2026-11-21 | 6.B1–6.B5 implemented; automated checks pass |
 | 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-21 | Smoke test on the real API passed |
 | 7. PR merged into `develop` (founder) | ☑ | 2026-11-21 | Founder-reported |
-| 8. `Next Phase` given | ☐ | | |
+| 8. `Next Phase` given | ☑ | 2026-11-21 | |
 
 **Draft task tables (Phase 0, superseded by the approved plan):**
 
@@ -394,7 +394,23 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 ---
 
 ## Phase 7 — Courier & expenses
-**Depends on:** 6. **Blocking:** OQ-060…063, OQ-020.
+**Depends on:** 6. **Blocking:** none (OQ-060…063 resolved as D-139–D-142; OQ-020 as D-107; D-143, D-144 added).
+
+**Approved plan (2026-11-21):** [`PHASE-7-PLAN.md`](PHASE-7-PLAN.md), tasks 7.A1–7.A6 and 7.B1–7.B5, decisions D-139–D-144, verification per D-106. It supersedes the draft tables below.
+
+### Phase 7 gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-21 | `feature/phase7-courier-expenses` |
+| 2. Plan approved | ☑ | 2026-11-21 | D-139–D-144 |
+| 3. `Backend` started | ☑ | 2026-11-21 | 7.A1–7.A6 implemented and verified |
+| 4. Backend pushed (founder confirmed) | ☐ | | migration `AddCourierAndExpenses` |
+| 5. `Frontend` started | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
+
+**Draft task tables (Phase 0, superseded by the approved plan):**
 
 | ID | Backend task | Acceptance / tests |
 |---|---|---|

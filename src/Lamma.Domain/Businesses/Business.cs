@@ -43,6 +43,9 @@ public sealed class Business : Entity, IHasTimestamps
 
     public SubscriptionPlan SubscriptionPlan { get; private set; } = SubscriptionPlan.Trial;
 
+    /// <summary>The business's courier company (D-139). Null = the default name «شركة التوصيل».</summary>
+    public string? CourierCompanyName { get; private set; }
+
     public DateTime CreatedAt { get; private set; }
 
     public DateTime UpdatedAt { get; private set; }
@@ -127,6 +130,25 @@ public sealed class Business : Entity, IHasTimestamps
     }
 
     /// <summary>Whole calendar days left in the trial, in the business time zone; never negative.</summary>
+    public const int CourierCompanyNameMaxLength = 60;
+
+    /// <summary>Renames the courier company (D-139).</summary>
+    public void SetCourierCompanyName(string? name)
+    {
+        var cleaned = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
+        if (cleaned is null)
+        {
+            throw new DomainException("courier.name_required", "اكتب اسم شركة التوصيل.");
+        }
+
+        if (cleaned.Length > CourierCompanyNameMaxLength)
+        {
+            throw new DomainException("courier.name_too_long", $"اسم الشركة لازم يكون {CourierCompanyNameMaxLength} حرف أو أقل.");
+        }
+
+        CourierCompanyName = cleaned;
+    }
+
     public int TrialDaysRemaining(DateTime nowUtc) => TrialDaysRemaining(TrialEndsAt, nowUtc, BusinessTime.FindZone(TimeZoneId));
 
     public static int TrialDaysRemaining(DateTime trialEndsAtUtc, DateTime nowUtc, TimeZoneInfo zone)

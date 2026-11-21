@@ -56,6 +56,9 @@ public sealed class Payment : Entity, IBusinessOwned
 
     public Guid? ReversalOperationId { get; private set; }
 
+    /// <summary>Set when a courier settlement created this payment (D-141); such a payment is reversed only with it.</summary>
+    public Guid? SettlementId { get; private set; }
+
     public IReadOnlyCollection<PaymentAllocation> Allocations => _allocations;
 
     public bool IsReversed => ReversedAt is not null;
@@ -119,8 +122,44 @@ public sealed class Payment : Entity, IBusinessOwned
         return payment;
     }
 
+    /// <summary>
+    /// The COD money of one settled order (D-141): covers what is left on it, so the order becomes paid. Created only
+    /// by <see cref="Courier.CourierSettlement"/>; the method is always COD.
+    /// </summary>
+    internal static Payment ForSettlement(Guid businessId, Guid customerId, Guid orderId, decimal amount, DateOnly settledOn, Guid settlementId, Guid operationId, DateTime nowUtc)
+    {
+        Guard.NotEmpty(customerId, nameof(customerId));
+        PaymentRules.EnsureAmount(amount);
+        var payment = new Payment(NewId(), businessId)
+        {
+            CustomerId = customerId,
+            OrderId = orderId,
+            Amount = amount,
+            Method = PaymentMethod.Cod,
+            PaidOn = settledOn,
+            RecordedAt = nowUtc,
+            Note = "تسوية شركة التوصيل",
+            OperationId = operationId,
+            SettlementId = settlementId,
+        };
+        payment._allocations.Add(new PaymentAllocation(payment, orderId, amount));
+        return payment;
+    }
+
     /// <summary>Voids the payment and all its allocations (D-136). A second reversal is a conflict.</summary>
     public void Reverse(string? reason, Guid operationId, DateTime nowUtc)
+    {
+        if (SettlementId is not null)
+        {
+            throw new DomainConflictException("payment.from_settlement", "هاي الدفعة من تسوية شركة التوصيل. ألغِ التسوية نفسها من صفحة شركة التوصيل.");
+        }
+
+        ReverseCore(reason, operationId, nowUtc);
+    }
+
+    internal void ReverseBySettlement(Guid operationId, DateTime nowUtc) => ReverseCore("انلغت التسوية", operationId, nowUtc);
+
+    private void ReverseCore(string? reason, Guid operationId, DateTime nowUtc)
     {
         if (IsReversed)
         {

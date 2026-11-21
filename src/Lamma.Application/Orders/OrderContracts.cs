@@ -153,7 +153,9 @@ public sealed record OrderPaymentDto(
     bool IsCustomerLevel,
     bool IsReversed,
     DateTime? ReversedAt,
-    string? ReversalReason);
+    string? ReversalReason,
+    /// <summary>Set for a payment from a courier settlement (D-141).</summary>
+    Guid? SettlementId);
 
 public sealed record OrderDetailsDto(
     Guid Id,
