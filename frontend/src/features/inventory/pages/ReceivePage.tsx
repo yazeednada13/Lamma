@@ -271,7 +271,7 @@ export function ReceivePage() {
                       </span>
                     </div>
                     <div className="col" style={{ gap: 4 }}>
-                      <span className="caption" title="بقديش اشتريت القطعة من المورّد بهالشحنة. مش سعر البيع.">
+                      <span className="caption" title="بكم اشتريت القطعة من المورّد بهالشحنة. مش سعر البيع.">
                         تكلفة القطعة (سعر الشراء)
                       </span>
                       <span className={`control${costBad ? " is-error" : ""}`} style={{ height: 36, width: 110 }}>

@@ -547,8 +547,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 1. Branch created by founder | ☑ | 2026-11-22 | `feature/phase11-subscription-admin` |
 | 2. Plan approved | ☑ | 2026-11-22 | D-173–D-181 |
 | 3. `Backend` started | ☑ | 2026-11-22 | part 11-I (11.A1–11.A7) implemented and verified; migration `AddSignupLeads` pending |
-| 4. Backend pushed (founder confirmed) | ☐ | | |
-| 5. `Frontend` started | ☐ | | |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-22 | 11-I; `AddSignupLeads` applied (seen working on `Lamma_Dev`) |
+| 5. `Frontend` started | ☑ | 2026-11-22 | 11-I: 11.B1–11.B3 implemented; checks pass |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |

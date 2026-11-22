@@ -188,3 +188,9 @@ Split a file only along a real responsibility boundary, never just to cut lines:
 
 ## 12. Testing (see TESTING-STRATEGY.md)
 Tests sit next to their subjects: shared primitives (Button, Icon, Money, form, Drawer, Toast), `apiClient`, `money`, `trial`; one test file per feature page area; routing and AppShell tests in `app/`. Every test file uses MSW (`src/test/fakeApi.ts`) and `renderApp` (`src/test/renderApp.tsx`, under StrictMode).
+
+## Phase 11-I additions (2026-11-22)
+- **`features/signup`** (public sign-up, D-160): the landing page, the sign-up form and their pure rules. Public API: `LandingPage`.
+- **Landing at `/` for anonymous visitors (D-174):** `RequireAuth` takes an optional `anonymousHome`; at `/` it renders that element instead of redirecting to `/login`. Signed-in owners still get the dashboard.
+- **Registration** (`/register?token=…`) lives in `features/auth` (`RegisterPage`, `useInvitation`, `useRegister`); the open `SignUpPage` was removed and `/signup` redirects to `/#join`.
+- **First co-located CSS module:** `features/signup/landing.module.css` (allowed by the CSS rule above). It uses the Lamma tokens only; the design-system files are unchanged.

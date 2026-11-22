@@ -46,7 +46,7 @@ export function DashboardPage() {
 /** How Lamma works, in one line each (the rules the app really applies). Shown as floating tips in the closing scene. */
 const TIPS: FloatItem[] = [
   { icon: "package", tone: "olive", title: "المخزون بيتحجز لحاله", text: "أول ما تأكّد الطلب، بنحجزله الكمية" },
-  { icon: "truck", tone: "blue", title: "المندوب محسوب أول بأول", text: "بتعرف قديش معه لحد ما يحوّل" },
+  { icon: "truck", tone: "blue", title: "المندوب محسوب أول بأول", text: "بتعرف كم معه لحد ما يحوّل" },
   { icon: "wallet", tone: "apricot", title: "ربح حقيقي مش تقديري", text: "التكلفة بتنحفظ يوم البيع والمصاريف بتنطرح" },
   { icon: "users", tone: "green", title: "كل زبون بملفه", text: "طلباته ودفعاته واللي عليه بمكان واحد" },
   {

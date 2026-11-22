@@ -1,11 +1,17 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, resetCsrfToken } from "@/services/api/apiClient";
 import { accountKey, type Account } from "./sessionApi";
 
-export interface SignUpBody {
-  fullName: string;
-  email: string;
+export interface RegisterBody {
+  token: string;
   password: string;
+  confirmPassword: string;
+}
+
+/** The invitation behind a registration link (D-160): who it is for. */
+export interface Invitation {
+  email: string;
+  fullName: string;
 }
 
 export interface LoginBody {
@@ -27,10 +33,21 @@ function useSessionChange() {
   };
 }
 
-export function useSignUp() {
+/** 404 `invite.invalid` (unknown or used) and 410 `invite.expired` are shown on the page, so no retry. */
+export const useInvitation = (token: string) =>
+  useQuery({
+    queryKey: ["invitation", token],
+    queryFn: () => api.get<Invitation>(`/public/invitations/${encodeURIComponent(token)}`),
+    enabled: token.length > 0,
+    retry: false,
+    staleTime: Infinity,
+  });
+
+/** Creates the account from the invitation and signs in; onboarding comes next (D-160, D-180). */
+export function useRegister() {
   const onSession = useSessionChange();
   return useMutation({
-    mutationFn: (body: SignUpBody) => api.post<Account>("/auth/signup", body),
+    mutationFn: (body: RegisterBody) => api.post<Account>("/auth/register", body),
     onSuccess: (account) => onSession(account),
   });
 }

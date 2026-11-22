@@ -120,3 +120,19 @@ New feature folder: `features/admin` with its own layout (recorded in FRONTEND-A
 
 ## 5. Documentation updates
 DECISIONS (D-173–D-181), API-DESIGN §21, DATABASE-DESIGN (new tables), FRONTEND-ARCHITECTURE (admin shell, public layout), FRONTEND-AUDIT (routes `/subscription`, `/trial-expired`, new public and admin routes), LOCAL-DEVELOPMENT (email file folder, admin setting, Brevo settings), PHASE-PLANS, PROJECT-PROGRESS.
+
+---
+
+## 6. Part 11-I frontend manual checklist (gate 6, D-106)
+| # | Scenario | Expected |
+|---|---|---|
+| 1 | Open `/` signed out (also with `?utm_source=ig`) | Landing page (redesign 2026-11-22): dark hero where the scattered pieces gather into one order card and the shadda draws; the business-types band; the before/after switch (turns by itself once); the five features with the sticky phone (inline screens on phones); the order-journey scene (message → packing → courier → delivered → money in, with the live order card; click a stage to jump, «وقّف/شغّل»); the profit waterfall counting up; three steps; pricing with the monthly/yearly switch; FAQ; the form (confetti on send); footer |
+| 2 | 390 px | No horizontal scroll; the sticky «ابدأ شهرك المجاني» button shows, hides when the form is in view, and scrolls to the form |
+| 3 | Send the form empty, then with a landline | Arabic field errors; «اكتب رقم موبايل أردني…» |
+| 4 | Send a valid form | «تفقّد إيميلك» with the masked email; an `.html` file appears in `%TEMP%\lamma-emails` and the API log shows the link |
+| 5 | Open the email file | Branded RTL email with the name, store name, «أكمل تسجيلك» button, 3 steps, 72-hour note |
+| 6 | Open the link | `/register`: name and email locked; strength meter; mismatched confirmation is refused |
+| 7 | Register | Lands on onboarding with the name; after onboarding the trial shows 30 days |
+| 8 | Open the same link again / after 72 h | «الرابط ما بيشتغل» with the server's reason and «ابعتلي رابط جديد» → `/#join` |
+| 9 | `/signup`, «ابدأ تجربتك المجانية» on `/login` | Both lead to the landing form |
+| 10 | Signed in at `/` | The dashboard as before |

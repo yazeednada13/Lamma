@@ -4,41 +4,41 @@ import { fake } from "@/test/fakeApi";
 import { renderApp } from "@/test/renderApp";
 
 describe("authentication pages", () => {
-  it("sign-up validates on the client, then creates the account and opens onboarding", async () => {
-    const { user, router } = renderApp("/signup");
-    await user.click(await screen.findByRole("button", { name: /إنشاء الحساب/ }));
-    expect(await screen.findByText("الاسم مطلوب.")).toBeInTheDocument();
-    expect(screen.getByText("الإيميل مطلوب.")).toBeInTheDocument();
+  it("registers from the emailed link with a locked email, then opens onboarding", async () => {
+    fake.invitations.set("tok-1", { email: "reem@example.com", fullName: "ريم الخطيب", state: "valid" });
+    const { user, router } = renderApp("/register?token=tok-1");
+    expect(await screen.findByText(/أهلًا ريم/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/الإيميل/)).toHaveValue("reem@example.com");
+    expect(screen.getByLabelText(/الإيميل/)).toBeDisabled();
 
-    await user.type(screen.getByLabelText(/اسمك/), "ريم");
-    await user.type(screen.getByLabelText(/الإيميل/), "reem@example.com");
-    await user.type(screen.getByLabelText(/كلمة السر/, { selector: "input" }), "lamma2026");
-    await user.click(screen.getByRole("button", { name: /إنشاء الحساب/ }));
-
-    await waitFor(() => expect(router.state.location.pathname).toBe("/onboarding"));
-    expect(fake.users.get("reem@example.com")?.fullName).toBe("ريم");
-  });
-
-
-  it("sign-up shows password strength while typing", async () => {
-    const { user } = renderApp("/signup");
-    const meter = await screen.findByRole("meter", { name: "قوة كلمة السر" });
-    expect(meter).toHaveAttribute("aria-valuenow", "0");
-    await user.type(screen.getByLabelText(/كلمة السر/, { selector: "input" }), "Phase1test2026");
+    const meter = screen.getByRole("meter", { name: "قوة كلمة السر" });
+    await user.type(screen.getByLabelText(/^كلمة السر/, { selector: "input" }), "Phase1test2026");
     expect(meter).toHaveAttribute("aria-valuenow", "4");
+    await user.type(screen.getByLabelText(/تأكيد كلمة السر/, { selector: "input" }), "Phase1test2025");
+    await user.click(screen.getByRole("button", { name: /ابدأ تجربتي المجانية/ }));
+    expect(await screen.findByText("تأكيد كلمة السر مش مطابق.")).toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText(/تأكيد كلمة السر/, { selector: "input" }));
+    await user.type(screen.getByLabelText(/تأكيد كلمة السر/, { selector: "input" }), "Phase1test2026");
+    await user.click(screen.getByRole("button", { name: /ابدأ تجربتي المجانية/ }));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/onboarding"));
+    expect(fake.users.get("reem@example.com")?.fullName).toBe("ريم الخطيب");
   });
 
 
-  it("a taken email is shown on the email field", async () => {
-    fake.addUser("taken@example.com");
-    const { user } = renderApp("/signup");
-    await user.type(await screen.findByLabelText(/اسمك/), "ريم");
-    await user.type(screen.getByLabelText(/الإيميل/), "taken@example.com");
-    await user.type(screen.getByLabelText(/كلمة السر/, { selector: "input" }), "lamma2026");
-    await user.click(screen.getByRole("button", { name: /إنشاء الحساب/ }));
+  it("an expired link explains itself and offers a new one", async () => {
+    fake.invitations.set("old", { email: "a@b.co", fullName: "ريم", state: "expired" });
+    renderApp("/register?token=old");
+    expect(await screen.findByText("رابط التسجيل انتهت صلاحيته.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /ابعتلي رابط جديد/ })).toHaveAttribute("href", "/#join");
+  });
 
-    expect(await screen.findByText("هاد الإيميل مسجّل من قبل. جرّب تسجّل دخول.")).toBeInTheDocument();
-    expect(screen.getByLabelText(/الإيميل/)).toHaveAttribute("aria-invalid", "true");
+
+  it("the old sign-up address leads to the landing form", async () => {
+    const { router } = renderApp("/signup");
+    await waitFor(() => expect(router.state.location.pathname).toBe("/"));
+    expect(router.state.location.hash).toBe("#join");
+    expect(await screen.findByRole("heading", { name: /كل شغلك/ })).toBeInTheDocument();
   });
 
 

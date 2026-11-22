@@ -60,7 +60,7 @@ export function LoginPage() {
         </Button>
         <div className="divider-or">أو</div>
         <p className="muted" style={{ textAlign: "center" }}>
-          جديد على لمّة؟ <Link to="/signup">ابدأ تجربتك المجانية</Link>
+          جديد على لمّة؟ <Link to="/#join">ابدأ تجربتك المجانية</Link>
         </p>
       </form>
     </AuthLayout>

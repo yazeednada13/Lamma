@@ -71,6 +71,10 @@ class FakeLamma {
   trialDaysRemaining = 30;
   requests: RecordedRequest[] = [];
   resetRequests: string[] = [];
+  /** Public sign-up forms received (D-160). */
+  signups: Record<string, unknown>[] = [];
+  /** Invitation tokens → { email, fullName, state }. */
+  invitations = new Map<string, { email: string; fullName: string; state: "valid" | "expired" | "used" }>();
   private nextId = 1;
 
   reset() {
@@ -80,6 +84,8 @@ class FakeLamma {
     this.trialDaysRemaining = 30;
     this.requests = [];
     this.resetRequests = [];
+    this.signups = [];
+    this.invitations.clear();
   }
 
   csrfFor(): string {
@@ -219,16 +225,33 @@ function withBusiness(
 export const handlers = [
   http.get(`${BASE}/auth/antiforgery`, () => json({ token: fake.csrfFor() })),
 
-  http.post(`${BASE}/auth/signup`, async ({ request }) => {
+  // Public sign-up (D-160): always 202; invitations are seeded by tests through fake.invitations.
+  http.post(`${BASE}/public/signup`, async ({ request }) => {
     const { body, error } = await guard(request);
     if (error) return error;
-    const email = String(body.email);
-    if (fake.users.has(email)) return problem(409, "auth.email_taken", "هاد الإيميل مسجّل من قبل. جرّب تسجّل دخول.");
-    if (String(body.password).length < 8)
-      return problem(422, "validation.failed", "x", { password: ["كلمة السر لازم تكون 8 أحرف على الأقل."] });
-    fake.addUser(email, String(body.password), String(body.fullName));
-    fake.session = email;
-    return json(fake.account(email), 201);
+    fake.signups.push(body);
+    return new HttpResponse(null, { status: 202 });
+  }),
+
+  http.get(`${BASE}/public/invitations/:token`, ({ params }) => {
+    const inv = fake.invitations.get(String(params.token));
+    if (!inv || inv.state === "used") return problem(404, "invite.invalid", "رابط التسجيل مش صحيح أو انستخدم قبل.");
+    if (inv.state === "expired") return problem(410, "invite.expired", "رابط التسجيل انتهت صلاحيته.");
+    return json({ email: inv.email, fullName: inv.fullName });
+  }),
+
+  http.post(`${BASE}/auth/register`, async ({ request }) => {
+    const { body, error } = await guard(request);
+    if (error) return error;
+    const inv = fake.invitations.get(String(body.token));
+    if (!inv || inv.state === "used") return problem(404, "invite.invalid", "رابط التسجيل مش صحيح أو انستخدم قبل.");
+    if (inv.state === "expired") return problem(410, "invite.expired", "رابط التسجيل انتهت صلاحيته.");
+    if (body.password !== body.confirmPassword)
+      return problem(422, "validation.failed", "x", { confirmPassword: ["تأكيد كلمة السر مش مطابق."] });
+    inv.state = "used";
+    fake.addUser(inv.email, String(body.password), inv.fullName);
+    fake.session = inv.email;
+    return json(fake.account(inv.email), 201);
   }),
 
   http.post(`${BASE}/auth/login`, async ({ request }) => {
