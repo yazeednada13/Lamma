@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 10: Reports** (branch `feature/phase10-reports`) |
-| Current gate | **Gate 6: Frontend checkpoint.** 10.B1–10.B4 implemented; automated checks pass; waiting for the founder's manual check ([PHASE-10-PLAN.md](../roadmap/PHASE-10-PLAN.md) §8) |
-| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22). Phase 9 (`feature/phase9-dashboard`) merged (2026-11-22) |
+| Current phase | **Phase 10: Reports — closed** (merged into `develop`) |
+| Current gate | **Gate 8: waiting for `Next Phase`** (Phase 11: Subscription, platform admin & public sign-up) |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22). Phase 9 (`feature/phase9-dashboard`) merged (2026-11-22). Phase 10 (`feature/phase10-reports`) merged (2026-11-22) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Run the Phase 10 manual checklist, then push the frontend |
+| Next expected founder action | Create the Phase 11 branch from `develop` and write `Next Phase` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -36,7 +36,7 @@
 | 7 Courier & expenses | **Merged into develop (founder-reported 2026-11-21)** |
 | 8 Returns & pre-orders | **Merged into develop (founder-reported 2026-11-22)** |
 | 9 Dashboard | **Merged into develop (founder-reported 2026-11-22)** |
-| 10 Reports | **Frontend done (2026-11-22); at gate 6** |
+| 10 Reports | **Merged into develop (founder-reported 2026-11-22)** |
 | 11 Subscription, platform admin & public sign-up (expanded, D-159) | Pending |
 | 12 Hardening & launch | Pending |
 
@@ -171,3 +171,5 @@
 | 2026-11-22 | Founder pushed the Phase 10 backend; `Frontend` given |
 | 2026-11-22 | Phase 10 Frontend 10.B1–10.B4 implemented; automated checks pass; waiting at gate 6 |
 | 2026-11-22 | Phase 10 checklist (13 cases) run by Claude on the real API (founder request «test all», throwaway businesses «متجر فحص 10» and «متجر فحص فاضي»): hub, P&L and sales figures equal the finance overview and the dashboard (net 32.40, net sales 62.40, return 19.60, COGS 24.00, stock value 448.00); period chips, URL, back button, custom range with its errors, loss waterfall, expected sales, month buckets, empty account, dashboard regression; 1440/1024/768/390 without page overflow: all passed after four fixes: «مقارنة بـ» wording; period changes now add a history entry so the back button returns to the previous period; axis labels no longer overlap the last one; weekday bars overflowed the page at 390 px and the waterfall was unreadable on phones (CSS overrides in `app-additions.css`) |
+| 2026-11-22 | Founder pushed the Phase 10 frontend and asked for the PR; at gate 7 |
+| 2026-11-22 | Founder merged the Phase 10 PR into `develop`; Phase 10 closed, at gate 8 |

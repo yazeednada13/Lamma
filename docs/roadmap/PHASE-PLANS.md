@@ -516,8 +516,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-22 | 10.A1–10.A6 implemented and verified; no migration |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-22 | no migration |
 | 5. `Frontend` started | ☑ | 2026-11-22 | 10.B1–10.B4 implemented; automated checks pass |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
-| 7. PR merged into `develop` (founder) | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-22 | 13-case checklist run on the real API |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-22 | Founder-reported |
 | 8. `Next Phase` given | ☐ | | |
 
 **Draft task tables (Phase 0):**
