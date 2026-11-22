@@ -78,3 +78,24 @@ No schema change expected. The reports read Orders, OrderItems, OrderReturns, Or
 
 ## 7. Documentation updates
 API-DESIGN §20, DECISIONS (D-168–D-172; OQ-081 resolved), PHASE-PLANS gate table, PROJECT-PROGRESS, FRONTEND-ARCHITECTURE (charts moved to shared), and FRONTEND-AUDIT parity notes for routes 26–28.
+
+---
+
+## 8. Frontend manual checklist (gate 6, D-106)
+Run against the real API with a business that has delivered orders, a return and expenses. Check at widths 1440, 1024, 768 and 390, in RTL.
+
+| # | Scenario | Expected |
+|---|---|---|
+| 1 | Open «التقارير» from the sidebar | `/reports` shows six cards (P&L, sales, product performance, customers, stock value, delivery), each with its preview; each card opens its page |
+| 2 | Hub figures | P&L and sales cards equal «نظرة مالية» for this month (net profit, net sales); delivery equals the courier page's held money |
+| 3 | `/reports/pnl` default | «هالشهر» selected; hero, flow steps, waterfall and ledger agree (net sales − COGS − expenses = net); the subtitle names this month and last month |
+| 4 | «شو تغيّر؟» | Delta pills for sales, COGS, expenses and net (a rise in costs is red); the sentence names the largest driver; a new account says «ما في فترة سابقة للمقارنة» |
+| 5 | Period chips | «الشهر الماضي» and «آخر 7 أيام» change every figure and the URL; reloading keeps the period; the back button returns to the previous period |
+| 6 | Custom range | «فترة مخصصة» opens the from–to panel; a reversed range, a future date or more than a year shows the reason; a valid range updates the page and the chip shows the range |
+| 7 | A loss | With expenses above gross profit, the hero says «صافي الخسارة», the last waterfall bar is red and below the zero line |
+| 8 | Expected sales | With confirmed orders not yet delivered, the «مبيعات متوقعة» note shows on periods that include today only |
+| 9 | `/reports/sales` | Net sales, orders and AOV cards with deltas; area chart with tooltips («اليوم» on the last point); a range over 92 days shows month buckets |
+| 10 | Channels and weekdays | Donut and legend with % and order counts; the best weekday is highlighted and named in the title |
+| 11 | Product performance | Rows ranked by revenue, pieces, sales and profit after discount and returns; a row opens the product; the delivery-fee note shows when fees exist |
+| 12 | Empty account | Every page loads without errors and shows the empty texts |
+| 13 | Dashboard regression | The dashboard chart and delta pills look and behave as before (they now use the shared components) |

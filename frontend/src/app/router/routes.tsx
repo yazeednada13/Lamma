@@ -7,6 +7,7 @@ import { dashboardRoute } from "@/features/dashboard";
 import { onboardingRoute } from "@/features/onboarding";
 import { CustomerOrdersSection, ordersRoutes, ProductOrdersSection } from "@/features/orders";
 import { courierSettingsSection, expenseCategoriesSettingsSection, financeRoutes } from "@/features/finance";
+import { reportsRoutes } from "@/features/reports";
 import { paymentsRoutes } from "@/features/payments";
 import { createSettingsRoutes } from "@/features/settings";
 import { AuthenticatedLayout } from "../layouts/AuthenticatedLayout";
@@ -46,7 +47,7 @@ export const routes: RouteObject[] = [
             children: [
               {
                 element: <AuthenticatedLayout />,
-                children: [dashboardRoute, ...catalogRoutes, ...inventoryRoutes, ...customersRoutes, ...ordersRoutes, ...paymentsRoutes, ...financeRoutes, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
+                children: [dashboardRoute, ...catalogRoutes, ...inventoryRoutes, ...customersRoutes, ...ordersRoutes, ...paymentsRoutes, ...financeRoutes, ...reportsRoutes, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
               },
             ],
           },

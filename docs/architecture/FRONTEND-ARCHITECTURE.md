@@ -26,7 +26,7 @@
 | Forms / validation | React Hook Form 7.91.0 + Zod 4.6.7 + @hookform/resolvers 7.0.5 |
 | Client state | React state/context only (no Redux/Zustand) |
 | Styling | Existing design-system CSS copied unchanged into `styles/design-system/` + `styles/app-additions.css` |
-| Charts | Port the prototype's SVG charts as React components (later phases) |
+| Charts | The prototype's SVG charts as business-agnostic React components in `shared/ui/charts` (data in through props). Phase 10 moved the dashboard's area chart and delta pill there so the reports reuse them; the profit waterfall stays in the reports feature |
 | Icons / illustrations | Generated ES modules in `assets/` from `frontend-reference/` (`npm run sync:design`) |
 | Testing | Vitest 5.1.0 + jsdom 27.4.0 + Testing Library + user-event; **MSW 3.0.4 in tests only** |
 | Lint / format | ESLint 10 + typescript-eslint + react-hooks; Prettier |
@@ -63,7 +63,7 @@ frontend/
       orders/                  orders list, status board, 4-step new/edit order form, order details, undo, cancel; customer/product history sections (Phase 5)
     shared/                    reusable, business-agnostic code
       ui/                      Button, Icon, Menu, Badge, Chip, Money, PageHeader
-        brand/  form/ (incl. MoneyField, ImagePicker)  feedback/  overlay/  toast/  charts/ (Donut)  MetricCard
+        brand/  form/ (incl. MoneyField, ImagePicker)  feedback/  overlay/  toast/  charts/ (Donut, AreaChart, Spark, DeltaPill, chartMath)  MetricCard
       lib/                     money, personName, formErrors, useActionKey (one Idempotency-Key per action, D-112)
       validation/              fieldSchemas (emailSchema, personNameSchema)
     services/                  infrastructure: api/apiClient.ts, query/queryClient.ts

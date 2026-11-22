@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 10: Reports** (branch `feature/phase10-reports`) |
-| Current gate | **Gate 4: Backend checkpoint.** 10.A1–10.A6 implemented and verified, no migration; waiting for the founder to push ([PHASE-10-PLAN.md](../roadmap/PHASE-10-PLAN.md)) |
+| Current gate | **Gate 6: Frontend checkpoint.** 10.B1–10.B4 implemented; automated checks pass; waiting for the founder's manual check ([PHASE-10-PLAN.md](../roadmap/PHASE-10-PLAN.md) §8) |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22). Phase 9 (`feature/phase9-dashboard`) merged (2026-11-22) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Push the Phase 10 backend, then write `Frontend` |
+| Next expected founder action | Run the Phase 10 manual checklist, then push the frontend |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -36,7 +36,7 @@
 | 7 Courier & expenses | **Merged into develop (founder-reported 2026-11-21)** |
 | 8 Returns & pre-orders | **Merged into develop (founder-reported 2026-11-22)** |
 | 9 Dashboard | **Merged into develop (founder-reported 2026-11-22)** |
-| 10 Reports | **Backend done (2026-11-22); at gate 4** |
+| 10 Reports | **Frontend done (2026-11-22); at gate 6** |
 | 11 Subscription, platform admin & public sign-up (expanded, D-159) | Pending |
 | 12 Hardening & launch | Pending |
 
@@ -97,6 +97,8 @@
 | 2026-11-22 | Phase 10 backend: focused tests (Application 19, Infrastructure 5, API 6) | all passed |
 | 2026-11-22 | Phase 10 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; **447 passed, 0 failed** (Domain 220, Application 85, Infrastructure 24, Architecture 8, API integration 110) |
 | 2026-11-22 | Phase 10 report performance (500 orders, 366-day range, LocalDB, opt-in `ReportPerfTests`) | medians: summary 101 ms, P&L 28 ms, sales 18 ms; no index needed |
+| 2026-11-22 | Phase 10 frontend: `tsc -b`, `eslint .`, `check:architecture` (269 files, 0 violations, 0 cycles), `vite build`, `vitest run` | all clean; **129 passed, 0 failed** (34 files; new: reports domain 9, shared chart math 2 moved from the dashboard) |
+| 2026-11-22 | «test all» re-run after the checklist fixes: `dotnet test Lamma.sln`; frontend `tsc -b`, `eslint .`, `check:architecture`, `vitest run`, `vite build` | backend **447 passed, 0 failed**; frontend all clean, **130 passed, 0 failed** (34 files; +1 axis-label test) |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -166,3 +168,6 @@
 | 2026-11-22 | Founder created `feature/phase10-reports` and gave `Next Phase`; Phase 10 plan proposed (D-168–D-172 pending approval); waiting at gate 2 |
 | 2026-11-22 | Phase 10 plan approved (D-168–D-172; OQ-081 resolved); `Backend` given |
 | 2026-11-22 | Phase 10 Backend 10.A1–10.A6 implemented and verified (no migration); waiting at gate 4 |
+| 2026-11-22 | Founder pushed the Phase 10 backend; `Frontend` given |
+| 2026-11-22 | Phase 10 Frontend 10.B1–10.B4 implemented; automated checks pass; waiting at gate 6 |
+| 2026-11-22 | Phase 10 checklist (13 cases) run by Claude on the real API (founder request «test all», throwaway businesses «متجر فحص 10» and «متجر فحص فاضي»): hub, P&L and sales figures equal the finance overview and the dashboard (net 32.40, net sales 62.40, return 19.60, COGS 24.00, stock value 448.00); period chips, URL, back button, custom range with its errors, loss waterfall, expected sales, month buckets, empty account, dashboard regression; 1440/1024/768/390 without page overflow: all passed after four fixes: «مقارنة بـ» wording; period changes now add a history entry so the back button returns to the previous period; axis labels no longer overlap the last one; weekday bars overflowed the page at 390 px and the waterfall was unreadable on phones (CSS overrides in `app-additions.css`) |

@@ -12,8 +12,8 @@ Copy this block into each phase when it starts, and keep it current.
 | Gate | Status | Date | Notes |
 |---|---|---|---|
 | 1. Branch created by founder | ☐ | | branch name: |
-| 2. Plan approved | ☑ | 2026-11-22 | D-168–D-172 |
-| 3. `Backend` started | ☑ | 2026-11-22 | 10.A1–10.A6 implemented and verified; no migration |
+| 2. Plan approved | ☐ | | |
+| 3. `Backend` started | ☐ | | |
 | 4. Backend pushed (founder confirmed) | ☐ | | migrations applied by founder: ☐ |
 | 5. `Frontend` started | ☐ | | |
 | 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-21 | manual checklist passed |
@@ -512,10 +512,10 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | Gate | Status | Date | Notes |
 |---|---|---|---|
 | 1. Branch created by founder | ☑ | 2026-11-22 | `feature/phase10-reports` |
-| 2. Plan approved | ☐ | | |
-| 3. `Backend` started | ☐ | | |
-| 4. Backend pushed (founder confirmed) | ☐ | | |
-| 5. `Frontend` started | ☐ | | |
+| 2. Plan approved | ☑ | 2026-11-22 | D-168–D-172 |
+| 3. `Backend` started | ☑ | 2026-11-22 | 10.A1–10.A6 implemented and verified; no migration |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-22 | no migration |
+| 5. `Frontend` started | ☑ | 2026-11-22 | 10.B1–10.B4 implemented; automated checks pass |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |
