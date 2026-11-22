@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 8: Returns & pre-orders** (branch `feature/phase8-returns-preorders`) |
-| Current gate | **Gate 6: Frontend checkpoint.** 8.B1–8.B5 implemented; automated checks pass; waiting for the founder's manual check ([PHASE-8-PLAN.md](../roadmap/PHASE-8-PLAN.md)) |
-| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21) |
+| Current phase | **Phase 8: Returns & pre-orders, closed (merged into `develop`)** |
+| Current gate | **Gate 8: Next phase.** Waiting for the founder's `Next Phase` to start Phase 9 (Dashboard) planning |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Run the Phase 8 manual checklist, then push the frontend |
+| Next expected founder action | Create the Phase 9 branch from the latest `develop`, commit these doc updates, and write `Next Phase` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -34,7 +34,7 @@
 | 5 Orders core | **Merged into develop (founder-reported 2026-11-21)** |
 | 6 Payments & receivables | **Merged into develop (founder-reported 2026-11-21)** |
 | 7 Courier & expenses | **Merged into develop (founder-reported 2026-11-21)** |
-| 8 Returns & pre-orders | **Frontend done (2026-11-22); at gate 6** |
+| 8 Returns & pre-orders | **Merged into develop (founder-reported 2026-11-22)** |
 | 9 Dashboard | Pending |
 | 10 Reports | Pending |
 | 11 Subscription (display) | Pending |
@@ -148,3 +148,5 @@
 | 2026-11-22 | Founder applied `AddReturnsAndPreOrders` and pushed the backend; `Frontend` given |
 | 2026-11-22 | Phase 8 Frontend 8.B1–8.B5 implemented; automated checks pass; waiting at gate 6 |
 | 2026-11-22 | Phase 8 checklist (19 cases) run by Claude on the real API (founder request, throwaway business «متجر فحص 8»): all passed. Two fixes found and applied: the order payment card now uses the net total after a return (it showed the original total and a 69% ring); a fully returned order still owing its delivery fee can record a payment (the card had marked it closed). 768px not measured |
+| 2026-11-22 | Founder asked for the Phase 8 PR; at gate 7 |
+| 2026-11-22 | Founder merged the Phase 8 PR into `develop`; Phase 8 closed, at gate 8 |

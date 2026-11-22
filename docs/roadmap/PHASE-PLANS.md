@@ -444,8 +444,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-22 | 8.A1–8.A5 implemented and verified |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-22 | migration `AddReturnsAndPreOrders` applied (verified read-only) |
 | 5. `Frontend` started | ☑ | 2026-11-22 | 8.B1–8.B5 implemented; automated checks pass |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
-| 7. PR merged into `develop` (founder) | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-22 | 19-case checklist run on the real API |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-22 | Founder-reported |
 | 8. `Next Phase` given | ☐ | | |
 
 **Draft task tables (Phase 0, superseded by the approved plan):**
