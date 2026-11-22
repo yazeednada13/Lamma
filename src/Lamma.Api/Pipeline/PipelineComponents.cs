@@ -91,8 +91,20 @@ public sealed class RateLimitingOptions
     public const string SectionName = "RateLimiting";
     public const string LoginPolicy = "auth-login";
     public const string SensitivePolicy = "auth-sensitive";
+    public const string PublicSignupPolicy = "public-signup";
 
     public int LoginPermitsPerMinute { get; set; } = 10;
 
     public int SensitivePermitsPerMinute { get; set; } = 5;
+
+    /// <summary>Public sign-up form per IP (D-160).</summary>
+    public int PublicSignupPermitsPerMinute { get; set; } = 5;
+}
+
+/// <summary>"Registration" configuration section. Invite-only by default (D-160): the open sign-up answers 404.</summary>
+public sealed class RegistrationOptions
+{
+    public const string SectionName = "Registration";
+
+    public bool InviteOnly { get; set; } = true;
 }

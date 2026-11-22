@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 10: Reports — closed** (merged into `develop`) |
-| Current gate | **Gate 8: waiting for `Next Phase`** (Phase 11: Subscription, platform admin & public sign-up) |
+| Current phase | **Phase 11: Subscription, platform admin & public sign-up** (branch `feature/phase11-subscription-admin`) |
+| Current gate | **Gate 4: Backend checkpoint, part 11-I.** 11.A1–11.A7 implemented and verified; waiting for the founder to apply `AddSignupLeads` and push ([PHASE-11-PLAN.md](../roadmap/PHASE-11-PLAN.md)) |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22). Phase 9 (`feature/phase9-dashboard`) merged (2026-11-22). Phase 10 (`feature/phase10-reports`) merged (2026-11-22) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Create the Phase 11 branch from `develop` and write `Next Phase` |
+| Next expected founder action | Add and apply migration `AddSignupLeads`, push the 11-I backend, then write `Frontend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -37,7 +37,7 @@
 | 8 Returns & pre-orders | **Merged into develop (founder-reported 2026-11-22)** |
 | 9 Dashboard | **Merged into develop (founder-reported 2026-11-22)** |
 | 10 Reports | **Merged into develop (founder-reported 2026-11-22)** |
-| 11 Subscription, platform admin & public sign-up (expanded, D-159) | Pending |
+| 11 Subscription, platform admin & public sign-up (expanded, D-159) | **Part 11-I backend done (2026-11-22); at gate 4** |
 | 12 Hardening & launch | Pending |
 
 ## Resolved for Phase 1 (2026-11-10)
@@ -99,6 +99,8 @@
 | 2026-11-22 | Phase 10 report performance (500 orders, 366-day range, LocalDB, opt-in `ReportPerfTests`) | medians: summary 101 ms, P&L 28 ms, sales 18 ms; no index needed |
 | 2026-11-22 | Phase 10 frontend: `tsc -b`, `eslint .`, `check:architecture` (269 files, 0 violations, 0 cycles), `vite build`, `vitest run` | all clean; **129 passed, 0 failed** (34 files; new: reports domain 9, shared chart math 2 moved from the dashboard) |
 | 2026-11-22 | «test all» re-run after the checklist fixes: `dotnet test Lamma.sln`; frontend `tsc -b`, `eslint .`, `check:architecture`, `vitest run`, `vite build` | backend **447 passed, 0 failed**; frontend all clean, **130 passed, 0 failed** (34 files; +1 axis-label test) |
+| 2026-11-22 | Phase 11-I backend: focused tests (Domain 10, Application 5, API 4) | all passed |
+| 2026-11-22 | Phase 11-I backend: `dotnet build` / `dotnet test Lamma.sln` | 0 warnings; **466 passed** (Domain 230, Application 90, Infrastructure 24, Architecture 8, API 114) after one fix (the `Utm` type broke the no-public-setters rule); the API project also showed 1 intermittent pre-existing failure (Phase 7 category race) in 1 of 3 isolated runs |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -173,3 +175,6 @@
 | 2026-11-22 | Phase 10 checklist (13 cases) run by Claude on the real API (founder request «test all», throwaway businesses «متجر فحص 10» and «متجر فحص فاضي»): hub, P&L and sales figures equal the finance overview and the dashboard (net 32.40, net sales 62.40, return 19.60, COGS 24.00, stock value 448.00); period chips, URL, back button, custom range with its errors, loss waterfall, expected sales, month buckets, empty account, dashboard regression; 1440/1024/768/390 without page overflow: all passed after four fixes: «مقارنة بـ» wording; period changes now add a history entry so the back button returns to the previous period; axis labels no longer overlap the last one; weekday bars overflowed the page at 390 px and the waterfall was unreadable on phones (CSS overrides in `app-additions.css`) |
 | 2026-11-22 | Founder pushed the Phase 10 frontend and asked for the PR; at gate 7 |
 | 2026-11-22 | Founder merged the Phase 10 PR into `develop`; Phase 10 closed, at gate 8 |
+| 2026-11-22 | Founder created `feature/phase11-subscription-admin` and gave `Next Phase`; Phase 11 plan proposed (D-173–D-181 pending approval); waiting at gate 2 |
+| 2026-11-22 | Phase 11 plan approved (D-173–D-181); `Backend` given for part 11-I |
+| 2026-11-22 | Phase 11-I Backend 11.A1–11.A7 implemented and verified; migration `AddSignupLeads` pending; waiting at gate 4. Found a pre-existing intermittent issue (Phase 7): three simultaneous first requests to expense categories can deadlock the default-category MERGE and one answers 500 (test `Categories_default_once…` failed 1 of 3 runs); not changed, proposed for Phase 12 |

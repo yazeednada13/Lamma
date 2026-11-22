@@ -335,6 +335,10 @@ All new tables are business-owned (tenant filter and write guard). Courier-held 
 
 Returned value, net total, remaining and «sold» are derived from the return lines and allocations (D-033); `ReturnedAmount` is the aggregate's own recomputed figure, never set by hand. A return, its lines, the restock movements, the variant stock and the refund payment are written in **one transaction** against the versioned order and variants.
 
+## 12k. Implemented in Phase 11-I: Public sign-up (code only; migration `AddSignupLeads` pending founder)
+- **SignupLeads** (platform-level, no BusinessId, no tenant filter): FullName (100), Email (256), NormalizedEmail (256, unique `UX_SignupLeads_NormalizedEmail`), PhoneE164 (16, Jordanian mobile), StoreName (100, null), UtmSource/UtmMedium/UtmCampaign (100, null), Status (`pending`/`registered`), InviteTokenHash (char(64) SHA-256 hex, null; filtered index), InviteExpiresAt, SendCount, SendWindowStartedAt, SendsInWindow, LastSentAt, CreatedAt, UpdatedAt, RegisteredAt, UserId (null). Index (Status, CreatedAt).
+- **AspNetUsers.PhoneNumber** (existing Identity column) now holds the mobile from the form.
+
 ## 13. Migration guidance
 - The first migration is created in Phase 1 and is named `InitialIdentityAndBusiness`. The founder runs these from the repo root, after setting the connection string with user-secrets (LOCAL-DEVELOPMENT §3):
   - `dotnet ef migrations add <Name> --project src/Lamma.Infrastructure --startup-project src/Lamma.Api --output-dir Persistence/Migrations -- --environment Development`

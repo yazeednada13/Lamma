@@ -400,3 +400,13 @@ All endpoints need an onboarded business; another business's records return 404.
 | Hub `series`, `topProducts` | The last 14 days (as the sales series) and this month's products ranked by revenue |
 
 **Performance (10.A5):** with 500 orders (half delivered, every fifth delivered one partly returned), the medians are **101 ms** for the summary, **28 ms** for the P&L and **18 ms** for a 366-day sales report (LocalDB, test host). No new index is needed. The measurement is the opt-in test `ReportPerfTests` (`LAMMA_PERF=1`).
+
+## 21. Phase 11 contracts: Public sign-up (part 11-I implemented, 2026-11-22)
+| Method & path | Auth | Success | Errors |
+|---|---|---|---|
+| POST `public/signup` `{ fullName, email, phone, storeName?, website?, utmSource?, utmMedium?, utmCampaign? }` | anonymous, rate-limited per IP (`RateLimiting:PublicSignupPermitsPerMinute`, 5) | **202 always** for valid input: new email → lead + invitation email; pending lead → details updated + a fresh link (old link stops working), at most 3 sends per 24 h; existing user, registered lead, honeypot (`website` filled) or send limit → no email | 422 field errors (name, email, Jordanian mobile `+9627…`, store ≤ 100) |
+| GET `public/invitations/{token}` | anonymous | 200 `{ email, fullName }` | 404 `invite.invalid` (unknown or used), 410 `invite.expired` (after 72 h) |
+| POST `auth/register` `{ token, password, confirmPassword }` | anonymous, CSRF | 201 account, signed in; the client continues to onboarding, which starts the 30-day trial (D-180) | 422 password rules / confirmation, 404, 410, 409 `auth.email_taken` |
+| POST `auth/signup` | — | 404 while `Registration:InviteOnly` = true (default) | — |
+
+**Tokens:** 32 random bytes, base64url, only in the link; the database keeps the SHA-256 hex hash. Valid 72 hours, single use, bound to the lead. **Email:** branded Arabic RTL HTML (`EmailTemplates`) with a plain-text alternative; user text HTML-encoded; Brevo SMTP when configured, a dev-only file sender in Development (D-166).

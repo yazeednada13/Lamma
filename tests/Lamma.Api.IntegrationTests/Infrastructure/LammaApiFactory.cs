@@ -1,4 +1,5 @@
 using Lamma.Application.Common;
+using Lamma.Application.Common.Email;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -33,11 +34,35 @@ public sealed class CapturingEmailSender : IEmailSender
         }
     }
 
+    private readonly List<EmailMessage> _messages = [];
+
+    public IReadOnlyList<EmailMessage> Messages
+    {
+        get
+        {
+            lock (_sent)
+            {
+                return _messages.ToList();
+            }
+        }
+    }
+
     public Task SendPasswordResetAsync(string toEmail, string fullName, string resetLink, CancellationToken cancellationToken)
     {
         lock (_sent)
         {
             _sent.Add((toEmail, resetLink));
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task SendAsync(EmailMessage message, CancellationToken cancellationToken)
+    {
+        lock (_sent)
+        {
+            _messages.Add(message);
+            _sent.Add((message.To, message.Link ?? string.Empty));
         }
 
         return Task.CompletedTask;
@@ -86,6 +111,8 @@ public class LammaApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("RateLimiting:LoginPermitsPerMinute", LoginPermitsPerMinute.ToString(System.Globalization.CultureInfo.InvariantCulture));
         builder.UseSetting("RateLimiting:SensitivePermitsPerMinute", "1000");
         builder.UseSetting("Storage:RootPath", StorageRoot);
+        builder.UseSetting("RateLimiting:PublicSignupPermitsPerMinute", "1000");
+        builder.UseSetting("Registration:InviteOnly", "false"); // the shared helpers sign up directly; invite-only has its own tests
 
         builder.ConfigureTestServices(services =>
         {

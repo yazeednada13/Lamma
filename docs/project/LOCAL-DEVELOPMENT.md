@@ -38,7 +38,9 @@ Do **not** use `python -m http.server`, which truncates files over 64 KB on this
 - The SDK is pinned to 9.0.320 by `global.json` (D-076).
 - Trust the dev HTTPS certificate once (founder action): `dotnet dev-certs https --trust`.
 - Run the API: `dotnet run --project src/Lamma.Api --launch-profile https` → https://localhost:7101 (http 5101). In Development, OpenAPI is at `/openapi/v1.json` and health at `/health`.
-- Password-reset emails: in Development the reset link is written to the console log (`DEV ONLY - password reset link`). Outside Development, forgot-password returns 503 until an email provider is chosen.
+- Emails (D-166): in Development every email (invitation, password reset) is written as an `.html` file to `%TEMP%\lamma-emails` (or `Email:DevOutputPath`), and the log line `DEV ONLY - … email written to …` shows the path and the link. Open the file in a browser to see the branded email.
+- Real sending (Brevo, D-166): set `Email:Smtp:Host` = `smtp-relay.brevo.com`, `Email:Smtp:Port` = `587`, `Email:Smtp:FromAddress`, `Email:Smtp:FromName`, and the SMTP login in `Email:Smtp:User` / `Email:Smtp:Password` with user-secrets (`dotnet user-secrets set "Email:Smtp:Password" "…" --project src/Lamma.Api`), never in a committed file. Outside Development without SMTP, sending answers 503 `email.not_configured`. Reliable delivery needs a Lamma domain (OQ-092).
+- Sign-up is invite-only (`Registration:InviteOnly`, default `true`): accounts come from `POST /api/v1/public/signup` → email link → `POST /api/v1/auth/register`. `POST /api/v1/auth/signup` answers 404 while invite-only.
 - Tests: `dotnet test Lamma.sln` (TESTING-STRATEGY §2). Requires LocalDB `MSSQLLocalDB` to be running: `sqllocaldb start MSSQLLocalDB`. Override with the env var `LAMMA_TEST_SQL_SERVER`.
 - Recommended database setting (founder action): `ALTER DATABASE Lamma_Dev SET READ_COMMITTED_SNAPSHOT ON;`
 

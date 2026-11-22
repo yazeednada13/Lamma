@@ -28,9 +28,18 @@ internal sealed class FakeEmailSender(bool configured = true) : IEmailSender
 
     public List<(string Email, string Link)> Sent { get; } = [];
 
+    public List<Lamma.Application.Common.Email.EmailMessage> Messages { get; } = [];
+
     public Task SendPasswordResetAsync(string toEmail, string fullName, string resetLink, CancellationToken cancellationToken)
     {
         Sent.Add((toEmail, resetLink));
+        return Task.CompletedTask;
+    }
+
+    public Task SendAsync(Lamma.Application.Common.Email.EmailMessage message, CancellationToken cancellationToken)
+    {
+        Messages.Add(message);
+        Sent.Add((message.To, message.Link ?? string.Empty));
         return Task.CompletedTask;
     }
 }
@@ -38,6 +47,10 @@ internal sealed class FakeEmailSender(bool configured = true) : IEmailSender
 internal sealed class FakeLinks : IAppLinks
 {
     public string PasswordReset(string email, string token) => $"https://app/reset?email={email}&token={token}";
+
+    public string Register(string token) => $"https://app/register?token={token}";
+
+    public string Login() => "https://app/login";
 }
 
 internal sealed class FakeIdentityService : IIdentityService
@@ -52,8 +65,12 @@ internal sealed class FakeIdentityService : IIdentityService
 
     public List<Guid> SignedIn { get; } = [];
 
-    public Task<IdentityResultInfo> CreateUserAsync(string fullName, string email, string password, CancellationToken cancellationToken)
+    public HashSet<string> ExistingEmails { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<IdentityResultInfo> CreateUserAsync(string fullName, string email, string password, CancellationToken cancellationToken, string? phoneE164 = null)
         => Task.FromResult(CreateResult);
+
+    public Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken) => Task.FromResult(ExistingEmails.Contains(email));
 
     public Task<PasswordSignInOutcome> PasswordSignInAsync(string email, string password, bool persistent, CancellationToken cancellationToken)
         => Task.FromResult(SignInOutcome);

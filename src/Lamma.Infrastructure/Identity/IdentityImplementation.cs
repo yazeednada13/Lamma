@@ -57,12 +57,15 @@ internal sealed class IdentityService(
     SignInManager<ApplicationUser> signIn,
     IClock clock) : IIdentityService
 {
-    public async Task<IdentityResultInfo> CreateUserAsync(string fullName, string email, string password, CancellationToken cancellationToken)
+    public async Task<IdentityResultInfo> CreateUserAsync(string fullName, string email, string password, CancellationToken cancellationToken, string? phoneE164 = null)
     {
-        var user = new ApplicationUser { UserName = email, Email = email, FullName = fullName, CreatedAt = clock.UtcNow };
+        var user = new ApplicationUser { UserName = email, Email = email, FullName = fullName, PhoneNumber = phoneE164, CreatedAt = clock.UtcNow };
         var result = await users.CreateAsync(user, password);
         return result.Succeeded ? IdentityResultInfo.Success(user.Id) : Fail(result);
     }
+
+    public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken)
+        => await users.FindByEmailAsync(email) is not null;
 
     public async Task<PasswordSignInOutcome> PasswordSignInAsync(string email, string password, bool persistent, CancellationToken cancellationToken)
     {

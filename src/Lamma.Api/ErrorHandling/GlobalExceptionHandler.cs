@@ -17,6 +17,7 @@ public sealed partial class GlobalExceptionHandler(ILogger<GlobalExceptionHandle
             ForbiddenException e => (StatusCodes.Status403Forbidden, e.Code, e.Message, null),
             UnauthorizedException e => (StatusCodes.Status401Unauthorized, e.Code, e.Message, null),
             LockedException e => (StatusCodes.Status423Locked, e.Code, e.Message, null),
+            GoneException e => (StatusCodes.Status410Gone, e.Code, e.Message, null),
             ServiceUnavailableException e => (StatusCodes.Status503ServiceUnavailable, e.Code, e.Message, null),
             DomainConflictException e => (StatusCodes.Status409Conflict, e.Code, e.Message, null),
             DomainException e => (StatusCodes.Status422UnprocessableEntity, e.Code, e.Message, null),

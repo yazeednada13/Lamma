@@ -539,6 +539,20 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 ---
 
 ## Phase 11 — Subscription, platform admin & public sign-up
+**Approved plan (2026-11-22):** [`PHASE-11-PLAN.md`](PHASE-11-PLAN.md): part 11-I (11.A1–11.A7, 11.B1–11.B4) and part 11-II (11.A8–11.A14, 11.B5–11.B8), decisions D-173–D-181.
+
+### Phase 11 gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-22 | `feature/phase11-subscription-admin` |
+| 2. Plan approved | ☑ | 2026-11-22 | D-173–D-181 |
+| 3. `Backend` started | ☑ | 2026-11-22 | part 11-I (11.A1–11.A7) implemented and verified; migration `AddSignupLeads` pending |
+| 4. Backend pushed (founder confirmed) | ☐ | | |
+| 5. `Frontend` started | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
+
 **Depends on:** 1. **Blocking:** prices set (D-165); OQ-092 (domain, go-live only). **Decisions:** D-159–D-167. Detailed tasks are written in the Phase 11 plan (gate 2).
 
 **Part 11-I: public sign-up**

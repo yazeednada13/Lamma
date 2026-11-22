@@ -40,6 +40,7 @@ public static class DependencyInjection
 
         services.AddAuthSecurity(configuration);
         services.AddLammaRateLimiting(configuration);
+        services.AddOptions<RegistrationOptions>().Bind(configuration.GetSection(RegistrationOptions.SectionName));
         services.AddHealthChecks();
         services.AddOpenApi();
         return services;
@@ -131,6 +132,7 @@ public static class DependencyInjection
             o.OnRejected = (ctx, _) => new ValueTask(Problems.WriteAsync(ctx.HttpContext, 429, "rate_limited", Problems.DefaultDetail(429)));
             o.AddPolicy(RateLimitingOptions.LoginPolicy, ctx => PerIp(ctx, opts => opts.LoginPermitsPerMinute));
             o.AddPolicy(RateLimitingOptions.SensitivePolicy, ctx => PerIp(ctx, opts => opts.SensitivePermitsPerMinute));
+            o.AddPolicy(RateLimitingOptions.PublicSignupPolicy, ctx => PerIp(ctx, opts => opts.PublicSignupPermitsPerMinute));
         });
         return services;
     }
