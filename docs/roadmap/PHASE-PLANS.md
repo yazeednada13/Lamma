@@ -478,8 +478,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 1. Branch created by founder | ☑ | 2026-11-22 | `feature/phase9-dashboard` |
 | 2. Plan approved | ☑ | 2026-11-22 | D-153–D-158 |
 | 3. `Backend` started | ☑ | 2026-11-22 | 9.A1–9.A5 implemented and verified; no migration |
-| 4. Backend pushed (founder confirmed) | ☐ | | no migration expected |
-| 5. `Frontend` started | ☐ | | |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-22 | no migration |
+| 5. `Frontend` started | ☑ | 2026-11-22 | 9.B1–9.B3 implemented; automated checks pass |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |

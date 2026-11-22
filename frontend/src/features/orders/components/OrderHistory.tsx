@@ -69,3 +69,17 @@ export function ProductOrdersSection({ productId, sold }: { productId: string; s
     </article>
   );
 }
+
+/** «آخر الطلبات» on the dashboard (prototype shipping labels): the 4 latest orders, newest first. */
+export function LatestOrdersGrid() {
+  const list = useOrders({ pageSize: 4 });
+  if (list.error) return <FormAlert>{errorMessage(list.error)}</FormAlert>;
+  if (!list.data) return <Skeleton height={120} />;
+  return (
+    <div className="ogrid stagger">
+      {list.data.items.map((o, i) => (
+        <OrderCard key={o.id} order={o} index={i} />
+      ))}
+    </div>
+  );
+}

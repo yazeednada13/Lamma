@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { errorMessage } from "@/services/api/apiClient";
 import { Button, ButtonLink } from "@/shared/ui/Button";
 import { Illustration } from "@/shared/ui/brand/Illustration";
+import { flyTo } from "@/shared/ui/celebrate/flyTo";
 import { ErrorState } from "@/shared/ui/feedback/ErrorState";
 import { Icon } from "@/shared/ui/Icon";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -56,7 +57,11 @@ function Column({
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    void move(o, next);
+                    // Where the card was, captured now: after the move it leaves this column.
+                    const from = (e.currentTarget.closest(".ocard") ?? e.currentTarget).getBoundingClientRect();
+                    void move(o, next).then((moved) => {
+                      if (moved) flyTo(from, document.querySelector(`.board__col.st-${next} .board__head`));
+                    });
                   }}
                 >
                   {STATUS[next].label}

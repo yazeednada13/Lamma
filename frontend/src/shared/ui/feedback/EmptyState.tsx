@@ -1,10 +1,21 @@
 import type { ReactNode } from "react";
 import { GatherPieces } from "../brand/GatherPieces";
 
-export function EmptyState({ title, text, children }: { title: string; text?: string; children?: ReactNode }) {
+/** Empty state card. `art` replaces the default "gather" animation with a scene that fits the screen. */
+export function EmptyState({
+  title,
+  text,
+  art,
+  children,
+}: {
+  title: string;
+  text?: string;
+  art?: ReactNode;
+  children?: ReactNode;
+}) {
   return (
     <div className="card empty">
-      <GatherPieces />
+      {art ?? <GatherPieces />}
       <div className="empty__title">{title}</div>
       {text && <p className="muted">{text}</p>}
       {children}

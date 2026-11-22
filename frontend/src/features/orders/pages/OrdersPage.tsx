@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { errorMessage } from "@/services/api/apiClient";
 import { Button, ButtonLink } from "@/shared/ui/Button";
 import { Chip } from "@/shared/ui/Chip";
+import { SleepingCourier } from "@/shared/ui/brand/EmptyScenes";
 import { EmptyState } from "@/shared/ui/feedback/EmptyState";
 import { ErrorState } from "@/shared/ui/feedback/ErrorState";
 import { PageSkeleton } from "@/shared/ui/feedback/Skeleton";
@@ -88,6 +89,7 @@ export function OrdersPage() {
         <PageSkeleton />
       ) : total.all === 0 ? (
         <EmptyState
+          art={<SleepingCourier />}
           title="لسا ما في طلبات"
           text="سجّل أول طلب من رسالة واتساب أو إنستغرام، ولمّة بتحجز القطع وبتتابع حالته."
         >
