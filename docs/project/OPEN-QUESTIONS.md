@@ -203,7 +203,7 @@ Recommendation:
 
 **OQ-080 · P2 · Phase 9: dashboard period semantics.** The prototype compares month-to-date against the same span of the previous month, and 7 days against the previous 7. Confirm. Is "today's order journey" limited to orders created today, or does it count all open orders by stage? **Resolved (2026-11-22) → D-153, D-154.**
 
-**OQ-081 · P2 · Phase 10: wording of the P&L "what changed" sentence.** Proposed: generated in Arabic from rules (the largest driver of change among sales, COGS, and each expense category). No AI.
+**OQ-081 · P2 · Phase 10: wording of the P&L "what changed" sentence.** Proposed: generated in Arabic from rules (the largest driver of change among sales, COGS, and each expense category). No AI. **Resolved (2026-11-22) → D-170.**
 
 **OQ-082 · P2 · Phase 9: notifications (bell).** The prototype has a bell menu and notification toggles in Account (new order, low stock, receivables reminder, trial ending). The spec doesn't list them. Options: (a) out of scope; (b) in-app notifications derived from the "Needs attention" data with no delivery channel. Recommendation: (b) at most, or defer. **Resolved (2026-11-22) → D-155.**
 

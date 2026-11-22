@@ -46,5 +46,6 @@ public static class DependencyInjection
             .AddScoped<Expenses.IExpenseService, Expenses.ExpenseService>()
             .AddScoped<Courier.ICourierService, Courier.CourierService>()
             .AddScoped<Finance.IFinanceService, Finance.FinanceService>()
-            .AddScoped<Dashboard.IDashboardService, Dashboard.DashboardService>();
+            .AddScoped<Dashboard.IDashboardService, Dashboard.DashboardService>()
+            .AddScoped<Reports.IReportService, Reports.ReportService>();
 }

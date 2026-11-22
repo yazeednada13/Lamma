@@ -112,6 +112,9 @@ public static class DependencyInjection
         // Dashboard (Phase 9)
         services.AddScoped<Lamma.Application.Dashboard.IDashboardQueries, DashboardQueries>();
 
+        // Reports (Phase 10)
+        services.AddScoped<Lamma.Application.Reports.IReportQueries, ReportQueries>();
+
         // Accounts module
         services.AddScoped<IAccountQueries, AccountQueries>();
         return services;
