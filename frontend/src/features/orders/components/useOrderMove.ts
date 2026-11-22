@@ -1,4 +1,5 @@
 import { ApiError, errorMessage } from "@/services/api/apiClient";
+import { useCelebrate } from "@/shared/ui/celebrate/CelebrateProvider";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
 import {
   useChangeOrderStatus,
@@ -28,6 +29,7 @@ export function useOrderMove() {
   const undo = useUndoOrderStatus();
   const refresh = useRefreshOrders();
   const toast = useToast();
+  const celebrate = useCelebrate();
 
   const fail = (error: unknown) => {
     if (error instanceof ApiError && error.status === 409) refresh();
@@ -59,6 +61,13 @@ export function useOrderMove() {
         cancelNote: cancel?.note,
       });
       announce(order, to);
+      if (to === "delivered")
+        celebrate({
+          kind: "burst",
+          sticker: "check",
+          title: `طلب ${order.customer.name} وصل`,
+          text: `#${order.number} · انحسبت المبيعة وانخصم المخزون`,
+        });
       return order;
     } catch (error) {
       fail(error);

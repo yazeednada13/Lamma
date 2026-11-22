@@ -18,6 +18,7 @@ import { PageSkeleton } from "@/shared/ui/feedback/Skeleton";
 import { FormAlert } from "@/shared/ui/form/FormAlert";
 import { Icon, type IconName } from "@/shared/ui/Icon";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { useCelebrate } from "@/shared/ui/celebrate/CelebrateProvider";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
 import {
   fetchProductWithVariants,
@@ -102,6 +103,9 @@ function EditOrderLoader({ id }: { id: string }) {
   );
 }
 
+/** Order numbers start here for every business (backend `Order.FirstNumber`). */
+const FIRST_ORDER_NUMBER = 1001;
+
 const STEPS: { id: string; label: string; icon: IconName }[] = [
   { id: "s1", label: "العميل", icon: "users" },
   { id: "s2", label: "المنتجات", icon: "package" },
@@ -112,6 +116,7 @@ const STEPS: { id: string; label: string; icon: IconName }[] = [
 function OrderForm({ initial, editing }: { initial: OrderFormState; editing?: OrderDetails }) {
   const navigate = useNavigate();
   const toast = useToast();
+  const celebrate = useCelebrate();
   const queryClient = useQueryClient();
   const create = useCreateOrder();
   const update = useUpdateOrder();
@@ -212,6 +217,14 @@ function OrderForm({ initial, editing }: { initial: OrderFormState; editing?: Or
             ? `انحفظ الطلب #${order.number} وانحجزت القطع، كل شي بمكانه`
             : `انحفظ الطلب #${order.number}`,
         );
+        // The business's very first order (numbers start at 1001 per business): a one-time milestone.
+        if (order.number === FIRST_ORDER_NUMBER)
+          celebrate({
+            kind: "stage",
+            sticker: "shadda",
+            title: "مبروك! أول طلب بلمّة",
+            text: "هاي بداية الحكاية. من هلّق كل طلب، كل قطعة وكل دينار بمكانه.",
+          });
         navigate(`/orders/${order.id}`, { replace: true });
       }
     } catch (e) {

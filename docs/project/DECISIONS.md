@@ -134,6 +134,12 @@ Sources:
 | D-150 | **A return is final in V1:** no undo (confirmation first); status undo (D-122) does not apply; a refund cannot be reversed alone | F (2026-11-21, Phase 8 plan) |
 | D-151 | **Pre-order:** any order may be marked «طلب مسبق» with an expected delivery date (today or later) and optional time; saved «جديد» even above available stock (D-029 exception); confirming still needs stock; no product flag | F (2026-11-21, Phase 8 plan) |
 | D-152 | **Pre-order deposit and limits:** deposit optional (D-135) with a «30%» shortcut, no required deposit; no daily capacity in V1; cancelling with a deposit follows D-137 | F (2026-11-21, Phase 8 plan) |
+| D-153 | **Dashboard periods** (Asia/Amman): profit hero and cards = this month to date vs the same days of last month; chart = last 14 days by delivery date; no earlier period → «ما في فترة سابقة للمقارنة» | F (2026-11-22, Phase 9 plan) |
+| D-154 | **Dashboard journey** counts open orders by stage now (new; preparing = confirmed + preparing; with the courier), plus products (and low ones), delivered this month, customers who bought this month | F (2026-11-22, Phase 9 plan) |
+| D-155 | **Notifications bell: not in V1**; «يحتاج انتباهك» covers it; the bell stays «قريبًا» | F (2026-11-22, Phase 9 plan) |
+| D-156 | **Ctrl K search: not in V1** (may return in Phase 12); the search button stays «قريبًا» | F (2026-11-22, Phase 9 plan) |
+| D-157 | **Dashboard figures** use the finance-overview definitions (D-144, D-149). «يحتاج انتباهك» order: orders to prepare (oldest), new orders to confirm, up to 2 low/out products, courier-held money, the customer owing the most. «ملاحظة لمّة» is rule-based (top channel, top product, best weekday), no AI | F (2026-11-22, Phase 9 plan) |
+| D-158 | **Sidebar counters:** new orders on «الطلبات», low and out-of-stock on «المخزون», a dot on «العملاء» when anyone owes money; refreshed on navigation | F (2026-11-22, Phase 9 plan) |
 | D-120 | **One confirmation dialog for every confirm-worthy action** (archive, delete, and similar): a centered Lamma-styled popup (tone band, icon seal, subject chip, short consequence text, full-width confirm/cancel), the shared `useConfirm()` (`shared/ui/confirm/ConfirmProvider.tsx`). Archive actions use an archive icon and the label «أرشفة»; restore needs no confirmation | F (2026-11-20, founder request during the Phase 4 review) |
 | D-090 | **Default variant:** every product has at least one ProductVariant. A simple product gets one hidden default variant with no option values. Stock, movements and order items always reference a variant (approves P-006) | F (2026-11-17, Phase 2 plan) |
 | D-091 | **Six system product templates:** `clothing` ملابس, `perfume` عطور, `beauty` تجميل, `jewelry` إكسسوارات, `gift` بوكس هدايا, `other` عام. Default axes and fields per PHASE-PLANS Phase 2 §2.1. Business type → template: clothing, kids → clothing; perfume → perfume; beauty → beauty; accessories → jewelry; gifts → gift; all other types → other | F (2026-11-17, Phase 2 plan) |
@@ -219,6 +225,7 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | 2026-11-10 | D-088 added: keep DTO + ProblemDetails, no response envelope |
 | 2026-11-17 | D-089 added: feature-based frontend architecture; FRONTEND-ARCHITECTURE.md is authoritative |
 | 2026-11-17 | D-090–D-105 added: Phase 2 (Catalog) decisions; the founder accepted the recommended answers and approved the Phase 2 plan |
+| 2026-11-22 | D-153–D-158 added: Phase 9 (Dashboard) decisions; the founder approved the Phase 9 plan |
 | 2026-11-21 | D-145–D-152 added: Phase 8 (Returns & pre-orders) decisions; the founder approved the Phase 8 plan |
 | 2026-11-21 | D-139–D-144 added: Phase 7 (Courier & expenses) decisions; the founder approved the Phase 7 plan |
 | 2026-11-21 | D-131–D-138 added: Phase 6 (Payments & receivables) decisions; the founder approved the Phase 6 plan |

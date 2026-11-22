@@ -3,7 +3,8 @@ import { Outlet, useLocation } from "react-router";
 import { sectionOf } from "@/app/navigation/navigation";
 import { BottomBar } from "./BottomBar";
 import { OfflineBanner } from "./OfflineBanner";
-import { Sidebar } from "./Sidebar";
+import { PeekSticker } from "./PeekSticker";
+import { Sidebar, type NavBadge } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { useSidebarCollapse } from "./useSidebarCollapse";
 
@@ -16,20 +17,30 @@ export interface AppShellSlots {
   topbarEnd?: ReactNode;
   /** Banners above the top bar (after the offline banner). */
   banners?: ReactNode;
+  /** Sidebar counters per nav key (D-158). Plain data: the shell never knows where they come from. */
+  navBadges?: Readonly<Record<string, NavBadge>>;
 }
 
 /**
  * The authenticated app frame (prototype shell): sidebar, top bar, page outlet and mobile bottom bar.
  * Layout composition only — it holds no session, auth or business logic; features fill the slots.
  */
-export function AppShell({ sidebarHeader, sidebarFooter, topbarEnd, banners }: AppShellSlots) {
+export function AppShell({ sidebarHeader, sidebarFooter, topbarEnd, banners, navBadges }: AppShellSlots) {
   const { pathname } = useLocation();
   const section = sectionOf(pathname);
   const { collapsed, toggle } = useSidebarCollapse();
 
   return (
     <div className={`app${collapsed ? " is-collapsed" : ""}`} id="app">
-      <Sidebar section={section} pathname={pathname} collapsed={collapsed} onToggleCollapse={toggle} header={sidebarHeader} footer={sidebarFooter} />
+      <Sidebar
+        section={section}
+        pathname={pathname}
+        collapsed={collapsed}
+        onToggleCollapse={toggle}
+        header={sidebarHeader}
+        footer={sidebarFooter}
+        badges={navBadges}
+      />
       <div className="main">
         <OfflineBanner />
         {banners}
@@ -39,6 +50,7 @@ export function AppShell({ sidebarHeader, sidebarFooter, topbarEnd, banners }: A
         </main>
       </div>
       <BottomBar section={section} />
+      <PeekSticker section={section} pathname={pathname} />
     </div>
   );
 }

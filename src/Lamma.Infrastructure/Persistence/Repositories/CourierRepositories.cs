@@ -177,7 +177,7 @@ internal sealed class FinanceQueries(LammaDbContext db, IPaymentQueries payments
 {
     private static readonly TimeZoneInfo Zone = BusinessTime.FindZone(BusinessTime.DefaultTimeZoneId);
 
-    public async Task<FinanceOverviewDto> OverviewAsync(DateOnly from, DateOnly to, DateOnly today, CancellationToken cancellationToken)
+    public async Task<FinanceOverviewDto> OverviewAsync(DateOnly from, DateOnly to, DateOnly today, CancellationToken cancellationToken, bool withSnapshot = true)
     {
         var startUtc = TimeZoneInfo.ConvertTimeToUtc(from.ToDateTime(TimeOnly.MinValue), Zone);
         var endUtc = TimeZoneInfo.ConvertTimeToUtc(to.AddDays(1).ToDateTime(TimeOnly.MinValue), Zone);
@@ -214,10 +214,10 @@ internal sealed class FinanceQueries(LammaDbContext db, IPaymentQueries payments
         var settledIn = await db.CourierSettlements.AsNoTracking()
             .Where(s => s.ReversedAt == null && s.SettledOn >= from && s.SettledOn <= to)
             .SumAsync(s => (decimal?)s.ReceivedAmount, cancellationToken) ?? 0m;
-        var expected = await db.Orders.AsNoTracking()
+        var expected = !withSnapshot ? 0m : await db.Orders.AsNoTracking()
             .Where(o => o.Status == OrderStatus.Confirmed || o.Status == OrderStatus.Preparing || o.Status == OrderStatus.Courier)
             .SumAsync(o => (decimal?)o.Total, cancellationToken) ?? 0m;
-        var aging = await payments.AgingAsync(today, cancellationToken);
+        var aging = withSnapshot ? await payments.AgingAsync(today, cancellationToken) : null;
 
         var netSales = sales - returns;
         var gross = netSales - cogs;
@@ -234,8 +234,8 @@ internal sealed class FinanceQueries(LammaDbContext db, IPaymentQueries payments
             cashIn,
             cashOut,
             cashIn - cashOut,
-            aging.Total,
-            aging.CourierHeld,
+            aging?.Total ?? 0m,
+            aging?.CourierHeld ?? 0m,
             expected,
             byCategory.OrderByDescending(c => c.Amount).ThenBy(c => c.Name).Select(c => new ExpenseShareDto(c.CategoryId, c.Name, c.Code?.ToCode(), c.Amount)).ToList(),
             returns,

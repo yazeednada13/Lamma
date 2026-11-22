@@ -5,7 +5,9 @@ export type IllustrationProps =
   | { kind: "gather"; play?: boolean }
   | { kind: "parcel" }
   | { kind: "route"; steps?: number }
-  | { kind: "delivery"; state?: "courier" | "delivered" };
+  | { kind: "delivery"; state?: "courier" | "delivered" }
+  | { kind: "packing"; template?: string; play?: boolean }
+  | { kind: "sticker"; name: string };
 
 /** Brand illustration. Markup is generated from static brand SVG code (never from user input). */
 export function Illustration(props: IllustrationProps) {
@@ -25,6 +27,12 @@ export function Illustration(props: IllustrationProps) {
       break;
     case "delivery":
       html = LammaArt.delivery(props.state ?? "courier");
+      break;
+    case "packing":
+      html = LammaArt.packing(props.template ?? "clothing", props.play ?? false);
+      break;
+    case "sticker":
+      html = LammaArt.sticker(props.name);
       break;
   }
 

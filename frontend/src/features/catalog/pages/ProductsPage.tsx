@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { errorMessage } from "@/services/api/apiClient";
 import { Button, ButtonLink } from "@/shared/ui/Button";
 import { Chip } from "@/shared/ui/Chip";
+import { EmptyShelf } from "@/shared/ui/brand/EmptyScenes";
 import { EmptyState } from "@/shared/ui/feedback/EmptyState";
 import { ErrorState } from "@/shared/ui/feedback/ErrorState";
 import { PageSkeleton } from "@/shared/ui/feedback/Skeleton";
@@ -149,7 +150,7 @@ export function ProductsPage() {
             </ButtonLink>
           </EmptyState>
         ) : (
-          <EmptyState title="لسا ما أضفت منتجات" text="أضف أول منتج بالمقاسات والألوان وكمية كل وحدة.">
+          <EmptyState art={<EmptyShelf />} title="لسا ما أضفت منتجات" text="أضف أول منتج بالمقاسات والألوان وكمية كل وحدة.">
             <ButtonLink to="/products/new" icon="plus">
               أضف منتج
             </ButtonLink>

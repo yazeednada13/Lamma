@@ -16,7 +16,6 @@ describe("app shell", () => {
     expect(within(sidebar).getByText("ريم الخطيب")).toBeInTheDocument();
   });
 
-
   it("every sidebar link resolves to a page (never the 404)", async () => {
     fake.signInOnboarded();
     const { user, router } = renderApp("/");
@@ -34,7 +33,6 @@ describe("app shell", () => {
     expect(user).toBeDefined();
   });
 
-
   it("marks the active section and opens its submenu", async () => {
     fake.signInOnboarded();
     renderApp("/inventory/receive");
@@ -44,7 +42,6 @@ describe("app shell", () => {
     expect(screen.getByRole("link", { name: "استلام بضاعة" })).toHaveClass("is-active");
   });
 
-
   it("shows the late-trial banner in the last 3 days", async () => {
     fake.signInOnboarded();
     fake.trialDaysRemaining = 2;
@@ -52,14 +49,12 @@ describe("app shell", () => {
     expect(await screen.findByText(/ضل 2 يوم بس من التجربة/)).toBeInTheDocument();
   });
 
-
   it("search and notifications are visibly marked as coming soon", async () => {
     fake.signInOnboarded();
     renderApp("/");
     expect(await screen.findByRole("button", { name: "الإشعارات (قريبًا)" })).toHaveAttribute("aria-disabled", "true");
     expect(screen.getAllByRole("button", { name: "البحث (قريبًا)" })[0]).toHaveAttribute("aria-disabled", "true");
   });
-
 
   it("logout ends the session and returns to login", async () => {
     fake.signInOnboarded();
@@ -70,7 +65,6 @@ describe("app shell", () => {
     await waitFor(() => expect(router.state.location.pathname).toBe("/login"));
     expect(fake.session).toBeNull();
   });
-
 
   it("collapsing the sidebar is remembered", async () => {
     window.innerWidth = 1440; // desktop width: the sidebar is expanded by default

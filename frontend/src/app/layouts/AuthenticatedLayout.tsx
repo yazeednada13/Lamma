@@ -1,4 +1,5 @@
 import { AccountMenu, SidebarUserCard } from "@/features/auth";
+import { useNavBadges } from "@/features/dashboard";
 import { SidebarBusinessCard, SidebarTrialCard, TrialBanner } from "@/features/subscription";
 import { AppShell } from "./app-shell/AppShell";
 
@@ -7,8 +8,10 @@ import { AppShell } from "./app-shell/AppShell";
  * This is the only layout that knows about features; AppShell itself stays pure layout.
  */
 export function AuthenticatedLayout() {
+  const navBadges = useNavBadges();
   return (
     <AppShell
+      navBadges={navBadges}
       sidebarHeader={<SidebarBusinessCard />}
       sidebarFooter={
         <>

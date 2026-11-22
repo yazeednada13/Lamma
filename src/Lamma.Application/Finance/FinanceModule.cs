@@ -56,7 +56,8 @@ public sealed class FinanceOverviewQueryValidator : AbstractValidator<FinanceOve
 
 public interface IFinanceQueries
 {
-    Task<FinanceOverviewDto> OverviewAsync(DateOnly from, DateOnly to, DateOnly today, CancellationToken cancellationToken);
+    /// <param name="withSnapshot">False skips the «now» figures (dues, courier-held, expected sales), returned as 0: for a past span.</param>
+    Task<FinanceOverviewDto> OverviewAsync(DateOnly from, DateOnly to, DateOnly today, CancellationToken cancellationToken, bool withSnapshot = true);
 }
 
 public interface IFinanceService

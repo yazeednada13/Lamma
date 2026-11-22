@@ -12,7 +12,13 @@ export function Topbar({ end }: { end?: ReactNode }) {
       <Link className="show-sm" to="/" aria-label="لمّة — الرئيسية">
         <LammaMark color="#3F4F2A" size={30} />
       </Link>
-      <button type="button" className="qsearch hide-sm is-soon" aria-disabled="true" title="البحث قريبًا" aria-label="البحث (قريبًا)">
+      <button
+        type="button"
+        className="qsearch hide-sm is-soon"
+        aria-disabled="true"
+        title="البحث قريبًا"
+        aria-label="البحث (قريبًا)"
+      >
         <span className="qsearch__ic">
           <Icon name="search" size={16} />
         </span>
@@ -23,7 +29,13 @@ export function Topbar({ end }: { end?: ReactNode }) {
         </span>
       </button>
       <div className="end row" style={{ gap: 6, position: "relative" }}>
-        <button type="button" className="btn btn--ghost icon-btn show-sm is-soon" aria-disabled="true" aria-label="البحث (قريبًا)" title="البحث قريبًا">
+        <button
+          type="button"
+          className="btn btn--ghost icon-btn show-sm is-soon"
+          aria-disabled="true"
+          aria-label="البحث (قريبًا)"
+          title="البحث قريبًا"
+        >
           <Icon name="search" />
         </button>
         <div className="hide-sm">
@@ -46,7 +58,13 @@ export function Topbar({ end }: { end?: ReactNode }) {
             ))}
           </Menu>
         </div>
-        <button type="button" className="btn btn--ghost icon-btn is-soon" aria-disabled="true" aria-label="الإشعارات (قريبًا)" title="الإشعارات قريبًا">
+        <button
+          type="button"
+          className="btn btn--ghost icon-btn is-soon"
+          aria-disabled="true"
+          aria-label="الإشعارات (قريبًا)"
+          title="الإشعارات قريبًا"
+        >
           <Icon name="bell" />
         </button>
         {end}
