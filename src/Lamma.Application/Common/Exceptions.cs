@@ -34,6 +34,9 @@ public sealed class UnauthorizedException(string code, string message) : AppExce
 /// <summary>423. The account is temporarily locked after repeated failed logins.</summary>
 public sealed class LockedException(string code, string message) : AppException(code, message);
 
+/// <summary>410. The resource existed but is no longer usable (e.g. an expired invitation link).</summary>
+public sealed class GoneException(string code, string message) : AppException(code, message);
+
 /// <summary>503. A required external service is not configured or unavailable.</summary>
 public sealed class ServiceUnavailableException(string code, string message) : AppException(code, message);
 

@@ -24,32 +24,12 @@ internal sealed class SystemClock : IClock
 internal sealed class AppLinks(IOptions<AppOptions> options) : IAppLinks
 {
     public string PasswordReset(string email, string token)
-        => $"{options.Value.FrontendBaseUrl.TrimEnd('/')}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+        => $"{Base}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+
+    public string Register(string token) => $"{Base}/register?token={Uri.EscapeDataString(token)}";
+
+    public string Login() => $"{Base}/login";
+
+    private string Base => options.Value.FrontendBaseUrl.TrimEnd('/');
 }
 
-/// <summary>
-/// DEVELOPMENT ONLY: writes the reset link to the log instead of sending an email (no provider chosen yet, OQ-003).
-/// Never registered outside Development.
-/// </summary>
-internal sealed partial class LoggingEmailSender(ILogger<LoggingEmailSender> logger) : IEmailSender
-{
-    public bool IsConfigured => true;
-
-    public Task SendPasswordResetAsync(string toEmail, string fullName, string resetLink, CancellationToken cancellationToken)
-    {
-        LogResetLink(logger, resetLink);
-        return Task.CompletedTask;
-    }
-
-    [LoggerMessage(Level = LogLevel.Warning, Message = "DEV ONLY - password reset link (no email provider configured): {ResetLink}")]
-    private static partial void LogResetLink(ILogger logger, string resetLink);
-}
-
-/// <summary>Used outside Development until an email provider is chosen: password reset returns 503.</summary>
-internal sealed class NotConfiguredEmailSender : IEmailSender
-{
-    public bool IsConfigured => false;
-
-    public Task SendPasswordResetAsync(string toEmail, string fullName, string resetLink, CancellationToken cancellationToken)
-        => throw new ServiceUnavailableException("email.not_configured", "خدمة الإيميل مش جاهزة حاليًا.");
-}

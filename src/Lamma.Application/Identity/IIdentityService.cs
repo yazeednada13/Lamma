@@ -6,7 +6,10 @@ namespace Lamma.Application.Identity;
 /// </summary>
 public interface IIdentityService
 {
-    Task<IdentityResultInfo> CreateUserAsync(string fullName, string email, string password, CancellationToken cancellationToken);
+    /// <param name="phoneE164">Optional mobile carried over from the sign-up form (D-160).</param>
+    Task<IdentityResultInfo> CreateUserAsync(string fullName, string email, string password, CancellationToken cancellationToken, string? phoneE164 = null);
+
+    Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken);
 
     Task<PasswordSignInOutcome> PasswordSignInAsync(string email, string password, bool persistent, CancellationToken cancellationToken);
 

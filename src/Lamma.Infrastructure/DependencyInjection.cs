@@ -40,9 +40,16 @@ public static class DependencyInjection
         services.AddSingleton<IAppLinks, AppLinks>();
         services.AddOptions<StorageOptions>().Bind(configuration.GetSection(StorageOptions.SectionName));
         services.AddSingleton<IFileStorage, LocalFileStorage>();
-        if (isDevelopment)
+        // Email (D-166): Brevo SMTP when configured; otherwise a dev-only file sender, or 503 outside Development.
+        services.AddOptions<EmailOptions>().Bind(configuration.GetSection(EmailOptions.SectionName));
+        var email = configuration.GetSection(EmailOptions.SectionName).Get<EmailOptions>() ?? new EmailOptions();
+        if (email.SmtpConfigured)
         {
-            services.AddSingleton<IEmailSender, LoggingEmailSender>();
+            services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        }
+        else if (isDevelopment)
+        {
+            services.AddSingleton<IEmailSender, DevFileEmailSender>();
         }
         else
         {
@@ -111,6 +118,9 @@ public static class DependencyInjection
 
         // Dashboard (Phase 9)
         services.AddScoped<Lamma.Application.Dashboard.IDashboardQueries, DashboardQueries>();
+
+        // Public sign-up (Phase 11-I)
+        services.AddScoped<Lamma.Application.Signup.ISignupLeadRepository, SignupLeadRepository>();
 
         // Reports (Phase 10)
         services.AddScoped<Lamma.Application.Reports.IReportQueries, ReportQueries>();

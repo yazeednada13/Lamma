@@ -116,7 +116,7 @@ export function PaymentsPage() {
   const header = (
     <PageHeader
       title="المدفوعات والذمم"
-      subtitle="مين عليه مصاري، ومن قديش"
+      subtitle="مين عليه مصاري، ومن متى"
       crumbs={
         <>
           <Link to="/finance">المالية</Link> / المدفوعات

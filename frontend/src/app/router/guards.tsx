@@ -36,8 +36,11 @@ function WithAccount({ children }: { children: (account: Account | null | undefi
   return <>{children(query.data)}</>;
 }
 
-/** Signed-in owners only; anonymous users go to /login (and come back afterwards). Provides the current account. */
-export function RequireAuth() {
+/**
+ * Signed-in owners only; anonymous users go to /login (and come back afterwards). Provides the current account.
+ * `anonymousHome` is shown instead at `/` to anonymous visitors (the public landing page, D-174).
+ */
+export function RequireAuth({ anonymousHome }: { anonymousHome?: ReactNode }) {
   const location = useLocation();
   return (
     <WithAccount>
@@ -46,6 +49,8 @@ export function RequireAuth() {
           <CurrentAccountContext.Provider value={account}>
             <Outlet />
           </CurrentAccountContext.Provider>
+        ) : anonymousHome && location.pathname === "/" ? (
+          <>{anonymousHome}</>
         ) : (
           <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
         )

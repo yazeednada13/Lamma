@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { emailSchema, personNameSchema } from "@/shared/validation/fieldSchemas";
+import { emailSchema } from "@/shared/validation/fieldSchemas";
 import { newPasswordSchema } from "./passwordSchema";
 
 export const loginSchema = z.object({
@@ -9,8 +9,11 @@ export const loginSchema = z.object({
 });
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
-export const signUpSchema = z.object({ fullName: personNameSchema, email: emailSchema, password: newPasswordSchema });
-export type SignUpFormValues = z.infer<typeof signUpSchema>;
+/** Registration from an invitation (D-160): the email is fixed by the link, so only the password and its confirmation. */
+export const registerSchema = z
+  .object({ password: newPasswordSchema, confirmPassword: z.string().min(1, "أكّد كلمة السر.") })
+  .refine((v) => v.password === v.confirmPassword, { path: ["confirmPassword"], message: "تأكيد كلمة السر مش مطابق." });
+export type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export const forgotPasswordSchema = z.object({ email: emailSchema });
 export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;

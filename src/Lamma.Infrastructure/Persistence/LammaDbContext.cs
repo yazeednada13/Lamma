@@ -71,6 +71,8 @@ public sealed class LammaDbContext : IdentityDbContext<ApplicationUser, Identity
 
     public DbSet<Lamma.Domain.Courier.CourierSettlementOrder> CourierSettlementOrders => Set<Lamma.Domain.Courier.CourierSettlementOrder>();
 
+    public DbSet<Lamma.Domain.Signup.SignupLead> SignupLeads => Set<Lamma.Domain.Signup.SignupLead>();
+
     public DbSet<Repositories.BusinessCounter> BusinessCounters => Set<Repositories.BusinessCounter>();
 
     public DbSet<Idempotency.IdempotencyRecord> IdempotencyRecords => Set<Idempotency.IdempotencyRecord>();

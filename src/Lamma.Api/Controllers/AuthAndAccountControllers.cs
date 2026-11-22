@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
+using Lamma.Application.Signup;
 
 namespace Lamma.Api.Controllers;
 
@@ -27,8 +29,22 @@ public sealed class AuthController(IAuthService auth) : ControllerBase
     [HttpPost("signup")]
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitingOptions.SensitivePolicy)]
-    public async Task<ActionResult<AccountDto>> SignUp(SignUpRequest request, CancellationToken cancellationToken)
-        => Created("/api/v1/account", await auth.SignUpAsync(request, cancellationToken));
+    public async Task<ActionResult<AccountDto>> SignUp(SignUpRequest request, [FromServices] IOptions<RegistrationOptions> registration, CancellationToken cancellationToken)
+    {
+        if (registration.Value.InviteOnly)
+        {
+            return NotFound(); // closed: accounts come from invitations only (D-160)
+        }
+
+        return Created("/api/v1/account", await auth.SignUpAsync(request, cancellationToken));
+    }
+
+    /// <summary>Creates the account from an invitation (D-160) and signs in.</summary>
+    [HttpPost("register")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingOptions.SensitivePolicy)]
+    public async Task<ActionResult<AccountDto>> Register(RegisterRequest request, [FromServices] ISignupService signup, CancellationToken cancellationToken)
+        => Created("/api/v1/account", await signup.RegisterAsync(request, cancellationToken));
 
     [HttpPost("login")]
     [AllowAnonymous]

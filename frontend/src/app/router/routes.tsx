@@ -8,6 +8,7 @@ import { onboardingRoute } from "@/features/onboarding";
 import { CustomerOrdersSection, ordersRoutes, ProductOrdersSection } from "@/features/orders";
 import { courierSettingsSection, expenseCategoriesSettingsSection, financeRoutes } from "@/features/finance";
 import { reportsRoutes } from "@/features/reports";
+import { LandingPage } from "@/features/signup";
 import { paymentsRoutes } from "@/features/payments";
 import { createSettingsRoutes } from "@/features/settings";
 import { AuthenticatedLayout } from "../layouts/AuthenticatedLayout";
@@ -39,7 +40,7 @@ export const routes: RouteObject[] = [
       { element: <RedirectIfAuthenticated />, children: authRoutes },
       resetPasswordRoute,
       {
-        element: <RequireAuth />,
+        element: <RequireAuth anonymousHome={<LandingPage />} />,
         children: [
           { element: <RequireNotOnboarded />, children: [onboardingRoute] },
           {

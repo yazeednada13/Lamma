@@ -30,13 +30,14 @@ describe("apiClient", () => {
 
 
   it("turns ProblemDetails into a typed ApiError with field errors", async () => {
-    const error = await api.post("/auth/signup", { fullName: "x", email: "a@b.co", password: "short" }).catch((e: unknown) => e);
+    fake.invitations.set("tok", { email: "a@b.co", fullName: "x", state: "valid" });
+    const error = await api.post("/auth/register", { token: "tok", password: "lamma2026", confirmPassword: "other2026" }).catch((e: unknown) => e);
 
     expect(error).toBeInstanceOf(ApiError);
     const apiError = error as ApiError;
     expect(apiError.status).toBe(422);
     expect(apiError.code).toBe("validation.failed");
-    expect(apiError.fieldError("password")).toContain("8");
+    expect(apiError.fieldError("confirmPassword")).toContain("مطابق");
   });
 
 

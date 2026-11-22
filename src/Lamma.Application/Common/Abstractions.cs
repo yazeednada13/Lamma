@@ -49,12 +49,17 @@ public interface IUnitOfWork
     Task ExecuteInTransactionAsync(Func<CancellationToken, Task> work, CancellationToken cancellationToken);
 }
 
-/// <summary>Outgoing email. A real provider is not chosen yet (OQ-003); see <see cref="IsConfigured"/>.</summary>
+/// <summary>
+/// Outgoing email (D-166: Brevo over SMTP when configured; a dev-only file sender in Development). Messages are built by
+/// <see cref="Email.EmailTemplates"/>; senders only deliver them.
+/// </summary>
 public interface IEmailSender
 {
     bool IsConfigured { get; }
 
     Task SendPasswordResetAsync(string toEmail, string fullName, string resetLink, CancellationToken cancellationToken);
+
+    Task SendAsync(Email.EmailMessage message, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -86,4 +91,10 @@ public interface IIdempotencyService
 public interface IAppLinks
 {
     string PasswordReset(string email, string token);
+
+    /// <summary>The registration page for an invitation token (D-160).</summary>
+    string Register(string token);
+
+    /// <summary>The app's sign-in page.</summary>
+    string Login();
 }
