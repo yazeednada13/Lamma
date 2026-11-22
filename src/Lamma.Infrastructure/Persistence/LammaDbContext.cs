@@ -73,6 +73,14 @@ public sealed class LammaDbContext : IdentityDbContext<ApplicationUser, Identity
 
     public DbSet<Lamma.Domain.Signup.SignupLead> SignupLeads => Set<Lamma.Domain.Signup.SignupLead>();
 
+    public DbSet<Lamma.Domain.Subscriptions.SubscriptionPeriod> SubscriptionPeriods => Set<Lamma.Domain.Subscriptions.SubscriptionPeriod>();
+
+    public DbSet<Lamma.Domain.Subscriptions.PaymentRequest> PaymentRequests => Set<Lamma.Domain.Subscriptions.PaymentRequest>();
+
+    public DbSet<Lamma.Domain.Platform.AdminAuditLog> AdminAuditLogs => Set<Lamma.Domain.Platform.AdminAuditLog>();
+
+    public DbSet<Lamma.Domain.Platform.ReminderLog> ReminderLogs => Set<Lamma.Domain.Platform.ReminderLog>();
+
     public DbSet<Repositories.BusinessCounter> BusinessCounters => Set<Repositories.BusinessCounter>();
 
     public DbSet<Idempotency.IdempotencyRecord> IdempotencyRecords => Set<Idempotency.IdempotencyRecord>();

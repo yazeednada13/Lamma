@@ -32,7 +32,7 @@ internal sealed class AccountQueries(LammaDbContext db) : IAccountQueries
         => (from m in db.Memberships.AsNoTracking()
             where m.UserId == userId
             join b in db.Businesses.AsNoTracking() on m.BusinessId equals b.Id
-            select new BusinessSummaryRow(b.Id, b.Name, b.BusinessType, b.TrialEndsAt, b.TimeZoneId, b.SubscriptionPlan))
+            select new BusinessSummaryRow(b.Id, b.Name, b.BusinessType, b.TrialEndsAt, b.TimeZoneId))
             .FirstOrDefaultAsync(cancellationToken);
 }
 

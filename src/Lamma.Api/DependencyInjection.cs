@@ -23,6 +23,7 @@ public static class DependencyInjection
                 o.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true; // FluentValidation owns validation
                 o.Filters.Add<AntiforgeryAndOriginFilter>();
                 o.Filters.Add<ValidationActionFilter>();
+                o.Filters.Add<ReadOnlySubscriptionFilter>(); // D-162, D-176
             })
             .ConfigureApiBehaviorOptions(o =>
                 o.InvalidModelStateResponseFactory = ctx => Problems.Result(ctx.HttpContext, 400, "request.malformed", Problems.DefaultDetail(400)));
@@ -99,8 +100,10 @@ public static class DependencyInjection
 
         services.AddAuthorizationBuilder()
             .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
-            .AddPolicy(Policies.RequireBusiness, p => p.RequireAuthenticatedUser().AddRequirements(new BusinessRequirement()));
+            .AddPolicy(Policies.RequireBusiness, p => p.RequireAuthenticatedUser().AddRequirements(new BusinessRequirement()))
+            .AddPolicy(Policies.RequirePlatformAdmin, p => p.RequireAuthenticatedUser().AddRequirements(new PlatformAdminRequirement()));
         services.AddScoped<IAuthorizationHandler, BusinessRequirementHandler>();
+        services.AddScoped<IAuthorizationHandler, PlatformAdminRequirementHandler>();
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, ProblemAuthorizationResultHandler>();
 
         services.AddAntiforgery(o =>

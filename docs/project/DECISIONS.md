@@ -163,6 +163,11 @@ Sources:
 | D-179 | **Billing details:** the CliQ alias and account name are server settings (`Billing:Cliq:Alias`, `Billing:Cliq:Name`) the founder fills in. Each business gets a fixed reference code `LM-<number>` for the transfer note | F (2026-11-22, Phase 11 plan) |
 | D-180 | **Trial start:** stays at onboarding, which follows registration immediately (D-160). An admin «extend trial» moves the trial end. It can also reopen an ended trial | F (2026-11-22, Phase 11 plan) |
 | D-181 | **Removing the old `SubscriptionPlan` column:** the plan is now derived from the periods (D-167), so the column is dropped in the 11-II migration and the API returns the derived plan | F (2026-11-22, Phase 11 plan) |
+| D-182 | **The admin account:** one email in `Platform:AdminEmails`, kept in user-secrets or an environment variable (never in the repo). The account is created through the public form → invitation → `/register`, then promoted at startup; it needs no business and skips onboarding. The founder provided the email (2026-11-22) | F (2026-11-22, Phase 11-II plan) |
+| D-183 | **Status words in Arabic:** «تجربة مجانية» · «فترة سماح» (3 days, D-167) · «انتهت التجربة» · «مشترك شهري/سنوي حتى …» · «انتهى الاشتراك» · «موقوف». Read-only = trial ended, plan ended, or suspended | F (2026-11-22, Phase 11-II plan) |
+| D-184 | **Reference code:** `LM-` + a number per business starting at 1001, assigned on first use, unique | F (2026-11-22, Phase 11-II plan) |
+| D-185 | **Onboarding prefill:** the store name from the sign-up form fills the onboarding name field (editable) | F (2026-11-22, Phase 11-II plan) |
+| D-186 | **Reminders:** 09:00 Amman every day, by email and in the app, 7, 3 and 1 days before the trial or plan ends, plus once when the account becomes read-only. Sent once per business, kind and date | F (2026-11-22, Phase 11-II plan) |
 | D-120 | **One confirmation dialog for every confirm-worthy action** (archive, delete, and similar): a centered Lamma-styled popup (tone band, icon seal, subject chip, short consequence text, full-width confirm/cancel), the shared `useConfirm()` (`shared/ui/confirm/ConfirmProvider.tsx`). Archive actions use an archive icon and the label «أرشفة»; restore needs no confirmation | F (2026-11-20, founder request during the Phase 4 review) |
 | D-090 | **Default variant:** every product has at least one ProductVariant. A simple product gets one hidden default variant with no option values. Stock, movements and order items always reference a variant (approves P-006) | F (2026-11-17, Phase 2 plan) |
 | D-091 | **Six system product templates:** `clothing` ملابس, `perfume` عطور, `beauty` تجميل, `jewelry` إكسسوارات, `gift` بوكس هدايا, `other` عام. Default axes and fields per PHASE-PLANS Phase 2 §2.1. Business type → template: clothing, kids → clothing; perfume → perfume; beauty → beauty; accessories → jewelry; gifts → gift; all other types → other | F (2026-11-17, Phase 2 plan) |
@@ -223,6 +228,8 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | P-024 | **→ Approved as D-167.** **Subscription status is derived, not stored:** a trial period and paid periods (plan, start, end, amount, CliQ reference) plus a suspension flag; the status is computed from them (CLAUDE.md §4). Admin changes create or adjust periods | Phase 11 plan |
 | P-025 | **→ Approved as D-167.** **Admin privacy boundary:** the admin sees account, subscription and activity metadata (e.g. order count, last sign-in), not the business's customers, orders or finances | Phase 11 plan |
 | P-026 | **→ Approved as D-167.** **Lifecycle details:** 3-day grace period before read-only mode; reminders in the app and by email 7, 3 and 1 days before the end; invitation link valid 72 hours with resend; rate limit and honeypot on the public form | Phase 11 plan |
+| P-027 | **Billing rows are platform-level:** SubscriptionPeriods and PaymentRequests carry a BusinessId but are not tenant-filtered (the admin writes them for any business); owner code filters them explicitly by the current business | PHASE-11-PLAN §7, 11-II checkpoint |
+| P-028 | **Admin idempotency via the audit row:** the admin has no business, so admin POSTs store their Idempotency-Key on `AdminAuditLogs.RequestKey` (unique) instead of the per-business idempotency store | PHASE-11-PLAN §7, 11-II checkpoint |
 
 ---
 
@@ -252,6 +259,7 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | 2026-11-10 | D-088 added: keep DTO + ProblemDetails, no response envelope |
 | 2026-11-17 | D-089 added: feature-based frontend architecture; FRONTEND-ARCHITECTURE.md is authoritative |
 | 2026-11-17 | D-090–D-105 added: Phase 2 (Catalog) decisions; the founder accepted the recommended answers and approved the Phase 2 plan |
+| 2026-11-22 | D-182–D-186 added: Phase 11-II details (admin account from a server setting, status words, reference code, onboarding prefill, reminders); the founder approved the 11-II plan |
 | 2026-11-22 | D-173–D-181 added: Phase 11 decisions (two cycles, URLs, admin account, read-only detail, plan start, proof, billing settings, trial start, plan column); the founder approved the Phase 11 plan |
 | 2026-11-22 | D-168–D-172 added: Phase 10 (Reports) decisions; the founder approved the Phase 10 plan; OQ-081 resolved by D-170 |
 | 2026-11-22 | D-166 (Brevo free plan) and D-167 (lifecycle details, approves P-024–P-026) added; the domain stays open (OQ-092) |

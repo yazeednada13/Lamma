@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 11: Subscription, platform admin & public sign-up** (branch `feature/phase11-subscription-admin`) |
-| Current gate | **Gate 2 for part 11-II.** 11-I merged; detailed 11-II plan proposed in [PHASE-11-PLAN.md](../roadmap/PHASE-11-PLAN.md) §7; waiting for approval |
+| Current gate | **Gate 4 for part 11-II: Backend checkpoint.** 11.A8–11.A14 implemented and verified; waiting for the founder to apply `AddSubscriptionsAndAdmin` and push |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22). Phase 9 (`feature/phase9-dashboard`) merged (2026-11-22). Phase 10 (`feature/phase10-reports`) merged (2026-11-22). Phase 11-I (`feature/phase11-subscription-admin`) merged (2026-11-22) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders`, `AddSignupLeads` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Approve the 11-II plan, create the 11-II branch from `develop`, then write `Backend` |
+| Next expected founder action | Add and apply migration `AddSubscriptionsAndAdmin`, push the 11-II backend, then write `Frontend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -102,6 +102,8 @@
 | 2026-11-22 | Phase 11-I backend: focused tests (Domain 10, Application 5, API 4) | all passed |
 | 2026-11-22 | Phase 11-I backend: `dotnet build` / `dotnet test Lamma.sln` | 0 warnings; **466 passed** (Domain 230, Application 90, Infrastructure 24, Architecture 8, API 114) after one fix (the `Utm` type broke the no-public-setters rule); the API project also showed 1 intermittent pre-existing failure (Phase 7 category race) in 1 of 3 isolated runs |
 | 2026-11-22 | Phase 11-I frontend: `tsc -b`, `eslint .`, `check:architecture` (277 files, 0 violations, 0 cycles), `vite build`, `vitest run` | all clean; **136 passed, 0 failed** (36 files; new: sign-up domain 4, landing 2, register 3; the open sign-up tests replaced; the api-client error test now uses `/auth/register`) |
+| 2026-11-22 | Phase 11-II backend: focused tests (Domain 13, Application 7, API 6) | all passed |
+| 2026-11-22 | Phase 11-II backend: `dotnet build` / `dotnet test Lamma.sln` (one full run) | 0 warnings; **492 passed, 0 failed** (Domain 243, Application 97, Infrastructure 24, Architecture 8, API 120) |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -186,3 +188,5 @@
 | 2026-11-22 | Founder pushed the 11-I frontend (with both landing reviews) |
 | 2026-11-22 | Founder chose a separate PR for 11-I; PR text delivered; at gate 7 |
 | 2026-11-22 | Founder merged the 11-I PR into `develop`; sent the CliQ alias and account name; gave `Next Phase` for 11-II |
+| 2026-11-22 | 11-II plan approved (D-182–D-186); the founder provided the admin email (kept out of the repo) |
+| 2026-11-22 | `Backend` given for 11-II; 11.A8–11.A14 implemented and verified (subscription status, read-only filter with the endpoint walk, owner subscription API with CliQ proofs, platform admin role and API with audit, emails and daily reminders); migration `AddSubscriptionsAndAdmin` pending; waiting at gate 4 |

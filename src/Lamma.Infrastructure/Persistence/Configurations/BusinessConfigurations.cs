@@ -16,6 +16,9 @@ internal sealed class BusinessConfiguration : IEntityTypeConfiguration<Business>
         builder.Property(b => b.Currency).HasMaxLength(3).IsFixedLength().IsUnicode(false).IsRequired();
         builder.Property(b => b.TimeZoneId).HasMaxLength(64).IsUnicode(false).IsRequired();
         builder.Property(b => b.CourierCompanyName).HasMaxLength(Business.CourierCompanyNameMaxLength);
+        builder.Property(b => b.SuspendReason).HasMaxLength(Business.SuspendReasonMaxLength);
+        builder.Ignore(b => b.ReferenceCode);
+        builder.HasIndex(b => b.ReferenceNumber).IsUnique().HasFilter("[ReferenceNumber] IS NOT NULL").HasDatabaseName("UX_Businesses_ReferenceNumber");
         builder.ToTable(t => t.HasCheckConstraint(
             "CK_Businesses_DefaultLowStockThreshold",
             $"[DefaultLowStockThreshold] >= 0 AND [DefaultLowStockThreshold] <= {Business.LowStockThresholdMax}"));

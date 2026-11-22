@@ -20,7 +20,7 @@ public sealed class BusinessTests
         Assert.Equal("JOD", business.Currency);
         Assert.Equal(5, business.DefaultLowStockThreshold);
         Assert.Equal("Asia/Amman", business.TimeZoneId);
-        Assert.Equal(SubscriptionPlan.Trial, business.SubscriptionPlan);
+        Assert.Null(business.SuspendedAt);
         Assert.Equal(Now, business.TrialStartsAt);
         Assert.Equal(Now.AddDays(30), business.TrialEndsAt);
     }

@@ -556,9 +556,9 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 ### Phase 11-II gate status
 | Gate | Status | Date | Notes |
 |---|---|---|---|
-| 1. Branch created by founder | ☐ | | a new branch from `develop` (e.g. `feature/phase11-admin-subscription`) |
-| 2. Plan approved | ☐ | | PHASE-11-PLAN §7, D-182–D-186 |
-| 3. `Backend` started | ☐ | | |
+| 1. Branch created by founder | ☑ | 2026-11-22 | `feature/phase11-admin-subscription` |
+| 2. Plan approved | ☑ | 2026-11-22 | PHASE-11-PLAN §7, D-182–D-186 |
+| 3. `Backend` started | ☑ | 2026-11-22 | 11.A8–11.A14 implemented and verified; migration `AddSubscriptionsAndAdmin` pending |
 | 4. Backend pushed (founder confirmed) | ☐ | | migration `AddSubscriptionsAndAdmin` |
 | 5. `Frontend` started | ☐ | | |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |

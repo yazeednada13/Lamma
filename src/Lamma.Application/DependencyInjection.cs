@@ -48,5 +48,9 @@ public static class DependencyInjection
             .AddScoped<Finance.IFinanceService, Finance.FinanceService>()
             .AddScoped<Dashboard.IDashboardService, Dashboard.DashboardService>()
             .AddScoped<Reports.IReportService, Reports.ReportService>()
-            .AddScoped<Signup.ISignupService, Signup.SignupService>();
+            .AddScoped<Signup.ISignupService, Signup.SignupService>()
+            .AddScoped<Subscriptions.ISubscriptionReader, Subscriptions.SubscriptionReader>()
+            .AddScoped<Subscriptions.ISubscriptionService, Subscriptions.SubscriptionService>()
+            .AddScoped<Subscriptions.IReminderService, Subscriptions.ReminderService>()
+            .AddScoped<Admin.IAdminService, Admin.AdminService>();
 }

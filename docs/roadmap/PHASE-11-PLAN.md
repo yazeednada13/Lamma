@@ -139,10 +139,10 @@ DECISIONS (D-173–D-181), API-DESIGN §21, DATABASE-DESIGN (new tables), FRONTE
 
 ---
 
-## 7. Part 11-II detailed plan (proposed 2026-11-22, awaiting founder approval)
+## 7. Part 11-II detailed plan (approved 2026-11-22)
 11-I is merged. This section turns the approved outline (11.A8–11.A14, 11.B5–11.B8; D-162–D-167, D-173–D-181) into concrete work. The founder sent the CliQ details: alias **YAZEED133**, account name **YAZEED NADA** (D-179; not secret, shown to subscribers).
 
-### 7.1 Points to confirm with this plan
+### 7.1 Points confirmed with this plan
 | ID | Point | Recommendation |
 |---|---|---|
 | D-182 | **The admin email** for `Platform:AdminEmails`. The admin account is created like any other: the public form → invitation → `/register` with that email, then promoted at startup. It needs no business, and onboarding is skipped for it | The founder names the email (it goes into user-secrets or an environment variable, not the repo) |

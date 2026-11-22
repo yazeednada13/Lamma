@@ -41,7 +41,15 @@ public sealed class Business : Entity, IHasTimestamps
 
     public DateTime TrialEndsAt { get; private set; }
 
-    public SubscriptionPlan SubscriptionPlan { get; private set; } = SubscriptionPlan.Trial;
+    /// <summary>Set when the platform admin suspends the business (read-only, D-164); null otherwise.</summary>
+    public DateTime? SuspendedAt { get; private set; }
+
+    public string? SuspendReason { get; private set; }
+
+    /// <summary>The CliQ transfer reference number (shown as «LM-1001», D-184); assigned on first use.</summary>
+    public int? ReferenceNumber { get; private set; }
+
+    public string? ReferenceCode => ReferenceNumber is { } n ? FormatReference(n) : null;
 
     /// <summary>The business's courier company (D-139). Null = the default name «شركة التوصيل».</summary>
     public string? CourierCompanyName { get; private set; }
@@ -147,6 +155,62 @@ public sealed class Business : Entity, IHasTimestamps
         }
 
         CourierCompanyName = cleaned;
+    }
+
+    public const int SuspendReasonMaxLength = 300;
+    public const int FirstReferenceNumber = 1001;
+
+    public static string FormatReference(int number) => $"LM-{number}";
+
+    /// <summary>
+    /// Admin «تمديد التجربة» (D-180): adds days to the trial end; an ended trial is reopened from now.
+    /// </summary>
+    public void ExtendTrial(int days, DateTime nowUtc)
+    {
+        if (days is < 1 or > 90)
+        {
+            throw new DomainException("subscription.invalid_days", "عدد أيام التجربة لازم يكون بين 1 و90.");
+        }
+
+        TrialEndsAt = (TrialEndsAt > nowUtc ? TrialEndsAt : nowUtc).AddDays(days);
+    }
+
+    public void Suspend(string reason, DateTime nowUtc)
+    {
+        if (SuspendedAt is not null)
+        {
+            throw new DomainConflictException("subscription.already_suspended", "هالحساب موقوف من قبل.");
+        }
+
+        var r = Guard.NotBlank(reason, nameof(reason)).Trim();
+        SuspendReason = r.Length > SuspendReasonMaxLength ? r[..SuspendReasonMaxLength] : r;
+        SuspendedAt = nowUtc;
+    }
+
+    public void Reactivate()
+    {
+        if (SuspendedAt is null)
+        {
+            throw new DomainConflictException("subscription.not_suspended", "هالحساب مش موقوف.");
+        }
+
+        SuspendedAt = null;
+        SuspendReason = null;
+    }
+
+    public void AssignReference(int number)
+    {
+        if (ReferenceNumber is not null)
+        {
+            return;
+        }
+
+        if (number < FirstReferenceNumber)
+        {
+            throw new ArgumentOutOfRangeException(nameof(number));
+        }
+
+        ReferenceNumber = number;
     }
 
     public int TrialDaysRemaining(DateTime nowUtc) => TrialDaysRemaining(TrialEndsAt, nowUtc, BusinessTime.FindZone(TimeZoneId));

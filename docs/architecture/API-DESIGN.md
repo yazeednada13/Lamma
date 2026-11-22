@@ -410,3 +410,34 @@ All endpoints need an onboarded business; another business's records return 404.
 | POST `auth/signup` | — | 404 while `Registration:InviteOnly` = true (default) | — |
 
 **Tokens:** 32 random bytes, base64url, only in the link; the database keeps the SHA-256 hex hash. Valid 72 hours, single use, bound to the lead. **Email:** branded Arabic RTL HTML (`EmailTemplates`) with a plain-text alternative; user text HTML-encoded; Brevo SMTP when configured, a dev-only file sender in Development (D-166).
+
+### Part 11-II: subscription, read-only mode and the platform admin (implemented, 2026-11-22)
+
+**Owner (business policy):**
+
+| Method & path | Success | Errors |
+|---|---|---|
+| GET `subscription` | 200 `{ summary{ status, readOnly, daysLeft, endsOn, plan, paidUntil }, trialStartsAt, trialEndsAt, plans[{ plan, price, months }], cliqAlias, cliqName, referenceCode, pending, lastReviewed, periods[] }` | — |
+| POST `subscription/payment-requests` (multipart `plan` + `file`, Idempotency-Key) **allowed in read-only mode** | 201 the subscription | 422 `payment_request.invalid_plan` / `file_missing` / `file_too_large` (5 MB) / `invalid_type` (jpg/png/webp/pdf by content); 409 `payment_request.pending_exists` |
+| GET `subscription/payment-requests/{id}/proof` | 200 the file (`private, no-store`) | 404 (another business's request too) |
+
+**Account:** `GET account` adds `isPlatformAdmin`, `suggestedBusinessName` (the store name from the sign-up form, before onboarding, D-185) and `business.subscription` (the summary above). `business.plan` is derived (trial/monthly/yearly; the stored column is gone, D-181).
+
+**Status (D-167, D-183), computed in the business calendar:** `suspended` → `active` (a period covering today, chained with periods that follow without a gap; `daysLeft` to the end of the chain) → `trial` (a running trial wins over an old paid period, D-180) → after a paid period `active_grace` for 3 days then `expired` → otherwise `trial_grace` for 3 days then `trial_ended`. `readOnly` = `trial_ended`, `expired` or `suspended`. `paidUntil` = the furthest paid day from today (a plan paid during the trial is queued after it). Plan lengths: a calendar month or 12, minus a day; a shorter target month ends on its last day (31 Jan → 28 Feb). Approved plans start the day after the running trial or plan, else today (D-177).
+
+**Read-only mode (D-162, D-176):** a global MVC filter refuses every unsafe request to an action under the business policy with **403 `subscription.read_only`** (suspended accounts get their own wording) unless the action has `[AllowWhenReadOnly]` (only `SubscriptionController.Pay`). GET is never blocked. A test walks all write endpoints of the API and classifies each one.
+
+**Platform admin (policy `RequirePlatformAdmin`, role `PlatformAdmin`, D-175, D-182):** the role is given to the emails in `Platform:AdminEmails` at startup, on registration and on login. The admin has no business: business endpoints answer 403 `business.not_onboarded` and onboarding answers 403 `admin.no_business`. Owners get 403 `auth.forbidden` on admin routes.
+
+| Method & path | Notes |
+|---|---|
+| GET `admin/dashboard` | `pendingLeads, activeTrials, trialsEndingSoon (≤ 7 days), paying, readOnly, suspended, pendingPayments, monthlyRevenue (monthly 9 + yearly 90/12 of periods running today), conversionRate (% of businesses that ever paid among those past the trial or paying; null when none), weeks[8]{ weekStart (Saturday), leads, accounts }` |
+| GET `admin/subscribers?search=&status=&page=&pageSize=` | search by store, owner, email or mobile digits; `status` = a status code or `read_only`; pending payments first |
+| GET `admin/subscribers/{businessId}` | owner and business metadata, reference code, trial dates, suspension, **order and product counts only** (P-025), periods, payments, notes and the audit (last 50) |
+| POST `admin/subscribers/{id}/extend-trial` `{ days }` · `/activate` `{ plan, startsOn?, amount?, reference?, note? }` · `/extend` `{ days }` · `/end-plan` · `/suspend` `{ reason }` · `/reactivate` · `/notes` `{ text }` | each returns the detail; each writes an audit row |
+| GET `admin/payment-requests?status=` · GET `…/{id}/proof` · POST `…/{id}/approve` · POST `…/{id}/reject` `{ reason }` | approve opens the period (D-177) and emails the owner; reject keeps the reason and emails the owner |
+| GET `admin/leads?search=&status=&page=` · POST `admin/leads/{id}/resend` | resend ignores the 3-per-day limit |
+
+Every admin POST needs an **Idempotency-Key**. Admin actions cannot use the per-business idempotency store (the admin has no business), so the key is stored on the audit row under a unique index: a repeated request is not applied twice and returns the current state.
+
+**Emails (D-163, D-186):** payment received (owner) and for review (admins), approved, rejected, reminders 7/3/1 days before the trial or plan ends (not when a renewal is already queued), and one read-only notice. The daily pass runs at 09:00 Amman (`Reminders:Enabled`, `Reminders:Hour`); a `ReminderLogs` row per business, kind and end date makes a second pass send nothing.

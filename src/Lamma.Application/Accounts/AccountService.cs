@@ -27,6 +27,9 @@ internal sealed class AccountService(
     ICurrentUser currentUser,
     IIdentityService identity,
     IAccountQueries queries,
+    Subscriptions.ISubscriptionReader subscriptions,
+    Subscriptions.IPlatformAdmins admins,
+    Signup.ISignupLeadRepository leads,
     IClock clock) : IAccountService
 {
     public Task<AccountDto> GetCurrentAsync(CancellationToken cancellationToken)
@@ -39,13 +42,27 @@ internal sealed class AccountService(
 
         var row = await queries.GetBusinessSummaryForUserAsync(userId, cancellationToken);
         BusinessSummaryDto? business = null;
+        string? suggestion = null;
         if (row is not null)
         {
             var days = Business.TrialDaysRemaining(row.TrialEndsAt, clock.UtcNow, BusinessTime.FindZone(row.TimeZoneId));
-            business = new BusinessSummaryDto(row.Id, row.Name, row.BusinessType.ToCode(), row.TrialEndsAt, days, row.Plan.ToCode());
+            var snapshot = await subscriptions.GetForBusinessAsync(row.Id, cancellationToken);
+            business = new BusinessSummaryDto(
+                row.Id,
+                row.Name,
+                row.BusinessType.ToCode(),
+                row.TrialEndsAt,
+                days,
+                snapshot?.PlanCode ?? "trial",
+                snapshot is null ? null : Subscriptions.SubscriptionSummaryDto.From(snapshot));
+        }
+        else
+        {
+            suggestion = (await leads.FindByUserIdAsync(userId, cancellationToken))?.StoreName;
         }
 
-        return new AccountDto(profile.Id, profile.FullName, profile.Email, business is not null, business);
+        var isAdmin = await admins.IsAdminAsync(userId, cancellationToken);
+        return new AccountDto(profile.Id, profile.FullName, profile.Email, business is not null, business, isAdmin, isAdmin ? null : suggestion);
     }
 
     public async Task<AccountDto> UpdateAsync(UpdateAccountRequest request, CancellationToken cancellationToken)

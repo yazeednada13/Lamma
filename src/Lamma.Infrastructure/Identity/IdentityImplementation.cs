@@ -18,6 +18,9 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     public string FullName { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>The last successful password sign-in (UTC), shown to the platform admin.</summary>
+    public DateTime? LastLoginAt { get; set; }
 }
 
 /// <summary>Requires at least one letter in any script (Arabic or Latin). Identity has no built-in rule for this.</summary>
@@ -78,6 +81,8 @@ internal sealed class IdentityService(
         var result = await signIn.PasswordSignInAsync(user, password, persistent, lockoutOnFailure: true);
         if (result.Succeeded)
         {
+            user.LastLoginAt = clock.UtcNow;
+            await users.UpdateAsync(user);
             return new PasswordSignInOutcome(PasswordSignInStatus.Succeeded, user.Id);
         }
 

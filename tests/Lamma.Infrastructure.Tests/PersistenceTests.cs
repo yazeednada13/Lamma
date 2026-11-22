@@ -154,7 +154,6 @@ public sealed class PersistenceTests(TestDatabase database) : IClassFixture<Test
         Assert.NotNull(row);
         Assert.Equal(business.Id, row.Id);
         Assert.Equal("summary", row.Name);
-        Assert.Equal(SubscriptionPlan.Trial, row.Plan);
         Assert.Null(await new AccountQueries(db).GetBusinessSummaryForUserAsync(Guid.NewGuid(), default));
     }
 

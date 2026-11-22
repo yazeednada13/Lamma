@@ -97,4 +97,13 @@ public interface IAppLinks
 
     /// <summary>The app's sign-in page.</summary>
     string Login();
+
+    /// <summary>The app home (dashboard).</summary>
+    string Home();
+
+    /// <summary>The owner's subscription page.</summary>
+    string Subscription();
+
+    /// <summary>The admin's payments queue.</summary>
+    string AdminPayments();
 }

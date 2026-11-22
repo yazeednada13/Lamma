@@ -339,6 +339,15 @@ Returned value, net total, remaining and «sold» are derived from the return li
 - **SignupLeads** (platform-level, no BusinessId, no tenant filter): FullName (100), Email (256), NormalizedEmail (256, unique `UX_SignupLeads_NormalizedEmail`), PhoneE164 (16, Jordanian mobile), StoreName (100, null), UtmSource/UtmMedium/UtmCampaign (100, null), Status (`pending`/`registered`), InviteTokenHash (char(64) SHA-256 hex, null; filtered index), InviteExpiresAt, SendCount, SendWindowStartedAt, SendsInWindow, LastSentAt, CreatedAt, UpdatedAt, RegisteredAt, UserId (null). Index (Status, CreatedAt).
 - **AspNetUsers.PhoneNumber** (existing Identity column) now holds the mobile from the form.
 
+## 12l. Implemented in Phase 11-II: Subscriptions and the platform admin (code only; migration `AddSubscriptionsAndAdmin` pending founder)
+Billing and platform rows carry a `BusinessId` but are **platform-level (not tenant-filtered)**, so the platform admin can write them for any business; owner-side code always filters them explicitly by the current business.
+- **SubscriptionPeriods:** BusinessId (FK), Plan (`monthly`/`yearly`), StartsOn, EndsOn (business dates, inclusive, check EndsOn ≥ StartsOn), Amount (money), CliqReference (64), Note (300), Source (`payment`/`admin`), PaymentRequestId, CreatedByUserId, CreatedAt, CancelledAt, CancelledByUserId. Index (BusinessId, StartsOn).
+- **PaymentRequests:** BusinessId (FK), Plan, Amount, ProofPath (260), ProofContentType (64), Status (`pending`/`approved`/`rejected`), RejectReason (300), SubmittedByUserId, SubmittedAt, ReviewedByUserId, ReviewedAt, PeriodId. Unique filtered index **one pending per business** `UX_PaymentRequests_BusinessId_Pending`; index (Status, SubmittedAt). Proof files live in the file storage under `proofs/{business}/{request}.{ext}`.
+- **AdminAuditLogs:** AdminUserId, Action (40), BusinessId, LeadId, Details (2000, JSON or the note), RequestKey (unique filtered: the admin's Idempotency-Key), At. Index (BusinessId, At).
+- **ReminderLogs:** BusinessId, Kind (20), TargetDate, SentAt. Unique (BusinessId, Kind, TargetDate).
+- **Businesses:** + SuspendedAt, SuspendReason (300), ReferenceNumber (int, unique filtered `UX_Businesses_ReferenceNumber`, shown as «LM-1001»); − SubscriptionPlan (the plan is derived, D-181).
+- **AspNetUsers:** + LastLoginAt.
+
 ## 13. Migration guidance
 - The first migration is created in Phase 1 and is named `InitialIdentityAndBusiness`. The founder runs these from the repo root, after setting the connection string with user-secrets (LOCAL-DEVELOPMENT §3):
   - `dotnet ef migrations add <Name> --project src/Lamma.Infrastructure --startup-project src/Lamma.Api --output-dir Persistence/Migrations -- --environment Development`

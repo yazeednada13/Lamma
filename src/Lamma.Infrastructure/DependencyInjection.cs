@@ -122,6 +122,20 @@ public static class DependencyInjection
         // Public sign-up (Phase 11-I)
         services.AddScoped<Lamma.Application.Signup.ISignupLeadRepository, SignupLeadRepository>();
 
+        // Subscriptions and the platform admin (Phase 11-II)
+        services.AddOptions<BillingOptions>().Bind(configuration.GetSection(BillingOptions.SectionName));
+        services.AddOptions<PlatformOptions>().Bind(configuration.GetSection(PlatformOptions.SectionName));
+        services.AddOptions<ReminderOptions>().Bind(configuration.GetSection(ReminderOptions.SectionName));
+        services.AddScoped<Lamma.Application.Subscriptions.IBillingSettings, BillingSettings>();
+        services.AddScoped<Lamma.Application.Subscriptions.IPlatformAdmins, PlatformAdmins>();
+        services.AddScoped<Lamma.Application.Subscriptions.IBusinessContacts, BusinessContacts>();
+        services.AddScoped<Lamma.Application.Subscriptions.ISubscriptionRepository, SubscriptionRepository>();
+        services.AddScoped<Lamma.Application.Subscriptions.IReminderRepository, ReminderRepository>();
+        services.AddScoped<Lamma.Application.Admin.IAdminRepository, AdminRepository>();
+        services.AddScoped<Lamma.Application.Admin.IAdminQueries, AdminQueries>();
+        services.AddHostedService<PlatformAdminSeeder>();
+        services.AddHostedService<ReminderScheduler>();
+
         // Reports (Phase 10)
         services.AddScoped<Lamma.Application.Reports.IReportQueries, ReportQueries>();
 
