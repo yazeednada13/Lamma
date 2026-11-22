@@ -480,8 +480,8 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-22 | 9.A1–9.A5 implemented and verified; no migration |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-22 | no migration |
 | 5. `Frontend` started | ☑ | 2026-11-22 | 9.B1–9.B3 implemented; automated checks pass |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
-| 7. PR merged into `develop` (founder) | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-22 | Founder tested and pushed |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-22 | Founder-reported |
 | 8. `Next Phase` given | ☐ | | |
 
 **Draft task tables (Phase 0, superseded by the approved plan):**
@@ -522,16 +522,18 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 
 ---
 
-## Phase 11 — Subscription (display only)
-**Depends on:** 1. **Blocking:** OQ-085. **Enforcement is excluded unless approved (D-011).**
+## Phase 11 — Subscription, platform admin & public sign-up
+**Depends on:** 1. **Blocking:** prices set (D-165); OQ-092 (domain, go-live only). **Decisions:** D-159–D-167. Detailed tasks are written in the Phase 11 plan (gate 2).
 
-| ID | Task |
-|---|---|
-| 11.A1 | Subscription status endpoint (trial start and end, days remaining, plan). No prices are invented |
-| 11.A2 | Backend checkpoint |
-| 11.B1 | Subscription page (trial ring, plans without prices), trial banners (late) |
-| 11.B2 | Trial-expired state only if enforcement is approved |
-| 11.B3 | Frontend checkpoint |
+**Part 11-I: public sign-up**
+- Public landing page in Lamma's identity (mobile first; feature cards styled as Lamma order slips), sign-up form (name, email, Jordanian mobile, optional store name), UTM source capture.
+- Invitation tokens (single-use, expiring, hashed, bound to the email); branded Arabic RTL email templates; registration page with a locked email; open registration closed; trial starts on activation.
+
+**Part 11-II: platform admin & subscription lifecycle**
+- Platform admin role and area; admin dashboard; subscriber list and detail; leads list; admin audit log.
+- Trial and paid periods with a derived status (P-024); admin actions (extend trial, activate/extend/end plan, suspend).
+- In-app subscription page: status, days remaining, plans, CliQ instructions with a reference code, proof upload; admin approval queue.
+- Read-only mode on expiry (D-162), enforced on the server; banners and reminders (P-026).
 
 ---
 

@@ -218,7 +218,11 @@ Recommendation:
 - The payment gateway.
 - Trial-expiration enforcement (D-011, not approved).
 
+**Partly resolved (2026-11-22):** enforcement → D-162 (read-only); payment → D-163 (CliQ, proof uploaded in the app); two plans kept (monthly, yearly). Prices → D-165 (9 د.أ monthly, 90 د.أ yearly). Still open: billing-invoices list (recommendation: no, the admin's period history is enough).
+
 **OQ-086 · P2 · Phase 12: hosting and deployment target.** Azure App Service plus Azure SQL, a VPS with IIS or Kestrel, or other. This affects image storage, secrets management, and email/SMS providers.
+
+**OQ-092 · P1 · Phase 11: domain and email provider.** The founder has **no domain and no email provider yet** (2026-11-22). Phase 11 sends welcome/registration, payment and reminder emails, so real delivery needs a Lamma domain with SPF/DKIM/DMARC and a transactional provider (e.g. Brevo, Resend, Amazon SES). Until then development writes emails to files (dev-only sender), so the flow stays fully testable. Needed before go-live; it does not block building Phase 11. **Partly resolved (2026-11-22):** provider → D-166 (Brevo free plan). **Still open: the domain** (the founder has none yet).
 
 **OQ-087 · P2 · Phase 1 FE: font rule.** `decisions.md` mentions Readex Pro digits in tables, while v2 uses tabular Inter. Confirm that v2 (IBM Plex Sans Arabic plus Inter) is authoritative for the UI. Recommendation: yes.
 

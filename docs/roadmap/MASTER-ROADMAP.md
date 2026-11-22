@@ -48,7 +48,7 @@ Identity ─▶ Business ownership/tenancy ─▶ Onboarding ─▶ Settings (ch
 - Returns and pre-orders are separated from orders core because their rules are the most open (OQ-070–074). Isolating them avoids blocking the core order flow.
 - Expenses are grouped with the courier because the settlement difference must create an expense atomically (D-035).
 - Reports need the final definitions of returns, COGS, and expenses.
-- Subscription enforcement is not approved, so Phase 11 covers display only.
+- Phase 11 was expanded (D-159): public landing page, invitation sign-up, platform admin, subscription lifecycle with read-only enforcement (D-162) and manual CliQ activation (D-163).
 
 ## 3. Phases
 | Phase | Name | Objective | Depends on | Blocking open questions |
@@ -64,7 +64,7 @@ Identity ─▶ Business ownership/tenancy ─▶ Onboarding ─▶ Settings (ch
 | 8 | **Returns & pre-orders** | Full or partial returns, refunds, restock; pre-orders with deposit and expected date; pre-orders page | 5, 6 | OQ-070…074 |
 | 9 | **Dashboard** | All dashboard sections and sidebar indicators computed from records | 3–8 | OQ-080, OQ-082, OQ-083 |
 | 10 | **Reports** | Reports hub, P&L with comparison and waterfall, sales reports, periods | 7, 8 | OQ-081 |
-| 11 | **Subscription (display)** | Trial status, days remaining, plans without prices; enforcement only if approved | 1 | OQ-085, D-011 |
+| 11 | **Subscription, platform admin & public sign-up** | 11-I landing page, invitation sign-up, emails. 11-II platform admin, subscription lifecycle, CliQ payments with in-app proof, read-only mode on expiry | 1 | OQ-092 (domain) |
 | 12 | **Hardening & launch readiness** | Security review, performance and index review, accessibility, error monitoring, deployment, backups, legal pages | 1–11 | OQ-084, OQ-086, OQ-089 |
 
 Phases 2 and 4 depend only on Phase 1. They could be reordered but not run in parallel: the rule is one phase at a time.
