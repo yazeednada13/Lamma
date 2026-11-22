@@ -33,6 +33,9 @@ public interface IOrderQueries
     Task<OrderStatusCountsDto> StatusCountsAsync(OrderListQuery query, CancellationToken cancellationToken);
 
     Task<OrderDetailsDto?> GetAsync(Guid id, DateTime nowUtc, CancellationToken cancellationToken);
+
+    /// <summary>Active pre-orders (not cancelled, returned or delivered) expected between the two dates.</summary>
+    Task<IReadOnlyList<PreOrderDto>> PreOrdersAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken);
 }
 
 // ---------- Service ----------
@@ -54,6 +57,10 @@ public interface IOrderService
     Task<OrderDetailsDto> ChangeStatusAsync(Guid id, Guid idempotencyKey, ChangeOrderStatusRequest request, CancellationToken cancellationToken);
 
     Task<OrderDetailsDto> UndoAsync(Guid id, Guid idempotencyKey, UndoOrderStatusRequest request, CancellationToken cancellationToken);
+
+    Task<OrderDetailsDto> ReturnAsync(Guid id, Guid idempotencyKey, ReturnOrderRequest request, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<PreOrderDto>> PreOrdersAsync(PreOrderQuery query, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -91,6 +98,15 @@ internal sealed class OrderService(
     public Task<OrderDetailsDto> UndoAsync(Guid id, Guid idempotencyKey, UndoOrderStatusRequest request, CancellationToken cancellationToken)
         => RetryOnceAsync(() => idempotency.ExecuteAsync(idempotencyKey, new { id, request }, ct => UndoCoreAsync(id, request, ct), cancellationToken));
 
+    public Task<OrderDetailsDto> ReturnAsync(Guid id, Guid idempotencyKey, ReturnOrderRequest request, CancellationToken cancellationToken)
+        => RetryOnceAsync(() => idempotency.ExecuteAsync(idempotencyKey, new { id, request }, ct => ReturnCoreAsync(id, request, ct), cancellationToken));
+
+    public Task<IReadOnlyList<PreOrderDto>> PreOrdersAsync(PreOrderQuery query, CancellationToken cancellationToken)
+    {
+        var today = BusinessTime.LocalDate(clock.UtcNow, Zone);
+        return queries.PreOrdersAsync(query.From ?? today, query.To ?? (query.From ?? today).AddDays(13), cancellationToken);
+    }
+
     public async Task<OrderDetailsDto> UpdateAsync(Guid id, UpdateOrderRequest request, CancellationToken cancellationToken)
     {
         var order = await orders.GetForUpdateAsync(id, cancellationToken) ?? throw NotFound();
@@ -104,6 +120,7 @@ internal sealed class OrderService(
         await EnsureEnabledAsync(channel == order.Channel ? null : channel, method == order.PaymentMethodHint ? null : method, cancellationToken);
         var (lines, _) = await LinesAsync(request.Items, cancellationToken);
         order.ReplaceItems(channel, lines, request.DeliveryFee, request.Discount, method);
+        order.Schedule(request.ExpectedDeliveryOn, OrderValidation.ParseTime(request.ExpectedDeliveryTime), Today());
         if (order.Total < await payments.PaidAsync(id, cancellationToken))
         {
             // D-132: paid never exceeds the total. A deposit recorded meanwhile bumps the rowversion, so the save fails.
@@ -119,6 +136,7 @@ internal sealed class OrderService(
     {
         var order = await orders.GetForUpdateAsync(id, cancellationToken) ?? throw NotFound();
         order.UpdateDetails(Delivery(request.DeliveryAddress, request.IsGift, request.RecipientName, request.RecipientPhone, request.GiftMessage), request.Note);
+        order.Schedule(request.ExpectedDeliveryOn, OrderValidation.ParseTime(request.ExpectedDeliveryTime), Today());
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
@@ -153,6 +171,7 @@ internal sealed class OrderService(
             Delivery(request.DeliveryAddress, request.IsGift, request.RecipientName, request.RecipientPhone, request.GiftMessage),
             request.Note,
             now);
+        order.Schedule(request.ExpectedDeliveryOn, OrderValidation.ParseTime(request.ExpectedDeliveryTime), BusinessTime.LocalDate(now, Zone)); // D-151
         orders.Add(order);
 
         if (request.Status == "confirmed")
@@ -203,6 +222,56 @@ internal sealed class OrderService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return await GetAsync(id, cancellationToken);
     }
+
+    /// <summary>
+    /// A return (D-145–D-150): the order and its variants are versioned, so a payment or status change meanwhile makes
+    /// this retry once on fresh data. The refund (D-148) must lie in the range that leaves no customer credit; it is
+    /// a «استرداد» payment saved in the same transaction.
+    /// </summary>
+    private async Task<OrderDetailsDto> ReturnCoreAsync(Guid id, ReturnOrderRequest request, CancellationToken cancellationToken)
+    {
+        var order = await orders.GetForUpdateAsync(id, cancellationToken) ?? throw NotFound();
+        var paid = await payments.PaidAsync(id, cancellationToken);
+        var variants = await VariantsOfAsync(order, cancellationToken);
+        var now = clock.UtcNow;
+        var today = BusinessTime.LocalDate(now, Zone);
+        var deliveredOn = order.DeliveredAt is { } at ? BusinessTime.LocalDate(at, Zone) : today;
+        var (orderReturn, movements) = order.Return(
+            request.Lines.Select(l => new ReturnLineRequest(l.OrderItemId, l.Quantity, l.Restock)).ToList(),
+            variants,
+            request.ReturnedOn,
+            today,
+            deliveredOn,
+            request.Reason,
+            Entity.NewId(),
+            now);
+
+        var range = RefundRange.For(paid, order.NetTotal, orderReturn.Amount);
+        var refund = request.Refund?.Amount ?? 0m;
+        if (!range.Contains(refund))
+        {
+            throw new ConflictException(
+                "return.refund_out_of_range",
+                range.Minimum == range.Maximum
+                    ? $"المبلغ المسترد لازم يكون {range.Minimum:0.00} د.أ."
+                    : $"المبلغ المسترد لازم يكون بين {range.Minimum:0.00} و {range.Maximum:0.00} د.أ.",
+                new Dictionary<string, object?> { ["minimum"] = range.Minimum, ["maximum"] = range.Maximum });
+        }
+
+        if (refund > 0)
+        {
+            var method = await PaymentService.RecordableMethodAsync(settings, currentBusiness.BusinessId, request.Refund!.Method, "refund.method", cancellationToken);
+            var payment = Domain.Payments.Payment.ForRefund(currentBusiness.BusinessId, order.CustomerId, order.Id, refund, method, request.ReturnedOn, today, Entity.NewId(), now);
+            payments.Add(payment);
+            orderReturn.LinkRefund(payment.Id);
+        }
+
+        inventory.AddMovements(movements);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return await GetAsync(id, cancellationToken);
+    }
+
+    private DateOnly Today() => BusinessTime.LocalDate(clock.UtcNow, Zone);
 
     /// <summary>Builds the line snapshots from the current catalog. Another business's variant is not found (404).</summary>
     private async Task<(List<OrderLine> Lines, Dictionary<Guid, ProductVariant> Variants)> LinesAsync(IReadOnlyList<OrderItemRequest> items, CancellationToken cancellationToken)

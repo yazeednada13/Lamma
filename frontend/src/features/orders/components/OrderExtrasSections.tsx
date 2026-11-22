@@ -9,7 +9,25 @@ type Patch = (patch: Partial<OrderFormState>) => void;
 const MONEY_ERROR = "اكتب مبلغ صحيح بمنزلتين عشريتين بالأكثر.";
 
 /** Step 3: delivery fee, discount (D-126), address (prefilled) and the gift option (D-129). */
-export function OrderDeliverySection({ done, form, set, feeInvalid, discountInvalid, discountTooHigh }: { done: boolean; form: OrderFormState; set: Patch; feeInvalid: boolean; discountInvalid: boolean; discountTooHigh: boolean }) {
+export function OrderDeliverySection({
+  done,
+  form,
+  set,
+  feeInvalid,
+  discountInvalid,
+  discountTooHigh,
+  preOrderMin,
+  preOrderError,
+}: {
+  done: boolean;
+  form: OrderFormState;
+  set: Patch;
+  feeInvalid: boolean;
+  discountInvalid: boolean;
+  discountTooHigh: boolean;
+  preOrderMin?: string;
+  preOrderError?: string;
+}) {
   const giftMissing = form.isGift && !form.recipientName.trim();
   return (
     <section className={`card osec${done ? " is-done" : ""}`} id="s3" aria-labelledby="s3-title">
@@ -18,13 +36,46 @@ export function OrderDeliverySection({ done, form, set, feeInvalid, discountInva
         <h2 id="s3-title">التوصيل والإضافات</h2>
       </div>
       <div className="grid g-2">
-        <MoneyField label="رسوم التوصيل (على الزبون)" value={form.fee} onChange={(e) => set({ fee: e.target.value })} error={feeInvalid ? MONEY_ERROR : undefined} />
-        <MoneyField label="خصم" value={form.discount} onChange={(e) => set({ discount: e.target.value })} error={discountInvalid ? MONEY_ERROR : discountTooHigh ? "الخصم أكبر من مجموع المنتجات." : undefined} />
+        <MoneyField
+          label="رسوم التوصيل (على الزبون)"
+          value={form.fee}
+          onChange={(e) => set({ fee: e.target.value })}
+          error={feeInvalid ? MONEY_ERROR : undefined}
+        />
+        <MoneyField
+          label="خصم"
+          value={form.discount}
+          onChange={(e) => set({ discount: e.target.value })}
+          error={discountInvalid ? MONEY_ERROR : discountTooHigh ? "الخصم أكبر من مجموع المنتجات." : undefined}
+        />
       </div>
       <div style={{ marginTop: 12 }}>
-        <TextField label="العنوان" icon="map-pin" maxLength={200} value={form.address} onChange={(e) => set({ address: e.target.value })} />
+        <TextField
+          label="العنوان"
+          icon="map-pin"
+          maxLength={200}
+          value={form.address}
+          onChange={(e) => set({ address: e.target.value })}
+        />
       </div>
       <div className="opts" style={{ marginTop: 14 }}>
+        <label className={`opt${form.isPreOrder ? " is-on" : ""}`}>
+          <span className="chipi tone-blue">
+            <Icon name="calendar" />
+          </span>
+          <span>
+            <b>طلب مسبق</b>
+            <span>تاريخ ووقت تسليم</span>
+          </span>
+          <input
+            type="checkbox"
+            role="switch"
+            className="toggle"
+            checked={form.isPreOrder}
+            onChange={(e) => set({ isPreOrder: e.target.checked })}
+            aria-label="طلب مسبق"
+          />
+        </label>
         <label className={`opt${form.isGift ? " is-on" : ""}`}>
           <span className="chipi tone-brick">
             <Icon name="gift" />
@@ -33,14 +84,66 @@ export function OrderDeliverySection({ done, form, set, feeInvalid, discountInva
             <b>هدية</b>
             <span>مستلم ورسالة إهداء</span>
           </span>
-          <input type="checkbox" role="switch" className="toggle" checked={form.isGift} onChange={(e) => set({ isGift: e.target.checked })} aria-label="هدية" />
+          <input
+            type="checkbox"
+            role="switch"
+            className="toggle"
+            checked={form.isGift}
+            onChange={(e) => set({ isGift: e.target.checked })}
+            aria-label="هدية"
+          />
         </label>
       </div>
+      {form.isPreOrder && (
+        <div className="grid g-2" style={{ marginTop: 12 }}>
+          <TextField
+            label="تاريخ التسليم"
+            required
+            icon="calendar"
+            type="date"
+            ltr
+            min={preOrderMin}
+            value={form.expectedOn}
+            onChange={(e) => set({ expectedOn: e.target.value })}
+            error={preOrderError}
+            help="بينحفظ «جديد» حتى لو البضاعة لسا ما وصلت"
+          />
+          <TextField
+            label="الوقت (اختياري)"
+            icon="clock"
+            type="time"
+            ltr
+            value={form.expectedTime}
+            onChange={(e) => set({ expectedTime: e.target.value })}
+          />
+        </div>
+      )}
       {form.isGift && (
         <div className="grid g-2" style={{ marginTop: 12 }}>
-          <TextField label="اسم المستلم" required maxLength={100} value={form.recipientName} onChange={(e) => set({ recipientName: e.target.value })} error={giftMissing ? "اكتب اسم مستلم الهدية." : undefined} />
-          <TextField label="رقم المستلم" icon="phone" ltr inputMode="tel" maxLength={30} value={form.recipientPhone} onChange={(e) => set({ recipientPhone: e.target.value })} />
-          <TextField label="رسالة الإهداء" placeholder="كل سنة وإنتِ بخير" maxLength={300} value={form.giftMessage} onChange={(e) => set({ giftMessage: e.target.value })} />
+          <TextField
+            label="اسم المستلم"
+            required
+            maxLength={100}
+            value={form.recipientName}
+            onChange={(e) => set({ recipientName: e.target.value })}
+            error={giftMissing ? "اكتب اسم مستلم الهدية." : undefined}
+          />
+          <TextField
+            label="رقم المستلم"
+            icon="phone"
+            ltr
+            inputMode="tel"
+            maxLength={30}
+            value={form.recipientPhone}
+            onChange={(e) => set({ recipientPhone: e.target.value })}
+          />
+          <TextField
+            label="رسالة الإهداء"
+            placeholder="كل سنة وإنتِ بخير"
+            maxLength={300}
+            value={form.giftMessage}
+            onChange={(e) => set({ giftMessage: e.target.value })}
+          />
         </div>
       )}
     </section>
@@ -53,10 +156,24 @@ export interface DepositState {
   method: PaymentMethodCode | null;
   error?: string;
   help?: string;
+  /** «30%» quick fill of the deposit (D-152), in the input format. */
+  shortcut?: string;
 }
 
 /** Step 4: the expected payment method (enabled methods only), an optional deposit for a new order (D-135), and a note. */
-export function OrderPaymentSection({ done, form, set, methods, deposit }: { done: boolean; form: OrderFormState; set: Patch; methods: readonly PaymentMethodCode[]; deposit?: DepositState }) {
+export function OrderPaymentSection({
+  done,
+  form,
+  set,
+  methods,
+  deposit,
+}: {
+  done: boolean;
+  form: OrderFormState;
+  set: Patch;
+  methods: readonly PaymentMethodCode[];
+  deposit?: DepositState;
+}) {
   return (
     <section className={`card osec${done ? " is-done" : ""}`} id="s4" aria-labelledby="s4-title">
       <div className="osec__h">
@@ -67,16 +184,44 @@ export function OrderPaymentSection({ done, form, set, methods, deposit }: { don
         <span className="field__label">طريقة الدفع المتوقعة</span>
         <div className="row wrap" style={{ gap: 6 }} role="radiogroup" aria-label="طريقة الدفع المتوقعة">
           {methods.map((m) => (
-            <button key={m} type="button" role="radio" aria-checked={form.paymentMethod === m} className={`chip${form.paymentMethod === m ? " is-selected" : ""}`} onClick={() => set({ paymentMethod: form.paymentMethod === m ? null : m })}>
+            <button
+              key={m}
+              type="button"
+              role="radio"
+              aria-checked={form.paymentMethod === m}
+              className={`chip${form.paymentMethod === m ? " is-selected" : ""}`}
+              onClick={() => set({ paymentMethod: form.paymentMethod === m ? null : m })}
+            >
               {paymentMethodLabel[m]}
             </button>
           ))}
         </div>
-        <span className="field__help">«عند الاستلام» يعني المندوب بيجمع المبلغ، وبيضل عند شركة التوصيل لحد التسوية.</span>
+        <span className="field__help">
+          «عند الاستلام» يعني المندوب بيجمع المبلغ، وبيضل عند شركة التوصيل لحد التسوية.
+        </span>
       </div>
       {deposit && (
         <div className="grid g-2" style={{ marginTop: 12 }}>
-          <MoneyField label="المدفوع هلأ (عربون)" placeholder="0.00" value={form.depositAmount} onChange={(e) => set({ depositAmount: e.target.value })} error={deposit.error} help={deposit.help ?? "اختياري: إذا دفع جزء أو كل المبلغ وقت الطلب"} />
+          <div className="col" style={{ gap: 6 }}>
+            <MoneyField
+              label="المدفوع هلأ (عربون)"
+              placeholder="0.00"
+              value={form.depositAmount}
+              onChange={(e) => set({ depositAmount: e.target.value })}
+              error={deposit.error}
+              help={deposit.help ?? "اختياري: إذا دفع جزء أو كل المبلغ وقت الطلب"}
+            />
+            {deposit.shortcut && (
+              <button
+                type="button"
+                className="chip"
+                style={{ alignSelf: "flex-start" }}
+                onClick={() => set({ depositAmount: deposit.shortcut! })}
+              >
+                عربون 30% · <bdi>{deposit.shortcut}</bdi>
+              </button>
+            )}
+          </div>
           {form.depositAmount.trim() !== "" && (
             <div className="field">
               <span className="field__label">طريقة دفع العربون</span>
@@ -85,7 +230,14 @@ export function OrderPaymentSection({ done, form, set, methods, deposit }: { don
               ) : (
                 <div className="row wrap" style={{ gap: 6 }} role="radiogroup" aria-label="طريقة دفع العربون">
                   {deposit.methods.map((m) => (
-                    <button key={m} type="button" role="radio" aria-checked={deposit.method === m} className={`chip${deposit.method === m ? " is-selected" : ""}`} onClick={() => set({ depositMethod: m })}>
+                    <button
+                      key={m}
+                      type="button"
+                      role="radio"
+                      aria-checked={deposit.method === m}
+                      className={`chip${deposit.method === m ? " is-selected" : ""}`}
+                      onClick={() => set({ depositMethod: m })}
+                    >
                       {paymentMethodLabel[m]}
                     </button>
                   ))}
@@ -96,7 +248,12 @@ export function OrderPaymentSection({ done, form, set, methods, deposit }: { don
         </div>
       )}
       <div style={{ marginTop: 12 }}>
-        <TextField label="ملاحظة على الطلب" maxLength={500} value={form.note} onChange={(e) => set({ note: e.target.value })} />
+        <TextField
+          label="ملاحظة على الطلب"
+          maxLength={500}
+          value={form.note}
+          onChange={(e) => set({ note: e.target.value })}
+        />
       </div>
     </section>
   );

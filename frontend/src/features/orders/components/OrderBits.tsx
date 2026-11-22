@@ -8,25 +8,58 @@ import type { OrderListItem, OrderStatus } from "../api/ordersApi";
 import { FLOW, flowIndex, STATUS } from "../domain/orderDomain";
 
 const dayFormat = new Intl.DateTimeFormat("ar-JO-u-nu-latn", { day: "numeric", month: "long", timeZone: "Asia/Amman" });
-const timeFormat = new Intl.DateTimeFormat("ar-JO-u-nu-latn", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Amman" });
+const timeFormat = new Intl.DateTimeFormat("ar-JO-u-nu-latn", {
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "Asia/Amman",
+});
 
 /** Business-local day (Asia/Amman, D-124) of a UTC timestamp. */
 export const orderDate = (utc: string): string => dayFormat.format(new Date(utc));
 
-export const orderDateTime = (utc: string): string => `${dayFormat.format(new Date(utc))} · ${timeFormat.format(new Date(utc))}`;
+const localDay = new Intl.DateTimeFormat("ar-JO-u-nu-latn", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  timeZone: "UTC",
+});
+
+/** «الثلاثاء 24 تشرين الثاني · 14:30» for a pre-order date (YYYY-MM-DD) and optional time (D-151). */
+export const preOrderLabel = (day: string, time: string | null): string =>
+  `${localDay.format(new Date(`${day}T00:00:00Z`))}${time ? ` · ${time}` : ""}`;
+
+/** «مسبق · 24 تشرين الثاني» badge for list rows and cards. */
+export function PreOrderBadge({ day }: { day: string | null }) {
+  if (!day) return null;
+  return (
+    <span className="badge badge--info badge--outline" title="طلب مسبق">
+      مسبق · {dayFormat.format(new Date(`${day}T00:00:00Z`))}
+    </span>
+  );
+}
+
+export const orderDateTime = (utc: string): string =>
+  `${dayFormat.format(new Date(utc))} · ${timeFormat.format(new Date(utc))}`;
 
 /** Status badge (prototype `App.statusBadge`); «مرتجع» uses the brick tone. */
 export function StatusBadge({ status, large }: { status: OrderStatus; large?: boolean }) {
   const info = STATUS[status];
   if (status === "returned") {
     return (
-      <span className={`badge badge--dot${large ? " badge--lg" : ""}`} style={{ background: "var(--lamma-brick-100)", color: "var(--lamma-brick-700)" }}>
+      <span
+        className={`badge badge--dot${large ? " badge--lg" : ""}`}
+        style={{ background: "var(--lamma-brick-100)", color: "var(--lamma-brick-700)" }}
+      >
         {info.label}
       </span>
     );
   }
 
-  return <span className={`badge badge--dot${large ? " badge--lg" : ""}${info.tone ? ` badge--${info.tone}` : ""}`}>{info.label}</span>;
+  return (
+    <span className={`badge badge--dot${large ? " badge--lg" : ""}${info.tone ? ` badge--${info.tone}` : ""}`}>
+      {info.label}
+    </span>
+  );
 }
 
 /** Five-dot progress along the flow (prototype `App.track`). */
@@ -35,7 +68,10 @@ export function Track({ status }: { status: OrderStatus }) {
   return (
     <div className="track" aria-label={k < 0 ? STATUS[status].label : `مرحلة ${k + 1} من 5`}>
       {FLOW.map((s, i) => (
-        <i key={s} className={k < 0 ? "" : i < k || (i === k && status === "delivered") ? "done" : i === k ? "now" : ""} />
+        <i
+          key={s}
+          className={k < 0 ? "" : i < k || (i === k && status === "delivered") ? "done" : i === k ? "now" : ""}
+        />
       ))}
     </div>
   );
@@ -55,7 +91,15 @@ export function Initials({ name }: { name: string }) {
 export function ItemThumb({ imageUrl, size = 40 }: { imageUrl: string | null; size?: number }) {
   return (
     <span className="lowrow__thumb" style={{ width: size, height: size }}>
-      {imageUrl ? <img src={imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} /> : <Illustration kind="product" template="other" />}
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
+        />
+      ) : (
+        <Illustration kind="product" template="other" />
+      )}
     </span>
   );
 }
@@ -68,7 +112,17 @@ export function itemsSummary(order: Pick<OrderListItem, "items" | "pieces">): st
 }
 
 /** Order "shipping label" card (prototype `App.orderCard`). With action buttons inside, use `asLink={false}`: the number links to the order. */
-export function OrderCard({ order, index = 0, children, asLink = true }: { order: OrderListItem; index?: number; children?: React.ReactNode; asLink?: boolean }) {
+export function OrderCard({
+  order,
+  index = 0,
+  children,
+  asLink = true,
+}: {
+  order: OrderListItem;
+  index?: number;
+  children?: React.ReactNode;
+  asLink?: boolean;
+}) {
   const body = (
     <>
       <span className="ocard__stamp">
@@ -83,6 +137,7 @@ export function OrderCard({ order, index = 0, children, asLink = true }: { order
           </Link>
         )}
         <StatusBadge status={order.status} />
+        <PreOrderBadge day={order.expectedDeliveryOn} />
       </div>
       <div className="ocard__who">
         <Initials name={order.customerName} />

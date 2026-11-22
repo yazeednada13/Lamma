@@ -1,4 +1,11 @@
-import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import type { OrderPaymentLine, PaymentStatus } from "@/features/payments";
 import type { PaymentMethodCode, SalesChannelCode } from "@/features/settings";
 import { api } from "@/services/api/apiClient";
@@ -35,6 +42,11 @@ export interface OrderListItem {
   paid: MoneyString;
   remaining: MoneyString;
   paymentStatus: PaymentStatus | null;
+  /** Phase 8 (D-148): value of the returned pieces; remaining uses total − returnedAmount. */
+  returnedAmount: MoneyString;
+  /** Pre-order (D-151): business-local YYYY-MM-DD and HH:mm. */
+  expectedDeliveryOn: string | null;
+  expectedDeliveryTime: string | null;
 }
 
 export type OrderStatusCounts = Record<OrderStatus | "all", number>;
@@ -50,6 +62,36 @@ export interface OrderItem {
   unitPrice: MoneyString;
   unitCost: MoneyString;
   lineTotal: MoneyString;
+  returnedQuantity: number;
+}
+
+export interface OrderReturn {
+  id: string;
+  returnedOn: string;
+  amount: MoneyString;
+  reason: string | null;
+  refundAmount: MoneyString;
+  refundMethod: PaymentMethodCode | null;
+  recordedAt: string;
+  lines: {
+    orderItemId: string;
+    productName: string;
+    variantLabel: string | null;
+    quantity: number;
+    restocked: boolean;
+  }[];
+}
+
+export interface PreOrder {
+  id: string;
+  number: number;
+  customerId: string;
+  customerName: string;
+  status: OrderStatus;
+  expectedDeliveryOn: string;
+  expectedDeliveryTime: string | null;
+  items: { productName: string; variantLabel: string | null; quantity: number }[];
+  total: MoneyString;
 }
 
 export interface OrderStatusChange {
@@ -72,7 +114,14 @@ export interface OrderUndo {
 export interface OrderDetails {
   id: string;
   number: number;
-  customer: { id: string; name: string; phone: string | null; city: string | null; area: string | null; isArchived: boolean };
+  customer: {
+    id: string;
+    name: string;
+    phone: string | null;
+    city: string | null;
+    area: string | null;
+    isArchived: boolean;
+  };
   channel: SalesChannelCode;
   status: OrderStatus;
   nextStatus: OrderStatus | null;
@@ -108,6 +157,13 @@ export interface OrderDetails {
   paymentStatus: PaymentStatus | null;
   /** Payments applied to this order, reversed ones included (D-136). */
   payments: OrderPaymentLine[];
+  returnedAmount: MoneyString;
+  netTotal: MoneyString;
+  isPartiallyReturned: boolean;
+  canReturn: boolean;
+  returns: OrderReturn[];
+  expectedDeliveryOn: string | null;
+  expectedDeliveryTime: string | null;
 }
 
 export interface OrderDetailsBody {
@@ -117,6 +173,9 @@ export interface OrderDetailsBody {
   recipientPhone: string | null;
   giftMessage: string | null;
   note: string | null;
+  /** Always sent: omitting them would clear the pre-order schedule (D-151). */
+  expectedDeliveryOn: string | null;
+  expectedDeliveryTime: string | null;
 }
 
 export interface OrderItemsBody extends OrderDetailsBody {
@@ -142,6 +201,7 @@ export interface OrderListParams {
   customerId?: string;
   productId?: string;
   sort?: "-createdAt" | "createdAt" | "-total";
+  isPreOrder?: boolean;
   page?: number;
   pageSize?: number;
 }
@@ -197,29 +257,53 @@ export const orderKeys = {
 };
 
 function qs(params: object): string {
-  const s = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined && v !== "").map(([k, v]) => [k, String(v)]));
+  const s = new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined && v !== "")
+      .map(([k, v]) => [k, String(v)]),
+  );
   const text = s.toString();
   return text ? `?${text}` : "";
 }
 
 export const useOrders = (p: OrderListParams, enabled = true) =>
-  useQuery({ queryKey: orderKeys.list(p), queryFn: () => api.get<Paged<OrderListItem>>(`/orders${qs(p)}`), placeholderData: keepPreviousData, enabled });
+  useQuery({
+    queryKey: orderKeys.list(p),
+    queryFn: () => api.get<Paged<OrderListItem>>(`/orders${qs(p)}`),
+    placeholderData: keepPreviousData,
+    enabled,
+  });
 
 export const useOrderStatusCounts = (p: Omit<OrderListParams, "status" | "page" | "pageSize" | "sort">) =>
-  useQuery({ queryKey: orderKeys.counts(p), queryFn: () => api.get<OrderStatusCounts>(`/orders/status-counts${qs(p)}`), placeholderData: keepPreviousData });
+  useQuery({
+    queryKey: orderKeys.counts(p),
+    queryFn: () => api.get<OrderStatusCounts>(`/orders/status-counts${qs(p)}`),
+    placeholderData: keepPreviousData,
+  });
 
 export const useOrder = (id: string | undefined) =>
-  useQuery({ queryKey: orderKeys.detail(id ?? ""), queryFn: () => api.get<OrderDetails>(`/orders/${id}`), enabled: Boolean(id) });
+  useQuery({
+    queryKey: orderKeys.detail(id ?? ""),
+    queryFn: () => api.get<OrderDetails>(`/orders/${id}`),
+    enabled: Boolean(id),
+  });
 
 export const useCustomerOptions = (search: string) =>
   useQuery({
     queryKey: ["orders", "lookup", "customers", search],
-    queryFn: () => api.get<Paged<CustomerOption>>(`/customers${qs({ search: search || undefined, pageSize: 8, sort: search ? undefined : "-createdAt" })}`),
+    queryFn: () =>
+      api.get<Paged<CustomerOption>>(
+        `/customers${qs({ search: search || undefined, pageSize: 8, sort: search ? undefined : "-createdAt" })}`,
+      ),
     placeholderData: keepPreviousData,
   });
 
 export const useCustomerOption = (id: string | null) =>
-  useQuery({ queryKey: ["orders", "lookup", "customer", id], queryFn: () => api.get<CustomerOption>(`/customers/${id}`), enabled: Boolean(id) });
+  useQuery({
+    queryKey: ["orders", "lookup", "customer", id],
+    queryFn: () => api.get<CustomerOption>(`/customers/${id}`),
+    enabled: Boolean(id),
+  });
 
 export const useProductOptions = (search: string) =>
   useQuery({
@@ -232,7 +316,8 @@ const productKey = (id: string | null) => ["orders", "lookup", "product", id] as
 const getProduct = (id: string) => api.get<ProductWithVariants>(`/products/${id}`);
 
 /** A product preselected from its page ("طلب جديد"), with its variants. */
-export const useProductWithVariants = (id: string | null) => useQuery({ queryKey: productKey(id), queryFn: () => getProduct(id!), enabled: Boolean(id) });
+export const useProductWithVariants = (id: string | null) =>
+  useQuery({ queryKey: productKey(id), queryFn: () => getProduct(id!), enabled: Boolean(id) });
 
 /** The products of an order being edited, with their variants. */
 export const useProductsWithVariants = (ids: readonly string[]) =>
@@ -263,12 +348,19 @@ function useOrderMutation<TArgs>(fn: (args: TArgs, key: (body: unknown) => strin
 }
 
 export const useCreateOrder = () =>
-  useOrderMutation((body: CreateOrderBody, key) => api.post<OrderDetails>("/orders", body, { idempotencyKey: key(body) }));
+  useOrderMutation((body: CreateOrderBody, key) =>
+    api.post<OrderDetails>("/orders", body, { idempotencyKey: key(body) }),
+  );
 
-export const useUpdateOrder = () => useOrderMutation(({ id, body }: { id: string; body: OrderItemsBody }) => api.put<OrderDetails>(`/orders/${id}`, body));
+export const useUpdateOrder = () =>
+  useOrderMutation(({ id, body }: { id: string; body: OrderItemsBody }) =>
+    api.put<OrderDetails>(`/orders/${id}`, body),
+  );
 
 export const useUpdateOrderDetails = () =>
-  useOrderMutation(({ id, body }: { id: string; body: OrderDetailsBody }) => api.put<OrderDetails>(`/orders/${id}/details`, body));
+  useOrderMutation(({ id, body }: { id: string; body: OrderDetailsBody }) =>
+    api.put<OrderDetails>(`/orders/${id}/details`, body),
+  );
 
 export interface StatusChangeArgs {
   id: string;
@@ -279,12 +371,34 @@ export interface StatusChangeArgs {
 }
 
 export const useChangeOrderStatus = () =>
-  useOrderMutation(({ id, ...body }: StatusChangeArgs, key) => api.post<OrderDetails>(`/orders/${id}/status`, body, { idempotencyKey: key({ id, ...body }) }));
+  useOrderMutation(({ id, ...body }: StatusChangeArgs, key) =>
+    api.post<OrderDetails>(`/orders/${id}/status`, body, { idempotencyKey: key({ id, ...body }) }),
+  );
 
 export const useUndoOrderStatus = () =>
   useOrderMutation(({ id, changeId }: { id: string; changeId: string }, key) =>
     api.post<OrderDetails>(`/orders/${id}/status/undo`, { changeId }, { idempotencyKey: key({ id, changeId }) }),
   );
+
+export interface ReturnBody {
+  lines: { orderItemId: string; quantity: number; restock: boolean }[];
+  returnedOn: string;
+  reason: string | null;
+  refund: { amount: MoneyString; method: PaymentMethodCode } | null;
+}
+
+/** A return (D-145–D-150): final; refreshes stock, payments and figures like a status change. */
+export const useReturnOrder = () =>
+  useOrderMutation(({ id, body }: { id: string; body: ReturnBody }, key) =>
+    api.post<OrderDetails>(`/orders/${id}/returns`, body, { idempotencyKey: key({ id, body }) }),
+  );
+
+export const usePreOrders = (from: string, to: string) =>
+  useQuery({
+    queryKey: ["orders", "preorders", from, to],
+    queryFn: () => api.get<PreOrder[]>(`/orders/preorders${qs({ from, to })}`),
+    placeholderData: keepPreviousData,
+  });
 
 /** Refreshes everything an order touches (e.g. after a 409 that tells us the data changed). */
 export function useRefreshOrders() {

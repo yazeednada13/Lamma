@@ -101,6 +101,9 @@ export interface FinanceOverview {
   courierHeld: MoneyString;
   expectedSales: MoneyString;
   expensesByCategory: { categoryId: string; name: string; code: CategoryCode | null; amount: MoneyString }[];
+  /** Phase 8 (D-149): value returned in the period, and sales − returns. */
+  returns: MoneyString;
+  netSales: MoneyString;
 }
 
 export interface Period {

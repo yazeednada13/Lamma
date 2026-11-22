@@ -200,7 +200,7 @@ internal sealed class CourierService(
         foreach (var orderId in request.OrderIds.Order())
         {
             var order = await payments.LockOrderAsync(orderId, cancellationToken) ?? throw new NotFoundException("order.not_found", "ما لقينا الطلب.");
-            if (order.Status != OrderStatus.Delivered || order.ExpectedMethod != PaymentMethod.Cod || order.DeliveredAt is null)
+            if (order.Status is not (OrderStatus.Delivered or OrderStatus.Returned) || order.ExpectedMethod != PaymentMethod.Cod || order.DeliveredAt is null)
             {
                 throw new ConflictException("settlement.order_not_held", $"الطلب #{order.Number} مش عند شركة التوصيل (لازم يكون «عند الاستلام» وتوصّل).");
             }

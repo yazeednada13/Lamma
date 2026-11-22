@@ -22,7 +22,15 @@ export const STATUS: Record<OrderStatus, StatusInfo> = {
 };
 
 /** All statuses in display order (the status rail). */
-export const STATUSES: readonly OrderStatus[] = ["new", "confirmed", "preparing", "courier", "delivered", "cancelled", "returned"];
+export const STATUSES: readonly OrderStatus[] = [
+  "new",
+  "confirmed",
+  "preparing",
+  "courier",
+  "delivered",
+  "cancelled",
+  "returned",
+];
 
 /** The lifecycle shown on the board, the track and the details stepper. */
 export const FLOW: readonly OrderStatus[] = ["new", "confirmed", "preparing", "courier", "delivered"];
@@ -31,7 +39,8 @@ export const FLOW: readonly OrderStatus[] = ["new", "confirmed", "preparing", "c
 export const flowIndex = (status: OrderStatus): number => FLOW.indexOf(status);
 
 /** Statuses that hold stock reserved for the order (D-024). */
-export const isReserving = (status: OrderStatus): boolean => status === "confirmed" || status === "preparing" || status === "courier";
+export const isReserving = (status: OrderStatus): boolean =>
+  status === "confirmed" || status === "preparing" || status === "courier";
 
 /** Toast after a status change (prototype `App.statusMsg`). */
 export function statusMessage(number: number, to: OrderStatus): string {
@@ -59,7 +68,8 @@ export const CANCEL_REASONS: readonly { code: CancelReason; label: string }[] = 
   { code: "other", label: "سبب ثاني" },
 ];
 
-export const cancelReasonLabel = (code: CancelReason): string => CANCEL_REASONS.find((r) => r.code === code)?.label ?? code;
+export const cancelReasonLabel = (code: CancelReason): string =>
+  CANCEL_REASONS.find((r) => r.code === code)?.label ?? code;
 
 export const CANCEL_NOTE_MAX = 200;
 
@@ -88,7 +98,11 @@ export interface Receipt {
 }
 
 /** Live receipt in integer fils (no floating point), the same formula as the server (D-031). */
-export function computeReceipt(lines: readonly ReceiptLine[], deliveryFee: MoneyString, discount: MoneyString): Receipt {
+export function computeReceipt(
+  lines: readonly ReceiptLine[],
+  deliveryFee: MoneyString,
+  discount: MoneyString,
+): Receipt {
   const subtotal = lines.reduce((sum, l) => sum + l.quantity * toFils(l.unitPrice), 0);
   const cost = lines.reduce((sum, l) => sum + l.quantity * toFils(l.unitCost), 0);
   const fee = toFils(deliveryFee);
@@ -103,7 +117,8 @@ export function computeReceipt(lines: readonly ReceiptLine[], deliveryFee: Money
 }
 
 /** Quantity kept within 1…available (the stepper never goes above what can be reserved). */
-export const clampQuantity = (quantity: number, available: number): number => Math.max(1, Math.min(quantity, Math.max(available, 1)));
+export const clampQuantity = (quantity: number, available: number): number =>
+  Math.max(1, Math.min(quantity, Math.max(available, 1)));
 
 /** "#1001" style search accepted as is; trims spaces. */
 export const orderLabel = (number: number): string => `#${number}`;
@@ -122,7 +137,12 @@ export const DATE_PRESETS: readonly { code: DatePreset; label: string }[] = [
   { code: "month", label: "هالشهر" },
 ];
 
-const ammanDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Amman", year: "numeric", month: "2-digit", day: "2-digit" });
+const ammanDay = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Amman",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
 /** The business-local calendar day (Asia/Amman, D-124) as YYYY-MM-DD. */
 export const businessDate = (instant: Date): string => ammanDay.format(instant);

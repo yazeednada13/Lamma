@@ -35,7 +35,9 @@ public sealed record CreateOrderRequest(
     string? GiftMessage,
     string? Note,
     string Status,
-    InitialPaymentRequest? Payment = null);
+    InitialPaymentRequest? Payment = null,
+    DateOnly? ExpectedDeliveryOn = null,
+    string? ExpectedDeliveryTime = null);
 
 /// <summary>Full edit of a new order (D-127): items, fee, discount, channel, payment method and details.</summary>
 public sealed record UpdateOrderRequest(
@@ -49,16 +51,39 @@ public sealed record UpdateOrderRequest(
     string? RecipientName,
     string? RecipientPhone,
     string? GiftMessage,
-    string? Note);
+    string? Note,
+    DateOnly? ExpectedDeliveryOn = null,
+    string? ExpectedDeliveryTime = null);
 
-/// <summary>Address, gift details and note: editable until delivered or closed (D-127).</summary>
+/// <summary>Address, gift details, note and pre-order schedule: editable until delivered or closed (D-127, D-151).</summary>
 public sealed record UpdateOrderDetailsRequest(
     string? DeliveryAddress,
     bool IsGift,
     string? RecipientName,
     string? RecipientPhone,
     string? GiftMessage,
-    string? Note);
+    string? Note,
+    DateOnly? ExpectedDeliveryOn = null,
+    string? ExpectedDeliveryTime = null);
+
+/// <summary>One returned line (D-146, D-147).</summary>
+public sealed record ReturnLineInput(Guid OrderItemId, int Quantity, bool Restock);
+
+/// <summary>Money given back with a return (D-148): within the range the order details report.</summary>
+public sealed record RefundInput(
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Amount,
+    string Method);
+
+/// <summary>Returns pieces of a delivered order (D-145–D-150). Final. Requires an Idempotency-Key.</summary>
+public sealed record ReturnOrderRequest(IReadOnlyList<ReturnLineInput> Lines, DateOnly ReturnedOn, string? Reason, RefundInput? Refund);
+
+/// <summary>Pre-orders whose expected delivery date is in the range (default: today and the next 13 days).</summary>
+public sealed class PreOrderQuery
+{
+    public DateOnly? From { get; set; }
+
+    public DateOnly? To { get; set; }
+}
 
 /// <summary>
 /// Moves the order to <c>To</c> (D-121). <c>ExpectedStatus</c> is the status the client saw; a stale one returns 409
@@ -90,6 +115,9 @@ public sealed class OrderListQuery
     /// <summary>-createdAt (default) | createdAt | -total.</summary>
     public string? Sort { get; set; }
 
+    /// <summary>Only pre-orders (D-151).</summary>
+    public bool? IsPreOrder { get; set; }
+
     public int Page { get; set; } = 1;
 
     public int PageSize { get; set; } = ProductListQuery.DefaultPageSize;
@@ -115,7 +143,35 @@ public sealed record OrderListItemDto(
     DateTime? DeliveredAt,
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Paid,
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Remaining,
-    string? PaymentStatus);
+    string? PaymentStatus,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal ReturnedAmount,
+    DateOnly? ExpectedDeliveryOn,
+    string? ExpectedDeliveryTime);
+
+/// <summary>A pre-order on the calendar (D-151).</summary>
+public sealed record PreOrderDto(
+    Guid Id,
+    int Number,
+    Guid CustomerId,
+    string CustomerName,
+    string Status,
+    DateOnly ExpectedDeliveryOn,
+    string? ExpectedDeliveryTime,
+    IReadOnlyList<OrderItemSummaryDto> Items,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Total);
+
+public sealed record OrderReturnLineDto(Guid OrderItemId, string ProductName, string? VariantLabel, int Quantity, bool Restocked);
+
+/// <summary>A return of the order (D-145–D-150) and the refund paid with it, if any.</summary>
+public sealed record OrderReturnDto(
+    Guid Id,
+    DateOnly ReturnedOn,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Amount,
+    string? Reason,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal RefundAmount,
+    string? RefundMethod,
+    DateTime RecordedAt,
+    IReadOnlyList<OrderReturnLineDto> Lines);
 
 public sealed record OrderStatusCountsDto(int All, int New, int Confirmed, int Preparing, int Courier, int Delivered, int Cancelled, int Returned);
 
@@ -131,7 +187,8 @@ public sealed record OrderItemDto(
     int Quantity,
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal UnitPrice,
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal UnitCost,
-    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal LineTotal);
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal LineTotal,
+    int ReturnedQuantity);
 
 public sealed record OrderStatusChangeDto(Guid Id, string? From, string To, DateTime ChangedAt, bool IsUndo, string? CancelReason, string? Note);
 
@@ -155,7 +212,9 @@ public sealed record OrderPaymentDto(
     DateTime? ReversedAt,
     string? ReversalReason,
     /// <summary>Set for a payment from a courier settlement (D-141).</summary>
-    Guid? SettlementId);
+    Guid? SettlementId,
+    /// <summary>payment | refund (a refund's <c>Amount</c> on the order is negative, D-148).</summary>
+    string Kind);
 
 public sealed record OrderDetailsDto(
     Guid Id,
@@ -194,7 +253,14 @@ public sealed record OrderDetailsDto(
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Paid,
     [property: JsonConverter(typeof(MoneyJsonConverter))] decimal Remaining,
     string? PaymentStatus,
-    IReadOnlyList<OrderPaymentDto> Payments);
+    IReadOnlyList<OrderPaymentDto> Payments,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal ReturnedAmount,
+    [property: JsonConverter(typeof(MoneyJsonConverter))] decimal NetTotal,
+    bool IsPartiallyReturned,
+    bool CanReturn,
+    IReadOnlyList<OrderReturnDto> Returns,
+    DateOnly? ExpectedDeliveryOn,
+    string? ExpectedDeliveryTime);
 
 // ---------- Validators ----------
 
@@ -237,6 +303,11 @@ internal static class OrderValidation
         validator.RuleFor(x => note(x)).MaximumLength(Order.NoteMaxLength).OverridePropertyName("note").WithMessage($"الملاحظة لازم تكون {Order.NoteMaxLength} حرف أو أقل.");
     }
 
+    /// <summary>"HH:mm" (24 hours) or empty.</summary>
+    public static bool IsOptionalTime(string? value) => value is null || TimeOnly.TryParseExact(value, "HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _);
+
+    public static TimeOnly? ParseTime(string? value) => value is null ? null : TimeOnly.ParseExact(value, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+
     public static bool IsOptionalCode<TEnum>(string? code)
         where TEnum : struct, Enum
         => code is null || EnumCode.TryParse<TEnum>(code, out _);
@@ -256,6 +327,7 @@ public sealed class CreateOrderRequestValidator : AbstractValidator<CreateOrderR
         RuleForEach(x => x.Items).SetValidator(new OrderItemRequestValidator());
         OrderValidation.Details(this, x => x.DeliveryAddress, x => x.IsGift, x => x.RecipientName, x => x.GiftMessage, x => x.Note);
         RuleFor(x => x.Payment!).SetValidator(new InitialPaymentRequestValidator()).When(x => x.Payment is not null);
+        RuleFor(x => x.ExpectedDeliveryTime).Must(OrderValidation.IsOptionalTime).WithMessage("الوقت لازم يكون مثل 14:30.");
     }
 }
 
@@ -270,13 +342,37 @@ public sealed class UpdateOrderRequestValidator : AbstractValidator<UpdateOrderR
         OrderValidation.Items(this, x => x.Items);
         RuleForEach(x => x.Items).SetValidator(new OrderItemRequestValidator());
         OrderValidation.Details(this, x => x.DeliveryAddress, x => x.IsGift, x => x.RecipientName, x => x.GiftMessage, x => x.Note);
+        RuleFor(x => x.ExpectedDeliveryTime).Must(OrderValidation.IsOptionalTime).WithMessage("الوقت لازم يكون مثل 14:30.");
     }
 }
 
 public sealed class UpdateOrderDetailsRequestValidator : AbstractValidator<UpdateOrderDetailsRequest>
 {
     public UpdateOrderDetailsRequestValidator()
-        => OrderValidation.Details(this, x => x.DeliveryAddress, x => x.IsGift, x => x.RecipientName, x => x.GiftMessage, x => x.Note);
+    {
+        OrderValidation.Details(this, x => x.DeliveryAddress, x => x.IsGift, x => x.RecipientName, x => x.GiftMessage, x => x.Note);
+        RuleFor(x => x.ExpectedDeliveryTime).Must(OrderValidation.IsOptionalTime).WithMessage("الوقت لازم يكون مثل 14:30.");
+    }
+}
+
+public sealed class ReturnOrderRequestValidator : AbstractValidator<ReturnOrderRequest>
+{
+    public ReturnOrderRequestValidator()
+    {
+        RuleFor(x => x.Lines).Must(l => l is { Count: > 0 }).WithMessage("اختار قطعة وحدة على الأقل.");
+        RuleFor(x => x.Lines).Must(l => l is null || l.Select(x => x.OrderItemId).Distinct().Count() == l.Count).WithMessage("المنتج مكرر بالمرتجع.");
+        RuleForEach(x => x.Lines).Must(l => l.Quantity is >= 1 and <= Order.MaxLineQuantity).WithMessage("الكمية لازم تكون 1 أو أكثر.");
+        RuleFor(x => x.ReturnedOn).NotEmpty().WithMessage("اختار تاريخ المرتجع.");
+        RuleFor(x => x.Reason).MaximumLength(OrderReturn.ReasonMaxLength).WithMessage($"السبب لازم يكون {OrderReturn.ReasonMaxLength} حرف أو أقل.");
+        RuleFor(x => x.Refund!.Amount).Must(a => OrderValidation.IsMoneyInput(a, allowZero: true)).When(x => x.Refund is not null).WithMessage("المبلغ لازم يكون صفر أو أكثر وبمنزلتين عشريتين بالأكثر.");
+        RuleFor(x => x.Refund!.Method).Must(m => m is not null && EnumCode.TryParse<PaymentMethod>(m, out _)).When(x => x.Refund is { Amount: > 0 }).WithMessage("اختار طريقة الاسترداد.");
+    }
+}
+
+public sealed class PreOrderQueryValidator : AbstractValidator<PreOrderQuery>
+{
+    public PreOrderQueryValidator()
+        => RuleFor(x => x.To).Must((q, to) => q.From is null || to is null || (to >= q.From && to.Value.DayNumber - q.From.Value.DayNumber <= 62)).WithMessage("الفترة لازم تكون 62 يوم بالأكثر.");
 }
 
 public sealed class ChangeOrderStatusRequestValidator : AbstractValidator<ChangeOrderStatusRequest>

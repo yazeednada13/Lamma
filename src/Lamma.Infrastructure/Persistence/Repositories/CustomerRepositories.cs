@@ -70,12 +70,12 @@ internal sealed class CustomerQueries(LammaDbContext db) : ICustomerQueries
         CreatedAt = c.CreatedAt,
         UpdatedAt = c.UpdatedAt,
         OrderCount = db.Orders.Count(o => o.CustomerId == c.Id && o.Status != OrderStatus.Cancelled),
-        TotalSpent = db.Orders.Where(o => o.CustomerId == c.Id && o.Status == OrderStatus.Delivered).Sum(o => (decimal?)o.Total) ?? 0m,
+        TotalSpent = db.Orders.Where(o => o.CustomerId == c.Id && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Returned)).Sum(o => (decimal?)(o.Total - o.ReturnedAmount)) ?? 0m, // net of returns (D-149)
         BalanceDue = (db.Orders
-                .Where(o => o.CustomerId == c.Id && o.Status == OrderStatus.Delivered && (o.PaymentMethodHint == null || o.PaymentMethodHint != PaymentMethod.Cod))
-                .Sum(o => (decimal?)o.Total) ?? 0m)
+                .Where(o => o.CustomerId == c.Id && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Returned) && (o.PaymentMethodHint == null || o.PaymentMethodHint != PaymentMethod.Cod))
+                .Sum(o => (decimal?)(o.Total - o.ReturnedAmount)) ?? 0m)
             - (db.PaymentAllocations
-                .Where(a => !a.IsReversed && db.Orders.Any(o => o.Id == a.OrderId && o.CustomerId == c.Id && o.Status == OrderStatus.Delivered && (o.PaymentMethodHint == null || o.PaymentMethodHint != PaymentMethod.Cod)))
+                .Where(a => !a.IsReversed && db.Orders.Any(o => o.Id == a.OrderId && o.CustomerId == c.Id && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.Returned) && (o.PaymentMethodHint == null || o.PaymentMethodHint != PaymentMethod.Cod)))
                 .Sum(a => (decimal?)a.Amount) ?? 0m),
         LastOrderAt = db.Orders.Where(o => o.CustomerId == c.Id && o.Status != OrderStatus.Cancelled).Max(o => (DateTime?)o.CreatedAt),
     });

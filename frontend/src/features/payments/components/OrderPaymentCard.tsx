@@ -24,6 +24,8 @@ export interface OrderPaymentLine {
   reversalReason: string | null;
   /** Set for a payment from a courier settlement (D-141): reversed only with its settlement. */
   settlementId: string | null;
+  /** A refund (D-148) has a negative amount on the order and cannot be reversed. */
+  kind: "payment" | "refund";
 }
 
 /** The order figures the card needs (structurally an `OrderDetails`; the payments feature never imports orders). */
@@ -33,6 +35,8 @@ export interface OrderPaymentInfo {
   status: string;
   customer: { name: string };
   total: MoneyString;
+  /** Total − returned value (Phase 8, D-148): what the customer owes in the end. */
+  netTotal?: MoneyString;
   paid: MoneyString;
   remaining: MoneyString;
   paymentStatus: PaymentStatus | null;
@@ -50,16 +54,28 @@ export const paidOnLabel = (paidOn: string): string => day.format(new Date(`${pa
 export function OrderPaymentCard({ order: o }: { order: OrderPaymentInfo }) {
   const [paying, setPaying] = useState(false);
   const reverse = useReversePaymentAction();
-  const closed = o.status === "cancelled" || o.status === "returned";
+  // A returned order may still owe its delivery fee (D-148), so only a cancelled order is closed for payments.
+  const closed = o.status === "cancelled";
   const due = toFils(o.remaining) > 0;
-  const percent = paidPercent(o.total, o.paid);
+  const total = o.netTotal ?? o.total;
+  const percent = paidPercent(total, o.paid);
 
   return (
     <article className="card">
       <div className="shead">
         <div className="shead__t">
           <span className="overline">الدفع</span>
-          <h2>{closed ? "الطلب مسكّر" : due ? <>باقي <Money value={o.remaining} /></> : "مدفوع بالكامل"}</h2>
+          <h2>
+            {closed ? (
+              "الطلب مسكّر"
+            ) : due ? (
+              <>
+                باقي <Money value={o.remaining} />
+              </>
+            ) : (
+              "مدفوع بالكامل"
+            )}
+          </h2>
         </div>
         <PaymentBadge status={o.paymentStatus} />
       </div>
@@ -73,9 +89,9 @@ export function OrderPaymentCard({ order: o }: { order: OrderPaymentInfo }) {
           </span>
         </div>
         <dl className="dl grow">
-          <dt>المجموع</dt>
+          <dt>{total !== o.total ? "الصافي بعد المرتجع" : "المجموع"}</dt>
           <dd>
-            <Money value={o.total} />
+            <Money value={total} />
           </dd>
           <dt>المدفوع</dt>
           <dd>
@@ -89,7 +105,11 @@ export function OrderPaymentCard({ order: o }: { order: OrderPaymentInfo }) {
           </dd>
         </dl>
       </div>
-      {o.paymentStatus === "courier" && <p className="caption" style={{ marginTop: 10 }}>الدفع عند الاستلام: المبلغ عند شركة التوصيل لحد التسوية.</p>}
+      {o.paymentStatus === "courier" && (
+        <p className="caption" style={{ marginTop: 10 }}>
+          الدفع عند الاستلام: المبلغ عند شركة التوصيل لحد التسوية.
+        </p>
+      )}
       {!closed && due && (
         <Button block icon="cash" style={{ marginTop: 14 }} onClick={() => setPaying(true)}>
           تسجيل دفعة
@@ -98,7 +118,11 @@ export function OrderPaymentCard({ order: o }: { order: OrderPaymentInfo }) {
       {o.payments.length > 0 && (
         <ul className="col" style={{ gap: 8, marginTop: 14, listStyle: "none", padding: 0 }} aria-label="دفعات الطلب">
           {o.payments.map((p) => (
-            <li key={p.paymentId} className="row" style={{ gap: 8, justifyContent: "space-between", opacity: p.isReversed ? 0.6 : 1 }}>
+            <li
+              key={p.paymentId}
+              className="row"
+              style={{ gap: 8, justifyContent: "space-between", opacity: p.isReversed ? 0.6 : 1 }}
+            >
               <span>
                 <span style={p.isReversed ? { textDecoration: "line-through" } : undefined}>
                   <Money value={p.amount} />
@@ -107,14 +131,22 @@ export function OrderPaymentCard({ order: o }: { order: OrderPaymentInfo }) {
                   {paymentMethodLabel[p.method]} · {paidOnLabel(p.paidOn)}
                   {p.isCustomerLevel ? " · من دفعة على الحساب" : ""}
                   {p.settlementId ? " · من تسوية شركة التوصيل" : ""}
+                  {p.kind === "refund" ? " · استرداد مرتجع" : ""}
                   {p.isReversed ? " · ملغية" : ""}
                 </span>
               </span>
-              {!p.isReversed && !p.settlementId && (
+              {!p.isReversed && !p.settlementId && p.kind !== "refund" && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => void reverse({ id: p.paymentId, amount: p.paymentAmount, method: p.method, spread: p.isCustomerLevel && p.paymentAmount !== p.amount })}
+                  onClick={() =>
+                    void reverse({
+                      id: p.paymentId,
+                      amount: p.paymentAmount,
+                      method: p.method,
+                      spread: p.isCustomerLevel && p.paymentAmount !== p.amount,
+                    })
+                  }
                 >
                   إلغاء الدفعة
                 </Button>
@@ -126,7 +158,16 @@ export function OrderPaymentCard({ order: o }: { order: OrderPaymentInfo }) {
       <RecordPaymentDrawer
         open={paying}
         onClose={() => setPaying(false)}
-        target={{ kind: "order", orderId: o.id, number: o.number, customerName: o.customer.name, remaining: o.remaining, paymentStatus: o.paymentStatus, expectedMethod: o.paymentMethod, createdAt: o.createdAt }}
+        target={{
+          kind: "order",
+          orderId: o.id,
+          number: o.number,
+          customerName: o.customer.name,
+          remaining: o.remaining,
+          paymentStatus: o.paymentStatus,
+          expectedMethod: o.paymentMethod,
+          createdAt: o.createdAt,
+        }}
       />
     </article>
   );

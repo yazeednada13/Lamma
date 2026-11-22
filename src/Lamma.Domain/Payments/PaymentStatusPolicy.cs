@@ -50,14 +50,17 @@ public static class PaymentStatusPolicy
 
     /// <summary>COD money the courier collects or holds: COD, with the courier or delivered, something still due (D-133).</summary>
     public static bool IsCourierHeld(OrderStatus status, PaymentMethod? expectedMethod, decimal remaining)
-        => expectedMethod == PaymentMethod.Cod && status is OrderStatus.Courier or OrderStatus.Delivered && remaining > 0;
+        => expectedMethod == PaymentMethod.Cod && status is OrderStatus.Courier or OrderStatus.Delivered or OrderStatus.Returned && remaining > 0;
 
     /// <summary>A customer receivable: delivered, something still due, not courier-held (D-134).</summary>
     public static bool IsReceivable(OrderStatus status, PaymentMethod? expectedMethod, decimal remaining)
-        => status == OrderStatus.Delivered && remaining > 0 && !IsCourierHeld(status, expectedMethod, remaining);
+        => status is OrderStatus.Delivered or OrderStatus.Returned && remaining > 0 && !IsCourierHeld(status, expectedMethod, remaining);
 
-    /// <summary>Order statuses that accept a payment or deposit (D-135, D-137).</summary>
-    public static bool CanReceivePayment(OrderStatus status) => status is not (OrderStatus.Cancelled or OrderStatus.Returned);
+    /// <summary>
+    /// Order statuses that accept a payment or deposit (D-135, D-137). A returned order may still owe its delivery fee
+    /// (D-148), so only cancelled orders refuse payments.
+    /// </summary>
+    public static bool CanReceivePayment(OrderStatus status) => status != OrderStatus.Cancelled;
 
     public static AgingBucket BucketOf(int ageDays) => ageDays switch
     {

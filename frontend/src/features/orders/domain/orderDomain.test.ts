@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { cancelProblem, clampQuantity, computeReceipt, flowIndex, isReserving, presetRange, statusMessage, undoSecondsLeft } from "./orderDomain";
+import {
+  cancelProblem,
+  clampQuantity,
+  computeReceipt,
+  flowIndex,
+  isReserving,
+  presetRange,
+  statusMessage,
+  undoSecondsLeft,
+} from "./orderDomain";
 
 describe("order receipt", () => {
   it("computes total and profit in fils like the server (D-031, D-125)", () => {
@@ -11,18 +20,28 @@ describe("order receipt", () => {
       "2.500",
       "1.500",
     );
-    expect(receipt).toEqual({ subtotal: "37.600", total: "38.600", itemsCost: "15.033", profit: "21.067", discountTooHigh: false });
+    expect(receipt).toEqual({
+      subtotal: "37.600",
+      total: "38.600",
+      itemsCost: "15.033",
+      profit: "21.067",
+      discountTooHigh: false,
+    });
   });
 
   it("flags a discount above the items subtotal (D-126)", () => {
-    expect(computeReceipt([{ quantity: 1, unitPrice: "10.000", unitCost: "4.000" }], "0", "10.010").discountTooHigh).toBe(true);
+    expect(
+      computeReceipt([{ quantity: 1, unitPrice: "10.000", unitCost: "4.000" }], "0", "10.010").discountTooHigh,
+    ).toBe(true);
     expect(computeReceipt([], "2.000", "0").total).toBe("2.000");
   });
 });
 
 describe("order rules", () => {
   it("knows the reserving statuses and the flow position", () => {
-    expect(["new", "confirmed", "preparing", "courier", "delivered", "cancelled"].map((s) => isReserving(s as never))).toEqual([false, true, true, true, false, false]);
+    expect(
+      ["new", "confirmed", "preparing", "courier", "delivered", "cancelled"].map((s) => isReserving(s as never)),
+    ).toEqual([false, true, true, true, false, false]);
     expect(flowIndex("courier")).toBe(3);
     expect(flowIndex("cancelled")).toBe(-1);
   });

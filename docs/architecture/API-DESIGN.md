@@ -314,3 +314,25 @@ All endpoints need an onboarded business; another business's records return 404.
 - **Settlement** (D-141): every picked order must be delivered, COD and still due. Expected = Σ their remaining; 0 ≤ received ≤ expected. It writes, in one transaction: the settlement, its order lines, one COD payment per order covering its remaining (the order becomes `paid`), and, when the difference is > 0, one «توصيل» expense (`source: courier_settlement`). The orders are locked in id order, so two settlements of the same order cannot both pass. Reversal voids its payments and expense; the orders become courier-held again and can be settled anew.
 - A settlement's payment (`Payment.settlementId` / `OrderDetails.payments[].settlementId` set) cannot be reversed alone (409 `payment.from_settlement`), and its expense cannot be voided alone.
 - **Overview** (D-144): sales = Σ totals of orders delivered in the period; cogs = their items' cost; expenses include settlement differences; cash received = manual payments by `paidOn` + settlement received by `settledOn`; cash out = manual expenses; customer dues and courier-held are the current snapshot (§16 aging); expected sales = Σ totals of confirmed, preparing and courier orders.
+
+## 18. Phase 8 contracts: Returns & pre-orders (implemented, 2026-11-22)
+`POST orders/{id}/returns` requires an `Idempotency-Key` (D-112). Dates are business-local `yyyy-MM-dd`; times are `HH:mm`.
+
+| Method & path | Request | Success | Errors |
+|---|---|---|---|
+| POST `orders/{id}/returns` | `{ lines[{ orderItemId, quantity ≥1, restock }] (distinct), returnedOn, reason? ≤200, refund?{ amount, method } }` | 200 `OrderDetails` | 404 `order.not_found` · 409 `return.not_delivered` · 409 `return.quantity_too_high` · 409 `return.refund_out_of_range` (+ `minimum`, `maximum`) · 422 `return.invalid_date` (future or before delivery) · 422 `payment.method_not_allowed` |
+| GET `orders/preorders` | `from`/`to` (default: today + 13 days, ≤ 62 days) | 200 `[{ id, number, customerId, customerName, status, expectedDeliveryOn, expectedDeliveryTime, items[{ productName, variantLabel, quantity }], total }]`, open pre-orders only, by date and time | 422 |
+
+**Changes to existing contracts:**
+- `POST orders`, `PUT orders/{id}` and `PUT orders/{id}/details` accept `expectedDeliveryOn?` and `expectedDeliveryTime?` (`HH:mm`). A new or changed date must be today or later (422 `order.invalid_schedule`). Clearing the date makes it a normal order. A pre-order saved «جديد» may exceed available stock; confirming still needs it (D-151).
+- `GET orders` accepts `isPreOrder=true`. List rows gain `returnedAmount, expectedDeliveryOn, expectedDeliveryTime`; `remaining` and `paymentStatus` use the net total.
+- `OrderDetails` gains `returnedAmount, netTotal, isPartiallyReturned, canReturn, returns[{ id, returnedOn, amount, reason, refundAmount, refundMethod, recordedAt, lines[{ orderItemId, productName, variantLabel, quantity, restocked }] }], expectedDeliveryOn, expectedDeliveryTime`; each item gains `returnedQuantity`; each payment gains `kind` (`payment` \| `refund`; a refund's `amount` on the order is negative).
+- `Payment` (§16) gains `kind`. A refund cannot be reversed (409 `payment.from_return`).
+- `finance/overview` gains `returns` and `netSales`; `grossProfit` = net sales − COGS, COGS is net of restocked pieces, and `cashReceived` subtracts refunds.
+- Payments are accepted on returned orders too (only cancelled orders refuse them): a fully returned order may still owe its delivery fee.
+
+**Rules:**
+- **Returned value** (D-148): returned pieces × unit price − their share of the discount, rounded to 2 decimals on the cumulative value, so a full return removes exactly the discount. The delivery fee is never returned. Net total = total − returned value; remaining = net total − paid.
+- **Refund range**: minimum = what leaves no customer credit (paid − net total after the return), maximum = min(paid, this return's value). The refund is a «استرداد» payment (method recordable, never COD) dated `returnedOn`, with a negative allocation on the order.
+- **Status** (D-146): the order becomes `returned` only when every piece is back; until then it stays `delivered` with `isPartiallyReturned: true`. A return is final (D-150): no undo, and the status-log row of a full return is not undoable.
+- **Stock** (D-147): restocked lines write a `return` movement (on hand + qty, label «مرتجع #1001»); damaged lines change nothing.

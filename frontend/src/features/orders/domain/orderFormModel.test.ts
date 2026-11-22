@@ -30,9 +30,22 @@ describe("order form model", () => {
   });
 
   it("builds the body without totals and drops gift fields unless it is a gift", () => {
-    const form = { ...emptyOrderForm("c1", [lineFrom(dress, [])!]), fee: "2", discount: "1.5", recipientName: "سارة", note: "  " };
+    const form = {
+      ...emptyOrderForm("c1", [lineFrom(dress, [])!]),
+      fee: "2",
+      discount: "1.5",
+      recipientName: "سارة",
+      note: "  ",
+    };
     const body = orderBody(form, "instagram");
-    expect(body).toMatchObject({ channel: "instagram", deliveryFee: "2.000", discount: "1.500", recipientName: null, note: null, items: [{ variantId: "v-m", quantity: 1 }] });
+    expect(body).toMatchObject({
+      channel: "instagram",
+      deliveryFee: "2.000",
+      discount: "1.500",
+      recipientName: null,
+      note: null,
+      items: [{ variantId: "v-m", quantity: 1 }],
+    });
     expect(body).not.toHaveProperty("total");
     expect(orderBody({ ...form, isGift: true }, "instagram").recipientName).toBe("سارة");
   });

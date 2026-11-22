@@ -16,6 +16,7 @@ import { useOrder } from "../api/ordersApi";
 import { OrderDetailsDrawer } from "../components/OrderDetailsDrawer";
 import { OrderHero } from "../components/OrderHero";
 import { OrderTimeline } from "../components/OrderTimeline";
+import { ReturnDrawer } from "../components/ReturnDrawer";
 import { Initials, ItemThumb } from "../components/OrderBits";
 import { useCancelOrder } from "../components/useCancelOrder";
 import { useOrderMove } from "../components/useOrderMove";
@@ -30,6 +31,7 @@ export function OrderDetailsPage() {
   const { move, undoChange, movingId, undoing } = useOrderMove();
   const cancel = useCancelOrder();
   const [editingDetails, setEditingDetails] = useState(false);
+  const [returning, setReturning] = useState(false);
 
   if (order.error) {
     return (
@@ -45,12 +47,38 @@ export function OrderDetailsPage() {
 
   const next = o.nextStatus;
   const menuItems = [
-    ...(o.canEditItems ? [{ label: "تعديل الطلب", icon: "pencil" as const, danger: false, onSelect: () => navigate(`/orders/${o.id}/edit`) }] : []),
-    ...(o.canEditDetails ? [{ label: "تفاصيل التوصيل والهدية", icon: "map-pin" as const, danger: false, onSelect: () => setEditingDetails(true) }] : []),
+    ...(o.canEditItems
+      ? [
+          {
+            label: "تعديل الطلب",
+            icon: "pencil" as const,
+            danger: false,
+            onSelect: () => navigate(`/orders/${o.id}/edit`),
+          },
+        ]
+      : []),
+    ...(o.canEditDetails
+      ? [
+          {
+            label: "تفاصيل التوصيل والهدية",
+            icon: "map-pin" as const,
+            danger: false,
+            onSelect: () => setEditingDetails(true),
+          },
+        ]
+      : []),
     // Skipping steps (D-121): every allowed forward status other than the usual next one and cancel.
     ...o.allowedStatuses
       .filter((s) => s !== o.nextStatus && s !== "cancelled")
-      .map((s) => ({ label: `نقل مباشرة لـ «${STATUS[s].label}»`, icon: STATUS[s].icon, danger: false, onSelect: () => void move(o, s) })),
+      .map((s) => ({
+        label: `نقل مباشرة لـ «${STATUS[s].label}»`,
+        icon: STATUS[s].icon,
+        danger: false,
+        onSelect: () => void move(o, s),
+      })),
+    ...(o.canReturn
+      ? [{ label: "إرجاع", icon: "arrow-back-up" as const, danger: false, onSelect: () => setReturning(true) }]
+      : []),
     ...(o.allowedStatuses.includes("cancelled")
       ? [
           {
@@ -58,7 +86,10 @@ export function OrderDetailsPage() {
             icon: "x" as const,
             danger: true,
             // D-137: a paid order is cancelled only after its payments are reversed (refunds come with returns).
-            onSelect: () => (toFils(o.paid) > 0 ? toast("على الطلب دفعات. ألغِ الدفعات من بطاقة «الدفع» أول، بعدين ألغِ الطلب.", { type: "error" }) : void cancel(o)),
+            onSelect: () =>
+              toFils(o.paid) > 0
+                ? toast("على الطلب دفعات. ألغِ الدفعات من بطاقة «الدفع» أول، بعدين ألغِ الطلب.", { type: "error" })
+                : void cancel(o),
           },
         ]
       : []),
@@ -75,7 +106,13 @@ export function OrderDetailsPage() {
         actions={
           <>
             {o.undo && (
-              <Button variant="outline" icon="arrow-back-up" loading={undoing} onClick={() => void undoChange(o)} title="بترجع الحالة اللي قبل خلال 5 دقايق من التغيير">
+              <Button
+                variant="outline"
+                icon="arrow-back-up"
+                loading={undoing}
+                onClick={() => void undoChange(o)}
+                title="بترجع الحالة اللي قبل خلال 5 دقايق من التغيير"
+              >
                 تراجع عن «{STATUS[o.undo.from].label}»
               </Button>
             )}
@@ -89,7 +126,13 @@ export function OrderDetailsPage() {
                 )}
               >
                 {menuItems.map((item) => (
-                  <button key={item.label} type="button" role="menuitem" className={`menu__item${item.danger ? " menu__item--danger" : ""}`} onClick={item.onSelect}>
+                  <button
+                    key={item.label}
+                    type="button"
+                    role="menuitem"
+                    className={`menu__item${item.danger ? " menu__item--danger" : ""}`}
+                    onClick={item.onSelect}
+                  >
                     <Icon name={item.icon} /> {item.label}
                   </button>
                 ))}
@@ -114,7 +157,16 @@ export function OrderDetailsPage() {
               </div>
             </div>
             {o.items.map((item) => (
-              <Link key={item.id} className="line2" to={`/products/${item.productId}`} style={{ textDecoration: "none", color: "inherit", gridTemplateColumns: "56px minmax(0,1fr) auto auto" }}>
+              <Link
+                key={item.id}
+                className="line2"
+                to={`/products/${item.productId}`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  gridTemplateColumns: "56px minmax(0,1fr) auto auto",
+                }}
+              >
                 <span className="line2__art">
                   <ItemThumb imageUrl={item.imageUrl} size={56} />
                 </span>
@@ -125,6 +177,11 @@ export function OrderDetailsPage() {
                 </span>
                 <span className="caption">
                   × {item.quantity} · <Money value={item.unitPrice} />
+                  {item.returnedQuantity > 0 && (
+                    <span style={{ display: "block", color: "var(--lamma-brick-700)" }}>
+                      رجع {item.returnedQuantity}
+                    </span>
+                  )}
                 </span>
                 <Money value={item.lineTotal} />
               </Link>
@@ -147,6 +204,18 @@ export function OrderDetailsPage() {
               <b>المجموع</b>
               <Money value={o.total} />
             </div>
+            {toFils(o.returnedAmount) > 0 && (
+              <>
+                <div className="receipt__row">
+                  <span>مرتجع{o.isPartiallyReturned ? " جزئي" : ""}</span>
+                  <Money value={`-${o.returnedAmount}`} />
+                </div>
+                <div className="receipt__row">
+                  <b>الصافي</b>
+                  <Money value={o.netTotal} />
+                </div>
+              </>
+            )}
             <div className="receipt__profit">
               <span>
                 <Icon name="wallet" size={16} /> ربحك من الطلب
@@ -208,13 +277,25 @@ export function OrderDetailsPage() {
               <dt>المنطقة</dt>
               <dd>{placeLabel(o.customer.city, o.customer.area) || "—"}</dd>
             </dl>
-            <ButtonLink to={`/orders/new?customerId=${o.customer.id}`} variant="outline" size="sm" icon="plus" style={{ marginTop: 12 }}>
+            <ButtonLink
+              to={`/orders/new?customerId=${o.customer.id}`}
+              variant="outline"
+              size="sm"
+              icon="plus"
+              style={{ marginTop: 12 }}
+            >
               طلب جديد لنفس العميل
             </ButtonLink>
           </article>
         </div>
       </div>
-      <OrderDetailsDrawer order={o} open={editingDetails} onClose={() => setEditingDetails(false)} onSaved={() => toast("انحفظت تفاصيل الطلب")} />
+      {returning && <ReturnDrawer order={o} open={returning} onClose={() => setReturning(false)} />}
+      <OrderDetailsDrawer
+        order={o}
+        open={editingDetails}
+        onClose={() => setEditingDetails(false)}
+        onSaved={() => toast("انحفظت تفاصيل الطلب")}
+      />
     </>
   );
 }

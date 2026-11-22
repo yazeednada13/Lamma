@@ -1,6 +1,13 @@
 import { ApiError, errorMessage } from "@/services/api/apiClient";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
-import { useChangeOrderStatus, useRefreshOrders, useUndoOrderStatus, type CancelReason, type OrderDetails, type OrderStatus } from "../api/ordersApi";
+import {
+  useChangeOrderStatus,
+  useRefreshOrders,
+  useUndoOrderStatus,
+  type CancelReason,
+  type OrderDetails,
+  type OrderStatus,
+} from "../api/ordersApi";
 import { STATUS, statusMessage } from "../domain/orderDomain";
 
 /** How long the undo action stays in the toast; the server keeps the 5-minute window (D-122). */
@@ -38,9 +45,19 @@ export function useOrderMove() {
   };
 
   /** Throws nothing; returns the updated order, or null when the change failed (an error toast was shown). */
-  const move = async (target: MoveTarget, to: OrderStatus, cancel?: { reason: CancelReason; note: string | null }): Promise<OrderDetails | null> => {
+  const move = async (
+    target: MoveTarget,
+    to: OrderStatus,
+    cancel?: { reason: CancelReason; note: string | null },
+  ): Promise<OrderDetails | null> => {
     try {
-      const order = await change.mutateAsync({ id: target.id, to, expectedStatus: target.status, cancelReason: cancel?.reason, cancelNote: cancel?.note });
+      const order = await change.mutateAsync({
+        id: target.id,
+        to,
+        expectedStatus: target.status,
+        cancelReason: cancel?.reason,
+        cancelNote: cancel?.note,
+      });
       announce(order, to);
       return order;
     } catch (error) {
@@ -51,7 +68,10 @@ export function useOrderMove() {
 
   /** Toast for a change done elsewhere (e.g. the cancel dialog), with the same undo action. */
   const announce = (order: OrderDetails, to: OrderStatus) =>
-    toast(statusMessage(order.number, to), order.undo ? { action: "تراجع", onAction: () => void undoChange(order), durationMs: UNDO_TOAST_MS } : undefined);
+    toast(
+      statusMessage(order.number, to),
+      order.undo ? { action: "تراجع", onAction: () => void undoChange(order), durationMs: UNDO_TOAST_MS } : undefined,
+    );
 
   return {
     move,

@@ -47,7 +47,14 @@ function TimelineEntry({ entry, order }: { entry: OrderStatusChange; order: Orde
     delivered: "تم التوصيل · انخصم من المخزون وانحسبت المبيعة",
     cancelled: `انلغى الطلب${entry.cancelReason ? ` · ${cancelReasonLabel(entry.cancelReason)}` : ""}${entry.note ? `: ${entry.note}` : ""}`,
   };
-  const tone = entry.to === "delivered" ? "tone-green" : entry.to === "cancelled" ? "tone-brick" : entry.to === "courier" ? "tone-blue" : "tone-olive";
+  const tone =
+    entry.to === "delivered"
+      ? "tone-green"
+      : entry.to === "cancelled"
+        ? "tone-brick"
+        : entry.to === "courier"
+          ? "tone-blue"
+          : "tone-olive";
   return (
     <li className={tone}>
       <span className="feed__ic">
@@ -72,7 +79,7 @@ function PaymentEntry({ payment, reversal }: { payment: PaymentLine; reversal: b
       </span>
       <div>
         <b>
-          {reversal ? "انلغت دفعة " : "دفعة "}
+          {reversal ? "انلغت دفعة " : payment.kind === "refund" ? "استرداد " : "دفعة "}
           <Money value={payment.amount} />
         </b>
         <span>
@@ -85,16 +92,58 @@ function PaymentEntry({ payment, reversal }: { payment: PaymentLine; reversal: b
   );
 }
 
+type ReturnLine = OrderDetails["returns"][number];
+
+/** A return in the thread (D-146, D-147): pieces, value, and what went back to stock. */
+function ReturnEntry({ entry }: { entry: ReturnLine }) {
+  const pieces = entry.lines.reduce((n, l) => n + l.quantity, 0);
+  const restocked = entry.lines.filter((l) => l.restocked).reduce((n, l) => n + l.quantity, 0);
+  return (
+    <li className="tone-brick">
+      <span className="feed__ic">
+        <Icon name="arrow-back-up" size={16} />
+      </span>
+      <div>
+        <b>
+          مرتجع {pieces} قطعة · <Money value={entry.amount} />
+        </b>
+        <span>
+          {restocked > 0 ? `${restocked} رجعت للمخزون` : "ما رجع شي للمخزون"}
+          {pieces - restocked > 0 ? ` · ${pieces - restocked} تالفة` : ""}
+          {entry.reason ? ` · ${entry.reason}` : ""} · {orderDateTime(entry.recordedAt)}
+        </span>
+      </div>
+    </li>
+  );
+}
+
 type ThreadItem = { at: string; key: string; node: ReactNode };
 
 /** The order "thread" (prototype feed): the server's status log plus payments and reversals, in time order. */
 export function OrderTimeline({ order }: { order: OrderDetails }) {
   const items: ThreadItem[] = [
-    ...order.timeline.map((entry) => ({ at: entry.changedAt, key: entry.id, node: <TimelineEntry key={entry.id} entry={entry} order={order} /> })),
-    ...order.payments.map((p) => ({ at: p.recordedAt, key: `p-${p.paymentId}`, node: <PaymentEntry key={`p-${p.paymentId}`} payment={p} reversal={false} /> })),
+    ...order.timeline.map((entry) => ({
+      at: entry.changedAt,
+      key: entry.id,
+      node: <TimelineEntry key={entry.id} entry={entry} order={order} />,
+    })),
+    ...order.payments.map((p) => ({
+      at: p.recordedAt,
+      key: `p-${p.paymentId}`,
+      node: <PaymentEntry key={`p-${p.paymentId}`} payment={p} reversal={false} />,
+    })),
     ...order.payments
       .filter((p) => p.isReversed && p.reversedAt)
-      .map((p) => ({ at: p.reversedAt!, key: `r-${p.paymentId}`, node: <PaymentEntry key={`r-${p.paymentId}`} payment={p} reversal /> })),
+      .map((p) => ({
+        at: p.reversedAt!,
+        key: `r-${p.paymentId}`,
+        node: <PaymentEntry key={`r-${p.paymentId}`} payment={p} reversal />,
+      })),
+    ...order.returns.map((r) => ({
+      at: r.recordedAt,
+      key: `ret-${r.id}`,
+      node: <ReturnEntry key={`ret-${r.id}`} entry={r} />,
+    })),
   ].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
   return (
     <article className="card">
@@ -104,9 +153,7 @@ export function OrderTimeline({ order }: { order: OrderDetails }) {
           <h2>الخيط</h2>
         </div>
       </div>
-      <ul className="feed">
-        {items.map((item) => item.node)}
-      </ul>
+      <ul className="feed">{items.map((item) => item.node)}</ul>
     </article>
   );
 }

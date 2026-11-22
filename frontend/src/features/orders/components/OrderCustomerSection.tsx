@@ -30,7 +30,16 @@ interface Props {
 }
 
 /** Step 1: pick or quick-add the customer (search by name or number) and where the order came from. */
-export function OrderCustomerSection({ done, customer, locked, channels, channel, onChoose, onClear, onChannel }: Props) {
+export function OrderCustomerSection({
+  done,
+  customer,
+  locked,
+  channels,
+  channel,
+  onChoose,
+  onClear,
+  onChannel,
+}: Props) {
   const toast = useToast();
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
@@ -85,19 +94,35 @@ export function OrderCustomerSection({ done, customer, locked, channels, channel
         <>
           <span className="control">
             <Icon name="search" />
-            <input placeholder="اسم العميل أو رقمه" aria-label="دوّر على عميل" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input
+              placeholder="اسم العميل أو رقمه"
+              aria-label="دوّر على عميل"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </span>
           <div className="select-list" style={{ boxShadow: "none", marginTop: 8 }} role="listbox" aria-label="العملاء">
             {(options.data?.items ?? [])
               .filter((x) => !x.isArchived)
               .map((x) => (
-                <button key={x.id} type="button" role="option" aria-selected={false} className="select-list__item" onClick={() => choose(x)}>
+                <button
+                  key={x.id}
+                  type="button"
+                  role="option"
+                  aria-selected={false}
+                  className="select-list__item"
+                  onClick={() => choose(x)}
+                >
                   <span className="avatar avatar--sm">{initialsOf(x.name)}</span>
                   {x.name}
                   <span className="caption ltr end">{x.phone ? phoneDisplay(x.phone) : ""}</span>
                 </button>
               ))}
-            <button type="button" className="select-list__item select-list__item--create" onClick={() => setAdding(true)}>
+            <button
+              type="button"
+              className="select-list__item select-list__item--create"
+              onClick={() => setAdding(true)}
+            >
               <Icon name="plus" size={16} /> عميل جديد{search.trim() ? ` «${search.trim()}»` : ""}
             </button>
           </div>
@@ -105,7 +130,14 @@ export function OrderCustomerSection({ done, customer, locked, channels, channel
       )}
       <div className="row wrap" style={{ marginTop: 12, gap: 6 }} role="radiogroup" aria-label="من وين إجى الطلب">
         {channels.map((ch) => (
-          <button key={ch} type="button" role="radio" aria-checked={channel === ch} className={`chip${channel === ch ? " is-selected" : ""}`} onClick={() => onChannel(ch)}>
+          <button
+            key={ch}
+            type="button"
+            role="radio"
+            aria-checked={channel === ch}
+            className={`chip${channel === ch ? " is-selected" : ""}`}
+            onClick={() => onChannel(ch)}
+          >
             <Icon name={channelIcon[ch]} size={16} /> {channelLabel[ch]}
           </button>
         ))}

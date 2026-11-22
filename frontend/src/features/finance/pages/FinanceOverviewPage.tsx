@@ -113,9 +113,9 @@ export function FinanceOverviewPage() {
         </div>
         <div className="flowsteps">
           <div className="fstep" style={{ ["--i" as string]: 0 }}>
-            <span>المبيعات</span>
+            <span>{toFils(m.returns) > 0 ? "المبيعات بعد المرتجعات" : "المبيعات"}</span>
             <b>
-              <bdi>{formatMoneyNumber(m.sales)}</bdi>
+              <bdi>{formatMoneyNumber(m.netSales)}</bdi>
             </b>
           </div>
           <div className="fstep minus" style={{ ["--i" as string]: 1 }}>
@@ -143,9 +143,13 @@ export function FinanceOverviewPage() {
           icon="cash"
           tone="olive"
           label="المبيعات"
-          value={formatMoneyNumber(m.sales)}
+          value={formatMoneyNumber(m.netSales)}
           unit="د.أ"
-          foot={`متوقع كمان ${formatMoneyNumber(m.expectedSales)} د.أ من طلبات لسا ما توصّلت`}
+          foot={
+            toFils(m.returns) > 0
+              ? `${formatMoneyNumber(m.sales)} مبيعات − ${formatMoneyNumber(m.returns)} مرتجعات`
+              : `متوقع كمان ${formatMoneyNumber(m.expectedSales)} د.أ من طلبات لسا ما توصّلت`
+          }
         />
         <MetricCard
           icon="wallet"

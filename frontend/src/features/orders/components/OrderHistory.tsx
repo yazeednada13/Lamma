@@ -8,7 +8,13 @@ import { OrderCard } from "./OrderBits";
 
 const SHOWN = 6;
 
-function HistoryGrid({ params, empty }: { params: { customerId?: string; productId?: string }; empty: { title: string; text: string } }) {
+function HistoryGrid({
+  params,
+  empty,
+}: {
+  params: { customerId?: string; productId?: string };
+  empty: { title: string; text: string };
+}) {
   const list = useOrders({ ...params, pageSize: SHOWN });
   if (list.error) return <FormAlert>{errorMessage(list.error)}</FormAlert>;
   if (!list.data) return <Skeleton height={120} />;
@@ -35,7 +41,10 @@ export function CustomerOrdersSection({ customerId, orderCount }: { customerId: 
           طلب جديد
         </ButtonLink>
       </div>
-      <HistoryGrid params={{ customerId }} empty={{ title: "لسا ما في طلبات", text: "بتظهر طلبات العميل هون من أول طلب." }} />
+      <HistoryGrid
+        params={{ customerId }}
+        empty={{ title: "لسا ما في طلبات", text: "بتظهر طلبات العميل هون من أول طلب." }}
+      />
     </section>
   );
 }
@@ -53,7 +62,10 @@ export function ProductOrdersSection({ productId, sold }: { productId: string; s
           طلب جديد
         </ButtonLink>
       </div>
-      <HistoryGrid params={{ productId }} empty={{ title: "لسا ما انطلب", text: "بتظهر الطلبات اللي فيها المنتج هون." }} />
+      <HistoryGrid
+        params={{ productId }}
+        empty={{ title: "لسا ما انطلب", text: "بتظهر الطلبات اللي فيها المنتج هون." }}
+      />
     </article>
   );
 }

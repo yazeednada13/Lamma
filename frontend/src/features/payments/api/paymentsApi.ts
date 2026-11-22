@@ -35,6 +35,8 @@ export interface Payment {
   allocations: { orderId: string; orderNumber: number; amount: MoneyString }[];
   /** Set for a payment from a courier settlement (D-141): reversed only with its settlement. */
   settlementId: string | null;
+  /** payment | refund (D-148). */
+  kind: "payment" | "refund";
 }
 
 export interface OrderPaymentSummary {
@@ -111,18 +113,33 @@ export const paymentKeys = {
 };
 
 function qs(params: object): string {
-  const s = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined && v !== "").map(([k, v]) => [k, String(v)]));
+  const s = new URLSearchParams(
+    Object.entries(params)
+      .filter(([, v]) => v !== undefined && v !== "")
+      .map(([k, v]) => [k, String(v)]),
+  );
   const text = s.toString();
   return text ? `?${text}` : "";
 }
 
 export const usePayments = (p: PaymentListParams, enabled = true) =>
-  useQuery({ queryKey: paymentKeys.list(p), queryFn: () => api.get<Paged<Payment>>(`/payments${qs(p)}`), placeholderData: keepPreviousData, enabled });
+  useQuery({
+    queryKey: paymentKeys.list(p),
+    queryFn: () => api.get<Paged<Payment>>(`/payments${qs(p)}`),
+    placeholderData: keepPreviousData,
+    enabled,
+  });
 
 export const useReceivables = (p: ReceivableListParams, enabled = true) =>
-  useQuery({ queryKey: paymentKeys.receivables(p), queryFn: () => api.get<Paged<Receivable>>(`/finance/receivables${qs(p)}`), placeholderData: keepPreviousData, enabled });
+  useQuery({
+    queryKey: paymentKeys.receivables(p),
+    queryFn: () => api.get<Paged<Receivable>>(`/finance/receivables${qs(p)}`),
+    placeholderData: keepPreviousData,
+    enabled,
+  });
 
-export const useReceivablesAging = () => useQuery({ queryKey: paymentKeys.aging, queryFn: () => api.get<ReceivablesAging>("/finance/receivables/aging") });
+export const useReceivablesAging = () =>
+  useQuery({ queryKey: paymentKeys.aging, queryFn: () => api.get<ReceivablesAging>("/finance/receivables/aging") });
 
 /** A payment changes order, customer and receivable figures: refresh all of them (keys by prefix, no imports). */
 function invalidateAfterPayment(queryClient: QueryClient) {

@@ -37,7 +37,13 @@ function CancelReasonPicker({ onChange }: { onChange: (choice: Choice) => void }
         ))}
       </div>
       {choice.reason === "other" && (
-        <TextField label="السبب" maxLength={CANCEL_NOTE_MAX} value={choice.note} onChange={(e) => update({ ...choice, note: e.target.value })} autoFocus />
+        <TextField
+          label="السبب"
+          maxLength={CANCEL_NOTE_MAX}
+          value={choice.note}
+          onChange={(e) => update({ ...choice, note: e.target.value })}
+          autoFocus
+        />
       )}
     </>
   );
@@ -55,7 +61,9 @@ export function useCancelOrder() {
       tone: "danger",
       icon: "x",
       title: `إلغاء الطلب #${order.number}؟`,
-      message: isReserving(order.status) ? "القطع المحجوزة رح ترجع للمتوفر تلقائيًا." : "الطلب ما حجز قطع، فالمخزون ما بيتأثر.",
+      message: isReserving(order.status)
+        ? "القطع المحجوزة رح ترجع للمتوفر تلقائيًا."
+        : "الطلب ما حجز قطع، فالمخزون ما بيتأثر.",
       content: <CancelReasonPicker onChange={(c) => (choice.current = c)} />,
       confirmLabel: "إلغاء الطلب",
       cancelLabel: "رجوع",
@@ -63,7 +71,13 @@ export function useCancelOrder() {
         const { reason, note } = choice.current;
         const problem = cancelProblem(reason, note);
         if (problem) throw new ApiError(422, "validation.failed", problem);
-        outcome.order = await changeAsync({ id: order.id, to: "cancelled", expectedStatus: order.status, cancelReason: reason, cancelNote: note.trim() || null });
+        outcome.order = await changeAsync({
+          id: order.id,
+          to: "cancelled",
+          expectedStatus: order.status,
+          cancelReason: reason,
+          cancelNote: note.trim() || null,
+        });
       },
     });
     if (confirmed && outcome.order) announce(outcome.order, "cancelled");
