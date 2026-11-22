@@ -336,3 +336,32 @@ All endpoints need an onboarded business; another business's records return 404.
 - **Refund range**: minimum = what leaves no customer credit (paid − net total after the return), maximum = min(paid, this return's value). The refund is a «استرداد» payment (method recordable, never COD) dated `returnedOn`, with a negative allocation on the order.
 - **Status** (D-146): the order becomes `returned` only when every piece is back; until then it stays `delivered` with `isPartiallyReturned: true`. A return is final (D-150): no undo, and the status-log row of a full return is not undoable.
 - **Stock** (D-147): restocked lines write a `return` movement (on hand + qty, label «مرتجع #1001»); damaged lines change nothing.
+
+## 19. Phase 9 contracts: Dashboard (implemented, 2026-11-22)
+| Method & path | Success |
+|---|---|
+| GET `dashboard` | 200 `Dashboard` (below) |
+| GET `dashboard/indicators` | 200 `{ newOrders, lowStock, hasDues }` (sidebar counters, D-158) |
+
+**`Dashboard`:** `today, monthStart, netProfit{ current, previous, change }, sales{ current, previous, change }, grossProfit, cashReceived, receivables, courierHeld, openOrders, openValue, journey{ products, lowStock, newOrders, preparing, courier, deliveredThisMonth, activeCustomers }, series[14]{ day, sales, grossProfit }, attention[]{ kind, priority, count, amount, refId, name, orderNumber, since, available, threshold }, channels[]{ channel, amount }, topProducts[4]{ productId, name, quantity, revenue }, latestOrders[4]{ id, number, customerName, status, total, createdAt }, activity[5]{ kind, at, name, number, amount, type, quantity, label }, insight{ topChannel, topChannelShare, topProduct, bestWeekday (0 = Sunday) }, trialDaysLeft, isEmpty`.
+
+**Formula per figure** (business-local dates, Asia/Amman, D-124):
+
+| Figure | Formula |
+|---|---|
+| `netProfit.current` | Finance overview (§17) net profit for **month start … today**: net sales − COGS (net of restocked returns) − active expenses (D-144, D-149) |
+| `netProfit.previous` | The same for **the same days of last month**: day 1 … today's day, capped at last month's end (D-153) |
+| `change` | (current − previous) ÷ \|previous\| × 100, rounded to 1 decimal; `null` when previous = 0 |
+| `sales` | Net sales (sales − returns) for the same two spans |
+| `grossProfit`, `cashReceived` | Finance overview, month to date |
+| `receivables`, `courierHeld` | Current snapshot (§16 aging) |
+| `openOrders`, `openValue` | Count and Σ total of orders that are new, confirmed, preparing or with the courier |
+| `journey` | Open orders by stage now: `newOrders` = new, `preparing` = confirmed + preparing, `courier`; `products` = active products, `lowStock` = those with available ≤ threshold (out of stock included); `deliveredThisMonth` = orders delivered since month start (returned ones included); `activeCustomers` = distinct customers with a non-cancelled order created this month (D-154) |
+| `series` | 14 days ending today, by delivery date: sales = Σ totals delivered that day − returns booked that day; grossProfit = sales − (items cost − restocked cost) that day |
+| `attention` | In order (D-157): `prepare` (confirmed + preparing count, oldest order), `confirm` (new count), up to two `low_stock` items (lowest available first; out of stock = high priority), `courier` (courier-held amount and count), `due` (the customer with the largest balance) |
+| `channels`, `topProducts` | Orders delivered this month: Σ total by channel; Σ quantity and Σ line totals by product (top 4 by revenue) |
+| `activity` | The latest 5 of: orders created, stock receipts / adjustments / returns, manual expenses |
+| `insight` | Top channel and its share of this month's delivered sales, top product, and the weekday with the most delivered sales over the last 90 days (rule-based, no AI) |
+| `isEmpty` | No products and no orders: the UI shows the getting-started checklist |
+
+**Performance (9.A3):** on 500 orders (half delivered) the dashboard answers in a median of **138 ms** and the indicators in about 115 ms (LocalDB, test host). The first version took 866 ms because the channel and top-product aggregations ran twice; they are now computed once. No new index was needed. The measurement is the opt-in test `DashboardPerfTests` (`LAMMA_PERF=1`).

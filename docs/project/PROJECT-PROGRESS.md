@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 8: Returns & pre-orders, closed (merged into `develop`)** |
-| Current gate | **Gate 8: Next phase.** Waiting for the founder's `Next Phase` to start Phase 9 (Dashboard) planning |
+| Current phase | **Phase 9: Dashboard** (branch `feature/phase9-dashboard`) |
+| Current gate | **Gate 4: Backend checkpoint.** 9.A1–9.A5 implemented and verified; **no migration**; waiting for the founder to push the backend ([PHASE-9-PLAN.md](../roadmap/PHASE-9-PLAN.md)) |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22) |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Create the Phase 9 branch from the latest `develop`, commit these doc updates, and write `Next Phase` |
+| Next expected founder action | Commit and push the backend, then write `Frontend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -35,7 +35,7 @@
 | 6 Payments & receivables | **Merged into develop (founder-reported 2026-11-21)** |
 | 7 Courier & expenses | **Merged into develop (founder-reported 2026-11-21)** |
 | 8 Returns & pre-orders | **Merged into develop (founder-reported 2026-11-22)** |
-| 9 Dashboard | Pending |
+| 9 Dashboard | **Backend done (2026-11-22); at gate 4** |
 | 10 Reports | Pending |
 | 11 Subscription (display) | Pending |
 | 12 Hardening & launch | Pending |
@@ -91,6 +91,8 @@
 | 2026-11-21 | Phase 7 frontend: `vitest run` | **108 passed, 0 failed** (30 files; 6 new finance logic tests; 1 settings assertion flipped from «no expense section until Phase 7» to «present») |
 | 2026-11-22 | Phase 8 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106; separate output folder because the founder's API was running) | 0 warnings; **405 passed, 0 failed** (Domain 220, Application 58, Infrastructure 19, Architecture 8, API integration 100; 12 new) |
 | 2026-11-22 | Phase 8 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build`, `vitest run` | all clean; 0 violations, 0 cycles; **113 passed, 0 failed** (31 files; 5 new logic tests: return math like the server, calendar cells, 30% deposit); JS 784 kB (228 kB gzip) |
+| 2026-11-22 | Phase 9 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106) | 0 warnings; **416 passed, 0 failed** (Domain 220, Application 66, Infrastructure 19, Architecture 8, API integration 103; 11 new incl. the opt-in perf test) |
+| 2026-11-22 | Phase 9 dashboard performance (500 orders, LocalDB) | median 866 ms → **138 ms** after computing channels and top products once; indicators ~115 ms; no index needed |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -150,3 +152,5 @@
 | 2026-11-22 | Phase 8 checklist (19 cases) run by Claude on the real API (founder request, throwaway business «متجر فحص 8»): all passed. Two fixes found and applied: the order payment card now uses the net total after a return (it showed the original total and a 69% ring); a fully returned order still owing its delivery fee can record a payment (the card had marked it closed). 768px not measured |
 | 2026-11-22 | Founder asked for the Phase 8 PR; at gate 7 |
 | 2026-11-22 | Founder merged the Phase 8 PR into `develop`; Phase 8 closed, at gate 8 |
+| 2026-11-22 | `Next Phase` given; Phase 9 plan approved (D-153–D-158; OQ-080, OQ-082, OQ-083 resolved); waiting at gate 3 |
+| 2026-11-22 | Phase 9 Backend 9.A1–9.A5 implemented and verified (no migration); waiting at gate 4 |

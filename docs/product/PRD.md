@@ -58,14 +58,14 @@
 ### M2 — Dashboard (all figures computed from records)
 | Req | Status |
 |---|---|
-| Today's order journey (count per lifecycle stage) | [A]; [O] definition (OQ-080) |
+| Today's order journey (count per lifecycle stage) | [A]; open orders by stage now (D-154) |
 | Profit for the period plus % change versus the previous period; daily sales chart over 7 or 30 days | [A] |
 | Cards: Sales, Open orders, Cash received, Receivables | [A] |
 | Needs attention: new orders, low-stock products, customers who owe money, money held by the courier | [A] |
 | Sales by channel, top-selling products, recent activity | [A] |
 | Trial banner with days remaining; new-user empty state with getting-started steps | [A] |
 | Sidebar indicators: new-order count, low-stock count, an owed-money dot | [A] |
-| Notifications bell and Ctrl K palette (prototype only) | [O] (OQ-082, OQ-083) |
+| Notifications bell and Ctrl K palette (prototype only) | [X] not in V1 (D-155, D-156) |
 
 ### M3 — Orders
 | Req | Status |

@@ -446,7 +446,7 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 5. `Frontend` started | ☑ | 2026-11-22 | 8.B1–8.B5 implemented; automated checks pass |
 | 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-22 | 19-case checklist run on the real API |
 | 7. PR merged into `develop` (founder) | ☑ | 2026-11-22 | Founder-reported |
-| 8. `Next Phase` given | ☐ | | |
+| 8. `Next Phase` given | ☑ | 2026-11-22 | |
 
 **Draft task tables (Phase 0, superseded by the approved plan):**
 
@@ -468,7 +468,23 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 ---
 
 ## Phase 9 — Dashboard
-**Depends on:** 3–8. **Blocking:** OQ-080, OQ-082, OQ-083.
+**Depends on:** 3–8. **Blocking:** none (OQ-080, OQ-082, OQ-083 resolved as D-153–D-156; D-157, D-158 added).
+
+**Approved plan (2026-11-22):** [`PHASE-9-PLAN.md`](PHASE-9-PLAN.md), tasks 9.A1–9.A5 and 9.B1–9.B3, decisions D-153–D-158, verification per D-106. It supersedes the draft tables below.
+
+### Phase 9 gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-22 | `feature/phase9-dashboard` |
+| 2. Plan approved | ☑ | 2026-11-22 | D-153–D-158 |
+| 3. `Backend` started | ☑ | 2026-11-22 | 9.A1–9.A5 implemented and verified; no migration |
+| 4. Backend pushed (founder confirmed) | ☐ | | no migration expected |
+| 5. `Frontend` started | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
+
+**Draft task tables (Phase 0, superseded by the approved plan):**
 
 | ID | Backend task | Acceptance / tests |
 |---|---|---|
