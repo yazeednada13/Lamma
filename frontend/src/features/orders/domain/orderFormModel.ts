@@ -32,23 +32,54 @@ export interface OrderFormState {
   depositAmount: string;
   /** Null = the default (the expected method when it can be recorded, else the first recordable one). */
   depositMethod: PaymentMethodCode | null;
+  /** «طلب مسبق» (D-151): expected delivery date (YYYY-MM-DD) and optional time (HH:mm). */
+  isPreOrder: boolean;
+  expectedOn: string;
+  expectedTime: string;
 }
 
 export const newLineKey = (): string => crypto.randomUUID();
 
 export function emptyOrderForm(customerId: string | null, lines: Line[] = []): OrderFormState {
-  return { customerId, channel: null, lines, fee: "0", discount: "0", address: "", isGift: false, recipientName: "", recipientPhone: "", giftMessage: "", paymentMethod: null, note: "", depositAmount: "", depositMethod: null };
+  return {
+    customerId,
+    channel: null,
+    lines,
+    fee: "0",
+    discount: "0",
+    address: "",
+    isGift: false,
+    recipientName: "",
+    recipientPhone: "",
+    giftMessage: "",
+    paymentMethod: null,
+    note: "",
+    depositAmount: "",
+    depositMethod: null,
+    isPreOrder: false,
+    expectedOn: "",
+    expectedTime: "",
+  };
 }
 
-/** A new line for a product: its first active variant with stock that is not already on another line. */
-export function lineFrom(product: ProductWithVariants, takenVariantIds: readonly string[]): Line | null {
+/**
+ * A new line for a product: its first active variant with stock that is not already on another line. A pre-order
+ * (D-151) may also take a variant without stock.
+ */
+export function lineFrom(
+  product: ProductWithVariants,
+  takenVariantIds: readonly string[],
+  allowOutOfStock = false,
+): Line | null {
   const active = product.variants.filter((v) => !v.isArchived);
-  const variant = active.find((v) => v.available > 0 && !takenVariantIds.includes(v.id));
+  const free = active.filter((v) => !takenVariantIds.includes(v.id));
+  const variant = free.find((v) => v.available > 0) ?? (allowOutOfStock ? free[0] : undefined);
   if (!variant) return null;
   return { key: newLineKey(), product, variants: active, variantId: variant.id, quantity: 1 };
 }
 
-export const lineVariant = (line: Line): ProductVariantOption => line.variants.find((v) => v.id === line.variantId) ?? line.variants[0]!;
+export const lineVariant = (line: Line): ProductVariantOption =>
+  line.variants.find((v) => v.id === line.variantId) ?? line.variants[0]!;
 
 export const linePrice = (line: Line): MoneyString => line.unitPrice ?? lineVariant(line).price;
 
@@ -60,7 +91,14 @@ export function formFromOrder(o: OrderDetails, products: ReadonlyMap<string, Pro
     lines: o.items.map((item) => {
       const product = products.get(item.productId)!;
       const variants = product.variants.filter((v) => !v.isArchived || v.id === item.variantId);
-      return { key: newLineKey(), product, variants, variantId: item.variantId, quantity: item.quantity, unitPrice: item.unitPrice };
+      return {
+        key: newLineKey(),
+        product,
+        variants,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+      };
     }),
     fee: o.deliveryFee,
     discount: o.discount,
@@ -73,6 +111,9 @@ export function formFromOrder(o: OrderDetails, products: ReadonlyMap<string, Pro
     note: o.note ?? "",
     depositAmount: "",
     depositMethod: null,
+    isPreOrder: o.expectedDeliveryOn !== null,
+    expectedOn: o.expectedDeliveryOn ?? "",
+    expectedTime: o.expectedDeliveryTime ?? "",
   };
 }
 
@@ -81,7 +122,11 @@ export function orderBody(form: OrderFormState, channel: SalesChannelCode): Orde
   const text = (v: string) => v.trim() || null;
   return {
     channel,
-    items: form.lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity, ...(l.unitPrice ? { unitPrice: l.unitPrice } : {}) })),
+    items: form.lines.map((l) => ({
+      variantId: l.variantId,
+      quantity: l.quantity,
+      ...(l.unitPrice ? { unitPrice: l.unitPrice } : {}),
+    })),
     deliveryFee: parseMoneyInput(form.fee) ?? "0.000",
     discount: parseMoneyInput(form.discount) ?? "0.000",
     paymentMethod: form.paymentMethod,
@@ -91,5 +136,7 @@ export function orderBody(form: OrderFormState, channel: SalesChannelCode): Orde
     recipientPhone: form.isGift ? text(form.recipientPhone) : null,
     giftMessage: form.isGift ? text(form.giftMessage) : null,
     note: text(form.note),
+    expectedDeliveryOn: form.isPreOrder ? form.expectedOn || null : null,
+    expectedDeliveryTime: form.isPreOrder && form.expectedOn ? form.expectedTime || null : null,
   };
 }

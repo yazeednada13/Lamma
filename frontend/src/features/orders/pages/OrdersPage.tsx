@@ -80,11 +80,17 @@ export function OrdersPage() {
         }
       />
       {counts.error || list.error || all.error ? (
-        <ErrorState message={errorMessage(counts.error ?? list.error ?? all.error)} onRetry={() => void Promise.all([counts.refetch(), list.refetch(), all.refetch()])} />
+        <ErrorState
+          message={errorMessage(counts.error ?? list.error ?? all.error)}
+          onRetry={() => void Promise.all([counts.refetch(), list.refetch(), all.refetch()])}
+        />
       ) : !c || !list.data || !total ? (
         <PageSkeleton />
       ) : total.all === 0 ? (
-        <EmptyState title="لسا ما في طلبات" text="سجّل أول طلب من رسالة واتساب أو إنستغرام، ولمّة بتحجز القطع وبتتابع حالته.">
+        <EmptyState
+          title="لسا ما في طلبات"
+          text="سجّل أول طلب من رسالة واتساب أو إنستغرام، ولمّة بتحجز القطع وبتتابع حالته."
+        >
           <ButtonLink to="/orders/new" icon="plus">
             سجّل أول طلب
           </ButtonLink>
@@ -92,16 +98,51 @@ export function OrdersPage() {
       ) : (
         <>
           <div className="grid g-3">
-            <MetricCard icon="receipt" tone="blue" label="جديدة (لسا ما تأكدت)" value={total.new} foot="بدها تأكيد مع الزبون" />
-            <MetricCard icon="gift" tone="apricot" label="بالتجهيز" value={total.confirmed + total.preparing} foot="مؤكدة وقطعها محجوزة" to="/orders/board" />
-            <MetricCard icon="truck" tone="olive" label="مع المندوب" value={total.courier} foot={`${total.delivered} توصّلت لهلّق`} />
+            <MetricCard
+              icon="receipt"
+              tone="blue"
+              label="جديدة (لسا ما تأكدت)"
+              value={total.new}
+              foot="بدها تأكيد مع الزبون"
+            />
+            <MetricCard
+              icon="gift"
+              tone="apricot"
+              label="بالتجهيز"
+              value={total.confirmed + total.preparing}
+              foot="مؤكدة وقطعها محجوزة"
+              to="/orders/board"
+            />
+            <MetricCard
+              icon="truck"
+              tone="olive"
+              label="مع المندوب"
+              value={total.courier}
+              foot={`${total.delivered} توصّلت لهلّق`}
+            />
           </div>
           <div className="srail" role="group" aria-label="الحالات">
-            <button type="button" className={`sopt sopt--all${!status ? " is-active" : ""}`} onClick={() => { setStatus(undefined); setPage(1); }}>
-              <i />الكل <b>{c.all}</b>
+            <button
+              type="button"
+              className={`sopt sopt--all${!status ? " is-active" : ""}`}
+              onClick={() => {
+                setStatus(undefined);
+                setPage(1);
+              }}
+            >
+              <i />
+              الكل <b>{c.all}</b>
             </button>
             {STATUSES.map((s) => (
-              <button key={s} type="button" className={`sopt st-${s}${status === s ? " is-active" : ""}`} onClick={() => { setStatus(s); setPage(1); }}>
+              <button
+                key={s}
+                type="button"
+                className={`sopt st-${s}${status === s ? " is-active" : ""}`}
+                onClick={() => {
+                  setStatus(s);
+                  setPage(1);
+                }}
+              >
                 <i />
                 {STATUS[s].label} <b>{c[s]}</b>
               </button>
@@ -111,20 +152,44 @@ export function OrdersPage() {
             <div className="toolbar">
               <span className="control control--search" style={{ height: 40, width: "min(300px, 100%)" }}>
                 <Icon name="search" />
-                <input placeholder="رقم الطلب أو اسم العميل أو رقمه" aria-label="ابحث عن طلب" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+                <input
+                  placeholder="رقم الطلب أو اسم العميل أو رقمه"
+                  aria-label="ابحث عن طلب"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
               </span>
               <div className="row wrap" style={{ gap: 6 }} role="group" aria-label="الفترة">
                 {DATE_PRESETS.map((p) => (
-                  <Chip key={p.code} selected={preset === p.code} onClick={() => { setPreset(p.code); setPage(1); }}>
+                  <Chip
+                    key={p.code}
+                    selected={preset === p.code}
+                    onClick={() => {
+                      setPreset(p.code);
+                      setPage(1);
+                    }}
+                  >
                     {p.code === "all" && <Icon name="calendar" size={16} />} {p.label}
                   </Chip>
                 ))}
               </div>
               <div className="vtoggle end" role="group" aria-label="طريقة العرض">
-                <button type="button" className={view === "table" ? "is-active" : ""} aria-label="جدول" aria-pressed={view === "table"} onClick={() => chooseView("table")}>
+                <button
+                  type="button"
+                  className={view === "table" ? "is-active" : ""}
+                  aria-label="جدول"
+                  aria-pressed={view === "table"}
+                  onClick={() => chooseView("table")}
+                >
                   <Icon name="list" size={16} />
                 </button>
-                <button type="button" className={view === "cards" ? "is-active" : ""} aria-label="ملصقات" aria-pressed={view === "cards"} onClick={() => chooseView("cards")}>
+                <button
+                  type="button"
+                  className={view === "cards" ? "is-active" : ""}
+                  aria-label="ملصقات"
+                  aria-pressed={view === "cards"}
+                  onClick={() => chooseView("cards")}
+                >
                   <Icon name="layout-grid" size={16} />
                 </button>
               </div>

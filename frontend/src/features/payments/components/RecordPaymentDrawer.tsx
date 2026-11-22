@@ -10,8 +10,23 @@ import { Icon } from "@/shared/ui/Icon";
 import { Money } from "@/shared/ui/Money";
 import { Drawer } from "@/shared/ui/overlay/Drawer";
 import { useToast } from "@/shared/ui/toast/ToastProvider";
-import { useReceivables, useRecordCustomerPayment, useRecordOrderPayment, useReversePayment, type PaymentResult, type PaymentStatus } from "../api/paymentsApi";
-import { ageLabel, amountInput, bucketInfo, businessToday, checkAmount, defaultMethod, recordableMethods } from "../domain/paymentDomain";
+import {
+  useReceivables,
+  useRecordCustomerPayment,
+  useRecordOrderPayment,
+  useReversePayment,
+  type PaymentResult,
+  type PaymentStatus,
+} from "../api/paymentsApi";
+import {
+  ageLabel,
+  amountInput,
+  bucketInfo,
+  businessToday,
+  checkAmount,
+  defaultMethod,
+  recordableMethods,
+} from "../domain/paymentDomain";
 import { PaymentBadge } from "./PaymentBadge";
 
 /** What the drawer records against: one order, a customer (FIFO, D-131), or a receivable picked inside the drawer. */
@@ -46,7 +61,17 @@ const initials = (name: string) =>
  * never COD), date (today, back-dating allowed) and a note. The success toast offers «تراجع» (a reversal, D-136).
  * Keep it mounted with the page: the toast's undo uses its mutation after the drawer closes.
  */
-export function RecordPaymentDrawer({ open, target, onClose, onDone }: { open: boolean; target: PaymentTarget | null; onClose: () => void; onDone?: (result: PaymentResult) => void }) {
+export function RecordPaymentDrawer({
+  open,
+  target,
+  onClose,
+  onDone,
+}: {
+  open: boolean;
+  target: PaymentTarget | null;
+  onClose: () => void;
+  onDone?: (result: PaymentResult) => void;
+}) {
   const reverse = useReversePayment();
   const toast = useToast();
 
@@ -80,13 +105,28 @@ export function RecordPaymentDrawer({ open, target, onClose, onDone }: { open: b
   );
 }
 
-function PaymentDrawerBody({ initial, onSaved, onClose }: { initial: PaymentTarget; onSaved: (r: PaymentResult) => void; onClose: () => void }) {
+function PaymentDrawerBody({
+  initial,
+  onSaved,
+  onClose,
+}: {
+  initial: PaymentTarget;
+  onSaved: (r: PaymentResult) => void;
+  onClose: () => void;
+}) {
   const [target, setTarget] = useState<PaymentTarget>(initial);
   if (target.kind === "pick") {
     return <ReceivablePicker onPick={(t) => setTarget(t)} onClose={onClose} />;
   }
 
-  return <PaymentForm target={target} onSaved={onSaved} onClose={onClose} onBack={initial.kind === "pick" ? () => setTarget(initial) : undefined} />;
+  return (
+    <PaymentForm
+      target={target}
+      onSaved={onSaved}
+      onClose={onClose}
+      onBack={initial.kind === "pick" ? () => setTarget(initial) : undefined}
+    />
+  );
 }
 
 /** Pick mode (global «دفعة»): search the receivables, oldest first, and choose one. */
@@ -96,7 +136,14 @@ function ReceivablePicker({ onPick, onClose }: { onPick: (t: PaymentTarget) => v
   const items = list.data?.items ?? [];
   return (
     <>
-      <TextField label="مين بدّه يدفع؟" icon="search" placeholder="اسم العميل، رقمه أو رقم الطلب" value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
+      <TextField
+        label="مين بدّه يدفع؟"
+        icon="search"
+        placeholder="اسم العميل، رقمه أو رقم الطلب"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        autoFocus
+      />
       {list.error && <FormAlert>{errorMessage(list.error)}</FormAlert>}
       {list.data && items.length === 0 && (
         <p className="muted" style={{ marginTop: 12 }}>
@@ -110,7 +157,16 @@ function ReceivablePicker({ onPick, onClose }: { onPick: (t: PaymentTarget) => v
             type="button"
             className="selcust"
             style={{ textAlign: "start", width: "100%", cursor: "pointer" }}
-            onClick={() => onPick({ kind: "order", orderId: r.orderId, number: r.number, customerName: r.customerName, remaining: r.remaining, paymentStatus: r.paymentStatus })}
+            onClick={() =>
+              onPick({
+                kind: "order",
+                orderId: r.orderId,
+                number: r.number,
+                customerName: r.customerName,
+                remaining: r.remaining,
+                paymentStatus: r.paymentStatus,
+              })
+            }
           >
             <span className="avatar">{initials(r.customerName)}</span>
             <span className="grow">
@@ -134,7 +190,17 @@ function ReceivablePicker({ onPick, onClose }: { onPick: (t: PaymentTarget) => v
   );
 }
 
-function PaymentForm({ target, onSaved, onClose, onBack }: { target: Exclude<PaymentTarget, { kind: "pick" }>; onSaved: (r: PaymentResult) => void; onClose: () => void; onBack?: () => void }) {
+function PaymentForm({
+  target,
+  onSaved,
+  onClose,
+  onBack,
+}: {
+  target: Exclude<PaymentTarget, { kind: "pick" }>;
+  onSaved: (r: PaymentResult) => void;
+  onClose: () => void;
+  onBack?: () => void;
+}) {
   const settings = usePaymentMethodSettings();
   const payOrder = useRecordOrderPayment();
   const payCustomer = useRecordCustomerPayment();
@@ -151,7 +217,12 @@ function PaymentForm({ target, onSaved, onClose, onBack }: { target: Exclude<Pay
 
   const method = chosen ?? defaultMethod(methods, target.kind === "order" ? target.expectedMethod : null);
   const check = checkAmount(amountText, max);
-  const dateError = !paidOn || paidOn > today ? "التاريخ ما بصير يكون بالمستقبل." : minDate && paidOn < minDate ? "التاريخ قبل يوم إنشاء الطلب." : undefined;
+  const dateError =
+    !paidOn || paidOn > today
+      ? "التاريخ ما بصير يكون بالمستقبل."
+      : minDate && paidOn < minDate
+        ? "التاريخ قبل يوم إنشاء الطلب."
+        : undefined;
   const saving = payOrder.isPending || payCustomer.isPending;
   const canSave = check.amount !== null && method !== null && !dateError && !saving;
 
@@ -160,7 +231,11 @@ function PaymentForm({ target, onSaved, onClose, onBack }: { target: Exclude<Pay
     setError(null);
     const body = { amount: check.amount, method, paidOn, note: note.trim() || null };
     try {
-      onSaved(target.kind === "order" ? await payOrder.mutateAsync({ orderId: target.orderId, body }) : await payCustomer.mutateAsync({ customerId: target.customerId, body }));
+      onSaved(
+        target.kind === "order"
+          ? await payOrder.mutateAsync({ orderId: target.orderId, body })
+          : await payCustomer.mutateAsync({ customerId: target.customerId, body }),
+      );
     } catch (e) {
       setError(errorMessage(e));
     }
@@ -195,7 +270,13 @@ function PaymentForm({ target, onSaved, onClose, onBack }: { target: Exclude<Pay
         {target.kind === "order" && <PaymentBadge status={target.paymentStatus} />}
       </div>
       {error && <FormAlert>{error}</FormAlert>}
-      <MoneyField label="المبلغ" value={amountText} onChange={(e) => setAmountText(e.target.value)} error={amountText.trim() ? check.error : "اكتب المبلغ."} help={check.help || "افتراضيًا: المبلغ المتبقي كامل"} />
+      <MoneyField
+        label="المبلغ"
+        value={amountText}
+        onChange={(e) => setAmountText(e.target.value)}
+        error={amountText.trim() ? check.error : "اكتب المبلغ."}
+        help={check.help || "افتراضيًا: المبلغ المتبقي كامل"}
+      />
       <div className="field">
         <span className="field__label">طريقة الدفع</span>
         {methods.length === 0 ? (
@@ -203,7 +284,14 @@ function PaymentForm({ target, onSaved, onClose, onBack }: { target: Exclude<Pay
         ) : (
           <div className="row wrap" style={{ gap: 6 }} role="radiogroup" aria-label="طريقة الدفع">
             {methods.map((m) => (
-              <button key={m} type="button" role="radio" aria-checked={method === m} className={`chip${method === m ? " is-selected" : ""}`} onClick={() => setChosen(m)}>
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={method === m}
+                className={`chip${method === m ? " is-selected" : ""}`}
+                onClick={() => setChosen(m)}
+              >
                 {paymentMethodLabel[m]}
               </button>
             ))}
@@ -211,8 +299,24 @@ function PaymentForm({ target, onSaved, onClose, onBack }: { target: Exclude<Pay
         )}
         <span className="field__help">«عند الاستلام» بيجمعه المندوب وبينسجّل مع تسوية شركة التوصيل.</span>
       </div>
-      <TextField label="التاريخ" icon="calendar" type="date" ltr value={paidOn} max={today} min={minDate} onChange={(e) => setPaidOn(e.target.value)} error={dateError} />
-      <TextField label="ملاحظة" maxLength={200} placeholder="مثلًا: حوّلت على CliQ" value={note} onChange={(e) => setNote(e.target.value)} />
+      <TextField
+        label="التاريخ"
+        icon="calendar"
+        type="date"
+        ltr
+        value={paidOn}
+        max={today}
+        min={minDate}
+        onChange={(e) => setPaidOn(e.target.value)}
+        error={dateError}
+      />
+      <TextField
+        label="ملاحظة"
+        maxLength={200}
+        placeholder="مثلًا: حوّلت على CliQ"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+      />
       <div className="row wrap" style={{ gap: 8, justifyContent: "flex-end" }}>
         <Button variant="ghost" onClick={onClose}>
           إلغاء

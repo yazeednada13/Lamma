@@ -6,7 +6,7 @@ import { Icon } from "@/shared/ui/Icon";
 import { Money } from "@/shared/ui/Money";
 import type { OrderListItem } from "../api/ordersApi";
 import { STATUS } from "../domain/orderDomain";
-import { Initials, ItemThumb, orderDate, StatusBadge, Track } from "./OrderBits";
+import { Initials, ItemThumb, orderDate, PreOrderBadge, StatusBadge, Track } from "./OrderBits";
 import type { useOrderMove } from "./useOrderMove";
 
 type Move = ReturnType<typeof useOrderMove>["move"];
@@ -34,7 +34,15 @@ function NextButton({ order, move, busy }: { order: OrderListItem; move: Move; b
 }
 
 /** Orders table (prototype `App.ordersTable`): label, customer, items, status, track, total, next step. */
-export function OrdersTable({ orders, move, movingId }: { orders: OrderListItem[]; move: Move; movingId: string | null }) {
+export function OrdersTable({
+  orders,
+  move,
+  movingId,
+}: {
+  orders: OrderListItem[];
+  move: Move;
+  movingId: string | null;
+}) {
   const navigate = useNavigate();
   return (
     <table className="tbl">
@@ -56,11 +64,23 @@ export function OrdersTable({ orders, move, movingId }: { orders: OrderListItem[
         {orders.map((o) => {
           const first = o.items[0];
           return (
-            <tr key={o.id} className={`st-${o.status}`} onClick={() => navigate(`/orders/${o.id}`)} style={{ cursor: "pointer" }}>
+            <tr
+              key={o.id}
+              className={`st-${o.status}`}
+              onClick={() => navigate(`/orders/${o.id}`)}
+              style={{ cursor: "pointer" }}
+            >
               <td>
                 <span className="o-id">
                   <span>
-                    <a href={`/orders/${o.id}`} onClick={(e) => { e.preventDefault(); navigate(`/orders/${o.id}`); }} style={{ color: "inherit", textDecoration: "none" }}>
+                    <a
+                      href={`/orders/${o.id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(`/orders/${o.id}`);
+                      }}
+                      style={{ color: "inherit", textDecoration: "none" }}
+                    >
                       <b className="ltr">#{o.number}</b>
                     </a>
                     <br />
@@ -98,6 +118,11 @@ export function OrdersTable({ orders, move, movingId }: { orders: OrderListItem[
               </td>
               <td>
                 <StatusBadge status={o.status} />
+                {o.expectedDeliveryOn && (
+                  <span style={{ display: "block", marginTop: 4 }}>
+                    <PreOrderBadge day={o.expectedDeliveryOn} />
+                  </span>
+                )}
               </td>
               <td className="hide-md">
                 <Track status={o.status} />

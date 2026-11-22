@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { ageLabel, agingShares, amountInput, bucketInfo, businessToday, checkAmount, defaultMethod, paidPercent, recordableMethods } from "./paymentDomain";
+import {
+  ageLabel,
+  agingShares,
+  amountInput,
+  bucketInfo,
+  businessToday,
+  checkAmount,
+  defaultMethod,
+  paidPercent,
+  recordableMethods,
+} from "./paymentDomain";
 
 describe("payment amount rules (D-132)", () => {
   it("accepts up to the amount due and says what is left", () => {
@@ -55,7 +65,11 @@ describe("figures for the screens", () => {
   });
 
   it("buckets and ages read naturally (D-038)", () => {
-    expect([bucketInfo("fresh").ageClass, bucketInfo("late").ageClass, bucketInfo("overdue").ageClass]).toEqual(["age--ok", "age--warn", "age--late"]);
+    expect([bucketInfo("fresh").ageClass, bucketInfo("late").ageClass, bucketInfo("overdue").ageClass]).toEqual([
+      "age--ok",
+      "age--warn",
+      "age--late",
+    ]);
     expect([ageLabel(0), ageLabel(1), ageLabel(12)]).toEqual(["اليوم", "يوم", "12 يوم"]);
   });
 

@@ -10,7 +10,13 @@ import { PageSkeleton } from "@/shared/ui/feedback/Skeleton";
 import { Icon } from "@/shared/ui/Icon";
 import { Money } from "@/shared/ui/Money";
 import { PageHeader } from "@/shared/ui/PageHeader";
-import { usePayments, useReceivables, useReceivablesAging, type AgingBucket, type Receivable } from "../api/paymentsApi";
+import {
+  usePayments,
+  useReceivables,
+  useReceivablesAging,
+  type AgingBucket,
+  type Receivable,
+} from "../api/paymentsApi";
 import { PaymentBadge } from "../components/PaymentBadge";
 import { PaymentsTable } from "../components/PaymentsTable";
 import { RecordPaymentDrawer, type PaymentTarget } from "../components/RecordPaymentDrawer";
@@ -129,7 +135,10 @@ export function PaymentsPage() {
     return (
       <>
         {header}
-        <ErrorState message={errorMessage(aging.error ?? due.error ?? received.error)} onRetry={() => void Promise.all([aging.refetch(), due.refetch(), received.refetch()])} />
+        <ErrorState
+          message={errorMessage(aging.error ?? due.error ?? received.error)}
+          onRetry={() => void Promise.all([aging.refetch(), due.refetch(), received.refetch()])}
+        />
       </>
     );
   }
@@ -165,7 +174,10 @@ export function PaymentsPage() {
         </div>
         <div className="agebar" role="img" aria-label="توزيع الذمم حسب العمر">
           {buckets.map((b, i) => (
-            <span key={b.code} style={{ width: `${shares[i]}%`, background: b.color, animationDelay: `${i * 150}ms` }} />
+            <span
+              key={b.code}
+              style={{ width: `${shares[i]}%`, background: b.color, animationDelay: `${i * 150}ms` }}
+            />
           ))}
         </div>
         <div className="row wrap" style={{ gap: 18, marginTop: 12 }}>
@@ -180,15 +192,28 @@ export function PaymentsPage() {
         </div>
         {toFils(a.courierHeld) > 0 && (
           <p className="caption" style={{ marginTop: 10 }}>
-            <Icon name="truck" size={16} /> وعند شركة التوصيل <Money value={a.courierHeld} /> ({a.courierHeldCount} طلب عند الاستلام)، بتنسجّل مع التسوية.
+            <Icon name="truck" size={16} /> وعند شركة التوصيل <Money value={a.courierHeld} /> ({a.courierHeldCount} طلب
+            عند الاستلام)، بتنسجّل مع التسوية.
           </p>
         )}
       </article>
       <div className="tabs" role="tablist" style={{ marginTop: 16 }}>
-        <button type="button" role="tab" aria-selected={tab === "due"} className={`tab${tab === "due" ? " is-active" : ""}`} onClick={() => setTab("due")}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "due"}
+          className={`tab${tab === "due" ? " is-active" : ""}`}
+          onClick={() => setTab("due")}
+        >
           الذمم المستحقة <span className="num">{a.count}</span>
         </button>
-        <button type="button" role="tab" aria-selected={tab === "received"} className={`tab${tab === "received" ? " is-active" : ""}`} onClick={() => setTab("received")}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "received"}
+          className={`tab${tab === "received" ? " is-active" : ""}`}
+          onClick={() => setTab("received")}
+        >
           الدفعات المستلمة <span className="num">{received.data.totalCount}</span>
         </button>
       </div>
@@ -197,14 +222,32 @@ export function PaymentsPage() {
           <div className="toolbar" style={{ padding: "12px 0" }}>
             <span className="control control--search" style={{ height: 40, width: "min(300px, 100%)" }}>
               <Icon name="search" />
-              <input placeholder="اسم العميل أو رقمه أو رقم الطلب" aria-label="ابحث عن ذمة" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+              <input
+                placeholder="اسم العميل أو رقمه أو رقم الطلب"
+                aria-label="ابحث عن ذمة"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
             </span>
             <div className="row wrap" style={{ gap: 6 }} role="group" aria-label="عمر الذمة">
-              <Chip selected={!bucket} onClick={() => { setBucket(undefined); setDuePage(1); }}>
+              <Chip
+                selected={!bucket}
+                onClick={() => {
+                  setBucket(undefined);
+                  setDuePage(1);
+                }}
+              >
                 الكل
               </Chip>
               {AGING_BUCKETS.map((b) => (
-                <Chip key={b.code} selected={bucket === b.code} onClick={() => { setBucket(b.code); setDuePage(1); }}>
+                <Chip
+                  key={b.code}
+                  selected={bucket === b.code}
+                  onClick={() => {
+                    setBucket(b.code);
+                    setDuePage(1);
+                  }}
+                >
                   {b.label}
                 </Chip>
               ))}
@@ -222,7 +265,16 @@ export function PaymentsPage() {
                 key={r.orderId}
                 r={r}
                 index={i}
-                onPay={() => setTarget({ kind: "order", orderId: r.orderId, number: r.number, customerName: r.customerName, remaining: r.remaining, paymentStatus: r.paymentStatus })}
+                onPay={() =>
+                  setTarget({
+                    kind: "order",
+                    orderId: r.orderId,
+                    number: r.number,
+                    customerName: r.customerName,
+                    remaining: r.remaining,
+                    paymentStatus: r.paymentStatus,
+                  })
+                }
               />
             ))
           )}

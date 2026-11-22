@@ -23,12 +23,17 @@ export const bucketInfo = (code: AgingBucket) => AGING_BUCKETS.find((b) => b.cod
 export const ageLabel = (days: number): string => (days === 0 ? "اليوم" : days === 1 ? "يوم" : `${days} يوم`);
 
 /** Methods a merchant records by hand: enabled ones, never COD (the courier collects it, D-138). */
-export function recordableMethods(enabled: readonly { method: PaymentMethodCode; isEnabled: boolean }[] | undefined): PaymentMethodCode[] {
+export function recordableMethods(
+  enabled: readonly { method: PaymentMethodCode; isEnabled: boolean }[] | undefined,
+): PaymentMethodCode[] {
   return PAYMENT_METHODS.filter((m) => m !== "cod" && (enabled?.some((r) => r.method === m && r.isEnabled) ?? false));
 }
 
 /** The drawer's default method: the order's expected one when it can be recorded, else the first recordable one. */
-export function defaultMethod(methods: readonly PaymentMethodCode[], expected: PaymentMethodCode | null | undefined): PaymentMethodCode | null {
+export function defaultMethod(
+  methods: readonly PaymentMethodCode[],
+  expected: PaymentMethodCode | null | undefined,
+): PaymentMethodCode | null {
   return expected && methods.includes(expected) ? expected : (methods[0] ?? null);
 }
 
@@ -54,7 +59,10 @@ export function checkAmount(input: string, max: MoneyString): AmountCheck {
   }
 
   const left = maxFils - toFils(parsed);
-  return { amount: parsed, help: left > 0 ? `بيضل عليه ${formatMoneyNumber(fromFils(left))} د.أ` : "بيصير مدفوع بالكامل" };
+  return {
+    amount: parsed,
+    help: left > 0 ? `بيضل عليه ${formatMoneyNumber(fromFils(left))} د.أ` : "بيصير مدفوع بالكامل",
+  };
 }
 
 /** Percent paid for the pay ring (0–100, whole number). */
@@ -70,7 +78,12 @@ export function agingShares(amounts: readonly MoneyString[]): number[] {
   return fils.map((f) => (total > 0 ? (f / total) * 100 : 0));
 }
 
-const ammanDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Amman", year: "numeric", month: "2-digit", day: "2-digit" });
+const ammanDay = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Amman",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
 /** Business today (Asia/Amman, D-124) as YYYY-MM-DD: the default and the latest allowed payment date (D-136). */
 export const businessToday = (now: Date = new Date()): string => ammanDay.format(now);

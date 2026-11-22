@@ -6,10 +6,10 @@
 | Item | Value |
 |---|---|
 | Current phase | **Phase 8: Returns & pre-orders** (branch `feature/phase8-returns-preorders`) |
-| Current gate | **Gate 4: Backend checkpoint.** 8.A1–8.A5 implemented and verified; waiting for the founder to add and apply migration `AddReturnsAndPreOrders` and push the backend ([PHASE-8-PLAN.md](../roadmap/PHASE-8-PLAN.md)) |
+| Current gate | **Gate 6: Frontend checkpoint.** 8.B1–8.B5 implemented; automated checks pass; waiting for the founder's manual check ([PHASE-8-PLAN.md](../roadmap/PHASE-8-PLAN.md)) |
 | Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21) |
-| Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Stop the running API, run the `AddReturnsAndPreOrders` migration commands, commit and push the backend, then write `Frontend` |
+| Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders` applied by the founder (verified read-only in `Lamma_Dev`) |
+| Next expected founder action | Run the Phase 8 manual checklist, then push the frontend |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -34,7 +34,7 @@
 | 5 Orders core | **Merged into develop (founder-reported 2026-11-21)** |
 | 6 Payments & receivables | **Merged into develop (founder-reported 2026-11-21)** |
 | 7 Courier & expenses | **Merged into develop (founder-reported 2026-11-21)** |
-| 8 Returns & pre-orders | **Backend done (2026-11-22); at gate 4** |
+| 8 Returns & pre-orders | **Frontend done (2026-11-22); at gate 6** |
 | 9 Dashboard | Pending |
 | 10 Reports | Pending |
 | 11 Subscription (display) | Pending |
@@ -90,6 +90,7 @@
 | 2026-11-21 | Phase 7 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build` | all clean; 239 files, 0 violations, 0 cycles; JS 769 kB (224 kB gzip) |
 | 2026-11-21 | Phase 7 frontend: `vitest run` | **108 passed, 0 failed** (30 files; 6 new finance logic tests; 1 settings assertion flipped from «no expense section until Phase 7» to «present») |
 | 2026-11-22 | Phase 8 backend: `dotnet build` / `dotnet test Lamma.sln` (one full run, D-106; separate output folder because the founder's API was running) | 0 warnings; **405 passed, 0 failed** (Domain 220, Application 58, Infrastructure 19, Architecture 8, API integration 100; 12 new) |
+| 2026-11-22 | Phase 8 frontend: `tsc -b`, `eslint .`, `check:architecture`, `vite build`, `vitest run` | all clean; 0 violations, 0 cycles; **113 passed, 0 failed** (31 files; 5 new logic tests: return math like the server, calendar cells, 30% deposit); JS 784 kB (228 kB gzip) |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -144,3 +145,6 @@
 | 2026-11-21 | Founder merged the Phase 7 PR into `develop`; Phase 7 closed, at gate 8 |
 | 2026-11-21 | `Next Phase` given; Phase 8 plan approved (D-145–D-152, OQ-070…074 resolved); waiting at gate 3 |
 | 2026-11-22 | Phase 8 Backend 8.A1–8.A5 implemented and verified (discount share rounded to 2 decimals so refunds can be exact); waiting at gate 4 (migration `AddReturnsAndPreOrders`) |
+| 2026-11-22 | Founder applied `AddReturnsAndPreOrders` and pushed the backend; `Frontend` given |
+| 2026-11-22 | Phase 8 Frontend 8.B1–8.B5 implemented; automated checks pass; waiting at gate 6 |
+| 2026-11-22 | Phase 8 checklist (19 cases) run by Claude on the real API (founder request, throwaway business «متجر فحص 8»): all passed. Two fixes found and applied: the order payment card now uses the net total after a return (it showed the original total and a 69% ring); a fully returned order still owing its delivery fee can record a payment (the card had marked it closed). 768px not measured |

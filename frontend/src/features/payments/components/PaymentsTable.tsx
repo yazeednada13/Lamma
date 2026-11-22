@@ -46,8 +46,21 @@ export function PaymentsTable({ payments, showCustomer = true }: { payments: Pay
             <tr key={p.id} style={p.isReversed ? { opacity: 0.6 } : undefined}>
               <td>
                 <OrdersCell payment={p} />
-                {p.orderId === null && <span className="caption" style={{ display: "block" }}>على الحساب</span>}
-                {p.settlementId && <span className="caption" style={{ display: "block" }}>تسوية شركة التوصيل</span>}
+                {p.orderId === null && (
+                  <span className="caption" style={{ display: "block" }}>
+                    على الحساب
+                  </span>
+                )}
+                {p.settlementId && (
+                  <span className="caption" style={{ display: "block" }}>
+                    تسوية شركة التوصيل
+                  </span>
+                )}
+                {p.kind === "refund" && (
+                  <span className="caption" style={{ display: "block" }}>
+                    استرداد مرتجع
+                  </span>
+                )}
               </td>
               {showCustomer && (
                 <td>
@@ -62,11 +75,20 @@ export function PaymentsTable({ payments, showCustomer = true }: { payments: Pay
                 {p.isReversed && <span style={{ display: "block" }}>ملغية</span>}
               </td>
               <td className="num" style={p.isReversed ? { textDecoration: "line-through" } : undefined}>
-                <Money value={p.amount} tone={p.isReversed ? undefined : "pos"} />
+                <Money
+                  value={p.kind === "refund" ? `-${p.amount}` : p.amount}
+                  tone={p.isReversed ? undefined : p.kind === "refund" ? "neg" : "pos"}
+                />
               </td>
               <td className="num">
-                {!p.isReversed && !p.settlementId && (
-                  <Button variant="ghost" size="sm" onClick={() => void reverse({ id: p.id, amount: p.amount, method: p.method, spread: p.allocations.length > 1 })}>
+                {!p.isReversed && !p.settlementId && p.kind !== "refund" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      void reverse({ id: p.id, amount: p.amount, method: p.method, spread: p.allocations.length > 1 })
+                    }
+                  >
                     إلغاء الدفعة
                   </Button>
                 )}

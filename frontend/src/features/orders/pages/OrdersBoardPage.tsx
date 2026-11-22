@@ -14,8 +14,22 @@ import { FLOW, STATUS } from "../domain/orderDomain";
 const COLUMN_SIZE = 50;
 const DELIVERED_SHOWN = 5;
 
-function Column({ status, count, move, movingId }: { status: OrderStatus; count: number; move: ReturnType<typeof useOrderMove>["move"]; movingId: string | null }) {
-  const list = useOrders({ status, pageSize: status === "delivered" ? DELIVERED_SHOWN : COLUMN_SIZE, sort: status === "delivered" ? "-createdAt" : "createdAt" });
+function Column({
+  status,
+  count,
+  move,
+  movingId,
+}: {
+  status: OrderStatus;
+  count: number;
+  move: ReturnType<typeof useOrderMove>["move"];
+  movingId: string | null;
+}) {
+  const list = useOrders({
+    status,
+    pageSize: status === "delivered" ? DELIVERED_SHOWN : COLUMN_SIZE,
+    sort: status === "delivered" ? "-createdAt" : "createdAt",
+  });
   const items = list.data?.items ?? [];
   const more = count - items.length;
 
@@ -59,7 +73,11 @@ function Column({ status, count, move, movingId }: { status: OrderStatus; count:
       )}
       {list.data && items.length === 0 && (
         <div className="board__empty">
-          {status === "preparing" ? <Illustration kind="parcel" /> : status === "courier" ? <Illustration kind="delivery" state="courier" /> : null}
+          {status === "preparing" ? (
+            <Illustration kind="parcel" />
+          ) : status === "courier" ? (
+            <Illustration kind="delivery" state="courier" />
+          ) : null}
           <span className="caption">ما في طلبات هون</span>
         </div>
       )}
@@ -103,7 +121,8 @@ export function OrdersBoardPage() {
         </div>
       )}
       <p className="caption">
-        <Icon name="info-circle" size={16} /> تلقائي: عند «مؤكد» القطع بتنحجز · عند «تم التوصيل» بتنخصم من المخزون وبتنحسب المبيعة · الملغية بتلاقيها بالجدول.
+        <Icon name="info-circle" size={16} /> تلقائي: عند «مؤكد» القطع بتنحجز · عند «تم التوصيل» بتنخصم من المخزون
+        وبتنحسب المبيعة · الملغية بتلاقيها بالجدول.
       </p>
     </>
   );

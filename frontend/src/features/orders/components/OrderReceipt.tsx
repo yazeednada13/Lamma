@@ -7,7 +7,25 @@ import type { Receipt } from "../domain/orderDomain";
 import { linePrice, lineVariant, type Line } from "../domain/orderFormModel";
 
 /** Live receipt of the order form (prototype `#receipt`), computed in fils like the server. */
-export function OrderReceipt({ customerName, channel, caption, lines, fee, discount, receipt, paidNow }: { customerName: string | null; channel: SalesChannelCode | null; caption: string; lines: Line[]; fee: MoneyString; discount: MoneyString; receipt: Receipt; paidNow?: MoneyString | null }) {
+export function OrderReceipt({
+  customerName,
+  channel,
+  caption,
+  lines,
+  fee,
+  discount,
+  receipt,
+  paidNow,
+}: {
+  customerName: string | null;
+  channel: SalesChannelCode | null;
+  caption: string;
+  lines: Line[];
+  fee: MoneyString;
+  discount: MoneyString;
+  receipt: Receipt;
+  paidNow?: MoneyString | null;
+}) {
   return (
     <div className="receipt" aria-label="ملخّص الطلب">
       <div className="receipt__head">

@@ -18,7 +18,15 @@ interface Props {
 }
 
 /** Step 2: product picker and lines (variant swatches, quantity capped at the available stock). */
-export function OrderLinesSection({ done, lines, loadingProductId, onAdd, onChange, onRemove }: Props) {
+export function OrderLinesSection({
+  done,
+  lines,
+  loadingProductId,
+  onAdd,
+  onChange,
+  onRemove,
+  preOrder = false,
+}: Props & { preOrder?: boolean }) {
   const [search, setSearch] = useState("");
   const options = useProductOptions(search.trim());
 
@@ -31,11 +39,16 @@ export function OrderLinesSection({ done, lines, loadingProductId, onAdd, onChan
       </div>
       <span className="control" style={{ marginBottom: 12 }}>
         <Icon name="search" />
-        <input placeholder="دوّر على منتج…" aria-label="دوّر على منتج" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input
+          placeholder="دوّر على منتج…"
+          aria-label="دوّر على منتج"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </span>
       <div className="picker">
         {(options.data?.items ?? []).map((p) => {
-          const out = p.available <= 0;
+          const out = p.available <= 0 && !preOrder;
           return (
             <button
               key={p.id}
@@ -45,9 +58,19 @@ export function OrderLinesSection({ done, lines, loadingProductId, onAdd, onChan
               disabled={loadingProductId === p.id}
               onClick={() => !out && onAdd(p.id)}
             >
-              {p.imageUrl ? <img src={p.imageUrl} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 12 }} /> : <Illustration kind="product" template={productArt(p.templateCode)} />}
+              {p.imageUrl ? (
+                <img src={p.imageUrl} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 12 }} />
+              ) : (
+                <Illustration kind="product" template={productArt(p.templateCode)} />
+              )}
               <b>{p.name}</b>
-              <small>{out ? "نفد" : `${formatMoneyNumber(p.minPrice)} د.أ · ${p.available} متوفر`}</small>
+              <small>
+                {out
+                  ? "نفد"
+                  : p.available <= 0
+                    ? `${formatMoneyNumber(p.minPrice)} د.أ · مسبق`
+                    : `${formatMoneyNumber(p.minPrice)} د.أ · ${p.available} متوفر`}
+              </small>
             </button>
           );
         })}
@@ -58,27 +81,53 @@ export function OrderLinesSection({ done, lines, loadingProductId, onAdd, onChan
             لسا ما ضفت منتجات.
           </p>
         ) : (
-          lines.map((l) => <LineRow key={l.key} line={l} taken={lines.filter((x) => x.key !== l.key).map((x) => x.variantId)} onChange={onChange} onRemove={onRemove} />)
+          lines.map((l) => (
+            <LineRow
+              key={l.key}
+              line={l}
+              preOrder={preOrder}
+              taken={lines.filter((x) => x.key !== l.key).map((x) => x.variantId)}
+              onChange={onChange}
+              onRemove={onRemove}
+            />
+          ))
         )}
       </div>
     </section>
   );
 }
 
-function LineRow({ line, taken, onChange, onRemove }: { line: Line; taken: string[]; onChange: Props["onChange"]; onRemove: Props["onRemove"] }) {
+function LineRow({
+  line,
+  taken,
+  onChange,
+  onRemove,
+  preOrder,
+}: {
+  line: Line;
+  taken: string[];
+  onChange: Props["onChange"];
+  onRemove: Props["onRemove"];
+  preOrder: boolean;
+}) {
   const v = lineVariant(line);
   const over = line.quantity > v.available;
+  const cap = preOrder ? 1000 : v.available; // D-151: a pre-order saved «جديد» may wait for stock
   return (
     <div className="line2">
       <span className="line2__art">
-        {line.product.imageUrl ? <ItemThumb imageUrl={line.product.imageUrl} size={56} /> : <Illustration kind="product" template={productArt(line.product.templateCode)} />}
+        {line.product.imageUrl ? (
+          <ItemThumb imageUrl={line.product.imageUrl} size={56} />
+        ) : (
+          <Illustration kind="product" template={productArt(line.product.templateCode)} />
+        )}
       </span>
       <div className="col" style={{ gap: 6, minWidth: 0 }}>
         <b>{line.product.name}</b>
         {!v.isDefault && (
           <div className="row wrap" style={{ gap: 6 }} role="radiogroup" aria-label={`نسخة ${line.product.name}`}>
             {line.variants.map((x) => {
-              const blocked = x.available <= 0 || taken.includes(x.id);
+              const blocked = (x.available <= 0 && !preOrder) || taken.includes(x.id);
               return (
                 <button
                   key={x.id}
@@ -87,7 +136,14 @@ function LineRow({ line, taken, onChange, onRemove }: { line: Line; taken: strin
                   aria-checked={x.id === line.variantId}
                   className={`swatch${x.id === line.variantId ? " is-selected" : ""}${blocked ? " is-out" : ""}`}
                   title={x.available <= 0 ? "نفد" : taken.includes(x.id) ? "مضافة بسطر ثاني" : undefined}
-                  onClick={() => !blocked && onChange(line.key, { variantId: x.id, unitPrice: undefined, quantity: clampQuantity(line.quantity, x.available) })}
+                  onClick={() =>
+                    !blocked &&
+                    onChange(line.key, {
+                      variantId: x.id,
+                      unitPrice: undefined,
+                      quantity: clampQuantity(line.quantity, preOrder ? 1000 : x.available),
+                    })
+                  }
                 >
                   {x.label}
                 </button>
@@ -95,8 +151,10 @@ function LineRow({ line, taken, onChange, onRemove }: { line: Line; taken: strin
             })}
           </div>
         )}
-        <span className={over ? "field__error" : "caption"}>
-          {over ? (
+        <span className={over && !preOrder ? "field__error" : "caption"}>
+          {over && preOrder ? (
+            `متوفر ${v.available} · الباقي بيستنى البضاعة (طلب مسبق)`
+          ) : over ? (
             <>
               <Icon name="alert-triangle" size={16} /> متوفر {v.available} بس{v.isDefault ? "" : ` من ${v.label}`}
             </>
@@ -106,16 +164,31 @@ function LineRow({ line, taken, onChange, onRemove }: { line: Line; taken: strin
         </span>
       </div>
       <span className="stepper">
-        <button type="button" aria-label="زيادة" disabled={line.quantity >= v.available} onClick={() => onChange(line.key, { quantity: line.quantity + 1 })}>
+        <button
+          type="button"
+          aria-label="زيادة"
+          disabled={line.quantity >= cap}
+          onClick={() => onChange(line.key, { quantity: line.quantity + 1 })}
+        >
           +
         </button>
         <input className="ltr" value={line.quantity} aria-label={`كمية ${line.product.name}`} readOnly />
-        <button type="button" aria-label="نقص" disabled={line.quantity <= 1} onClick={() => onChange(line.key, { quantity: Math.max(1, line.quantity - 1) })}>
+        <button
+          type="button"
+          aria-label="نقص"
+          disabled={line.quantity <= 1}
+          onClick={() => onChange(line.key, { quantity: Math.max(1, line.quantity - 1) })}
+        >
           −
         </button>
       </span>
       <Money value={fromFils(line.quantity * toFils(linePrice(line)))} />
-      <button type="button" className="btn btn--ghost icon-btn btn--sm" aria-label={`حذف ${line.product.name}`} onClick={() => onRemove(line.key)}>
+      <button
+        type="button"
+        className="btn btn--ghost icon-btn btn--sm"
+        aria-label={`حذف ${line.product.name}`}
+        onClick={() => onRemove(line.key)}
+      >
         <Icon name="trash" size={16} />
       </button>
     </div>
