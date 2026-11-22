@@ -6,31 +6,14 @@ import { Illustration } from "@/shared/ui/brand/Illustration";
 import { ButtonLink } from "@/shared/ui/Button";
 import { CountUp, countFormat } from "@/shared/ui/CountUp";
 import { Donut } from "@/shared/ui/charts/Donut";
+export { DeltaPill } from "@/shared/ui/charts/DeltaPill";
 import { Icon, type IconName } from "@/shared/ui/Icon";
 import { Money } from "@/shared/ui/Money";
 import type { Dashboard, LowProduct } from "../api/dashboardApi";
-import {
-  activityView,
-  areaGeometry,
-  attentionView,
-  chartDay,
-  delta,
-  filsOf,
-  insightSentence,
-  smoothPath,
-} from "../domain/dashboardDomain";
+import { AreaChart as SharedAreaChart } from "@/shared/ui/charts/AreaChart";
+import { activityView, attentionView, chartDay, filsOf, insightSentence } from "../domain/dashboardDomain";
 
 const CHART = ["var(--lamma-chart-1)", "var(--lamma-chart-2)", "var(--lamma-chart-3)", "var(--lamma-chart-4)"] as const;
-
-/** Delta pill (prototype `LammaCards.delta`). */
-export function DeltaPill({ change, invert }: { change: number | null; invert?: boolean }) {
-  const d = delta(change, invert);
-  return (
-    <span className={`dpill dpill--${d.tone}`}>
-      <bdi>{d.text}</bdi>
-    </span>
-  );
-}
 
 /** Journey (prototype `.journey`, D-154): stages now, each a link; the end node is the month's net profit. */
 export function JourneyBar({ d }: { d: Dashboard }) {
@@ -102,89 +85,26 @@ export function JourneyBar({ d }: { d: Dashboard }) {
   );
 }
 
-/** Two-series area chart with hover tooltips (prototype `LammaCards.area`). */
+/** The 14-day sales and profit chart (prototype `LammaCards.area`). */
 export function AreaChart({ d }: { d: Dashboard }) {
-  const [hover, setHover] = useState<number | null>(null);
-  const w = 640;
-  const h = 220;
-  const series = d.series.map((s) => ({ a: filsOf(s.sales), b: filsOf(s.grossProfit) }));
-  const g = areaGeometry(series, w, h);
-  const step = (w - 28) / Math.max(series.length - 1, 1);
-  const labelEvery = Math.ceil(series.length / 7);
-  const tip = hover === null ? null : d.series[hover];
   return (
-    <div className="area" onMouseLeave={() => setHover(null)}>
-      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img" aria-label="المبيعات والربح آخر 14 يوم">
-        <defs>
-          <linearGradient id="dash-gA" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#3F4F2A" stopOpacity=".22" />
-            <stop offset="1" stopColor="#3F4F2A" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {[0.25, 0.5, 0.75, 1].map((f) => (
-          <line key={f} className="grid-line" x1="0" x2={w} y1={g.y((g.max * f) / 1.15)} y2={g.y((g.max * f) / 1.15)} />
-        ))}
-        <path
-          className="fade-up"
-          d={`${smoothPath(g.a)} L${g.a[g.a.length - 1]![0]} ${h - 28} L${g.a[0]![0]} ${h - 28}Z`}
-          fill="url(#dash-gA)"
-        />
-        <path
-          className="draw"
-          d={smoothPath(g.a)}
-          fill="none"
-          stroke="var(--lamma-chart-1)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-        <path
-          className="draw"
-          style={{ animationDelay: "350ms" }}
-          d={smoothPath(g.b)}
-          fill="none"
-          stroke="var(--lamma-chart-2)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-        {d.series.map((s, i) => (
-          <g key={s.day}>
-            <rect
-              className="hit"
-              x={g.x(i) - step / 2}
-              y="0"
-              width={step}
-              height={h}
-              onMouseEnter={() => setHover(i)}
-            />
-            <circle
-              className={`dot${hover === i ? " is-on" : ""}`}
-              cx={g.x(i)}
-              cy={g.a[i]![1]}
-              r="4.5"
-              stroke="var(--lamma-chart-1)"
-            />
-            {(i % labelEvery === 0 || i === d.series.length - 1) && (
-              <text className="lbl" x={g.x(i)} y={h - 6} textAnchor="middle">
-                {chartDay(s.day, d.today)}
-              </text>
-            )}
-          </g>
-        ))}
-      </svg>
-      {tip && hover !== null && (
-        <div
-          className="area__tip is-on"
-          style={{ left: `${(g.x(hover) / w) * 100}%`, top: `${(g.a[hover]![1] / h) * 100}%` }}
-        >
-          <b>{chartDay(tip.day, d.today)}</b>
-          المبيعات: <bdi>{formatMoneyNumber(tip.sales)}</bdi> د.أ
-          <br />
-          الربح: <bdi>{formatMoneyNumber(tip.grossProfit)}</bdi> د.أ
-        </div>
-      )}
-    </div>
+    <SharedAreaChart
+      ariaLabel="المبيعات والربح آخر 14 يوم"
+      points={d.series.map((s) => ({
+        key: s.day,
+        label: chartDay(s.day, d.today),
+        a: filsOf(s.sales),
+        b: filsOf(s.grossProfit),
+        tip: (
+          <>
+            <b>{chartDay(s.day, d.today)}</b>
+            المبيعات: <bdi>{formatMoneyNumber(s.sales)}</bdi> د.أ
+            <br />
+            الربح: <bdi>{formatMoneyNumber(s.grossProfit)}</bdi> د.أ
+          </>
+        ),
+      }))}
+    />
   );
 }
 

@@ -1,25 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   activityView,
-  areaGeometry,
   attentionView,
   dayPhase,
-  delta,
   greeting,
   insightSentence,
   leadSentence,
   prevMonthName,
-  smoothPath,
 } from "./dashboardDomain";
 
 describe("dashboard wording (D-153–D-157)", () => {
-  it("delta pill is honest about missing comparisons", () => {
-    expect(delta(15.4)).toEqual({ text: "↑ 15.4%", tone: "up" });
-    expect(delta(-50)).toEqual({ text: "↓ 50%", tone: "down" });
-    expect(delta(-5, true)).toEqual({ text: "↓ 5%", tone: "up" });
-    expect(delta(null)).toEqual({ text: "—", tone: "flat" });
-  });
-
   it("greets by the Amman hour", () => {
     expect(greeting(new Date("2026-11-22T06:00:00Z"))).toBe("صباح الخير"); // 09:00 in Amman
     expect(greeting(new Date("2026-11-22T10:00:00Z"))).toBe("مساء الخير"); // 13:00 in Amman
@@ -98,28 +88,5 @@ describe("dashboard wording (D-153–D-157)", () => {
     expect(insightSentence({ topChannel: null, topChannelShare: null, topProduct: null, bestWeekday: null })).toContain(
       "أول ما تتوصّل",
     );
-  });
-});
-
-describe("chart geometry", () => {
-  it("draws right to left with headroom and clips negative profit", () => {
-    const g = areaGeometry(
-      [
-        { a: 0, b: 0 },
-        { a: 100, b: -20 },
-      ],
-      640,
-      220,
-    );
-    expect(g.x(0)).toBe(626); // oldest on the right
-    expect(g.x(1)).toBe(14); // newest on the left
-    expect(g.y(-20)).toBe(g.y(0)); // a loss sits on the baseline
-    expect(g.max).toBeCloseTo(115);
-    expect(
-      smoothPath([
-        [0, 0],
-        [10, 10],
-      ]),
-    ).toBe("M0.0 0.0 C5.0 0.0 5.0 10.0 10.0 10.0");
   });
 });

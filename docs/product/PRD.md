@@ -131,8 +131,8 @@ Arabic labels: جديد · مؤكد · قيد التجهيز · مع المند�
 |---|---|
 | Business profile, channels, payment methods, default low-stock threshold, expense categories, templates and fields | [A] |
 | Trial: first month free, full features, days remaining | [A] |
-| Plans: monthly and yearly (yearly saves two months); prices undecided | [A]; [O] the prototype shows 3 plans (OQ-085) |
-| Trial expiration: data viewable, new operations blocked | **[O] proposal only, not approved. Do not implement enforcement** |
+| Plans: monthly and yearly (yearly saves two months) | [A]; prices D-165 (9 / 90 د.أ); two plans, not the prototype's three |
+| Trial expiration: data viewable, new operations blocked | **[A] D-162** (read-only mode; built in Phase 11) |
 | General states: loading, offline, 404 | [A] (UI) |
 
 ## 5. Out of scope (V1)

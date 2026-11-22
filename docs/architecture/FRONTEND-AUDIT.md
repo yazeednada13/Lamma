@@ -76,6 +76,8 @@ The `screens/` folder mentioned in the README does not exist in the copy.
 | 26 | `#/reports` | مركز التقارير | `/reports` | `ReportsHubPage` | AppShell | 10 |
 | 27 | `#/reports/pnl` | الأرباح والخسائر | `/reports/pnl` | `ProfitLossPage` | AppShell | 10 |
 | 28 | `#/reports/sales` | المبيعات | `/reports/sales` | `SalesReportPage` | AppShell | 10 |
+
+**Phase 10 parity notes (routes 26–28):** same cards, hero, flow steps, waterfall, ledger, «شو تغيّر؟», area chart, channel donut, weekday bars and product rows as the reference. Deviations, by design (PHASE-10-PLAN §2): a period picker on the P&L and sales pages (the PRD requires periods); a row of net sales, orders and AOV cards on the sales page; «المرتجعات» instead of «الخصومات والمرتجعات»; weekday bars cover the selected period; at most 50 product rows plus «باقي المنتجات»; product rows use the neutral product art because the report does not carry the product template. Two CSS overrides in `app-additions.css` fix reference layout issues found at 390 px: weekday-bar tracks may shrink below their labels, and the waterfall keeps a 600 px minimum width and scrolls inside its card on phones.
 | 29 | `#/settings` | إعدادات المشروع | `/settings` | `BusinessSettingsPage` | AppShell | 1 (profile, channels, payment methods, inventory default), 2 (templates), 7 (expense categories) |
 | 30 | `#/account` | الحساب | `/account` | `AccountPage` | AppShell | 1 |
 | 31 | `#/subscription` | الاشتراك | `/subscription` | `SubscriptionPage` | AppShell | 11 |

@@ -265,3 +265,9 @@
   .escene__z text { opacity: 1; }
 }
 @media (max-width: 767px) { .cele-burst { top: 72px; max-width: calc(100% - 32px); } }
+
+/* Phase 10: weekday bars may shrink below their label width on phones (the reference's 1fr tracks overflowed at 390px). */
+.wbars { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+@media (max-width: 480px) { .wbars { gap: 6px; } .wbars span { font-size: 10.5px; } }
+/* Phase 10: the profit waterfall keeps readable labels on phones and scrolls inside its card instead of shrinking. */
+@media (max-width: 767px) { .wf { overflow-x: auto; } .wf svg { min-width: 600px; } }

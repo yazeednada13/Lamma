@@ -365,3 +365,38 @@ All endpoints need an onboarded business; another business's records return 404.
 | `isEmpty` | No products and no orders: the UI shows the getting-started checklist |
 
 **Performance (9.A3):** on 500 orders (half delivered) the dashboard answers in a median of **138 ms** and the indicators in about 115 ms (LocalDB, test host). The first version took 866 ms because the channel and top-product aggregations ran twice; they are now computed once. No new index was needed. The measurement is the opt-in test `DashboardPerfTests` (`LAMMA_PERF=1`).
+
+## 20. Phase 10 contracts: Reports (implemented, 2026-11-22)
+| Method & path | Success | Errors |
+|---|---|---|
+| GET `reports/summary` | 200 `ReportsSummary` (hub, this month, D-172) | — |
+| GET `reports/pnl?period=&from=&to=` | 200 `PnlReport` | 422 (below) |
+| GET `reports/sales?period=&from=&to=` | 200 `SalesReport` | 422 (below) |
+
+**Period (D-168):** `period` = `month` (default) · `last_month` · `last_7_days` · `custom` (needs `from` and `to`, `YYYY-MM-DD`, inclusive). It is resolved on the server in Asia/Amman. Every report returns `period{ period, from, to, previousFrom, previousTo, includesToday, bucket }`. The comparison span is the same days of last month for `month` (D-153), the whole month before for `last_month`, the 7 days before for `last_7_days`, and the same number of days just before for `custom`. `bucket` = `day` for spans up to 92 days, `month` beyond. Errors are 422 ProblemDetails with a field error and the code `report.invalid_period`, `report.range_required`, `report.range_reversed`, `report.range_future`, `report.range_too_long` (more than 366 days).
+
+**`PnlReport`:** `period, current{ sales, deliveredCount, returns, netSales, cogs, grossProfit, expenses, netProfit }, previous{ … }, hasPrevious, changes{ sales, cogs, expenses, netProfit }, netProfitChange, driver{ kind, categoryName, categoryCode, change, effect } | null, expensesByCategory[]{ categoryId, name, code, current, previous }, expectedSales | null`.
+
+**`SalesReport`:** `period, series[]{ start, sales, grossProfit }, channels[]{ channel, amount, orders }, weekdays[7] (0 = Sunday), bestWeekday | null, products[≤50]{ productId, name, quantity, revenue, grossProfit }, otherProducts{ count, quantity, revenue, grossProfit } | null, deliveryFees, netSales, grossProfit, orders, averageOrderValue, previousNetSales, previousOrders, previousAverageOrderValue, netSalesChange, ordersChange, averageOrderValueChange`.
+
+**`ReportsSummary`:** `from, to, netProfit, netSales, series[14]{ day, sales, grossProfit }, topProducts[≤6]{ productId, name, quantity, revenue, grossProfit }, customers, recentCustomers[≤5]{ id, name }, stockValue, courierHeld`.
+
+**Formula per figure** (business-local dates, Asia/Amman):
+
+| Figure | Formula |
+|---|---|
+| P&L `current`, `previous` | The finance overview (§17) for each span: sales = Σ totals of orders delivered in it (returned ones included); returns = Σ return amounts by return date; net sales = sales − returns; COGS = items cost of those orders − cost of restocked returned pieces; expenses = active expenses by date (settlement differences included); net profit = net sales − COGS − expenses (D-144, D-149, D-169) |
+| `changes` | (current − previous) ÷ \|previous\| × 100, 1 decimal; `null` when previous = 0. The sales change uses net sales |
+| `hasPrevious` | The previous span has any sales, returns, COGS or expenses; otherwise the UI says «ما في فترة سابقة للمقارنة» |
+| `driver` | Among net sales (effect = +change), COGS (effect = −change) and each expense category (effect = −change), the largest \|effect\|; ties go to sales, then COGS, then the category order; `null` without a previous span or when nothing changed (D-170). The UI writes the Arabic sentence |
+| `expectedSales` | Σ totals of confirmed, preparing and with-courier orders; only when the span includes today |
+| Sales `series` | Per day: Σ totals delivered − returns booked that day; gross profit = that − (items cost − restocked cost). Month buckets sum the days of each calendar month inside the span |
+| `channels` | Σ totals delivered by order channel − Σ return amounts by the returned order's channel; `orders` = delivered orders |
+| `weekdays`, `bestWeekday` | The same net amounts by weekday of the delivery or return date; the best is the highest (earliest weekday on a tie), `null` with no positive day |
+| `products` | Per product: pieces delivered − pieces returned; revenue = line total − its share of the order discount (2-decimal shares, the last line takes the remainder) − its share of each return amount (split by pieces × unit price, same rule); gross profit = revenue − cost of delivered pieces + cost of restocked returned pieces (damaged pieces keep their cost). Σ revenue + `deliveryFees` = `netSales` exactly (D-171) |
+| `averageOrderValue` | Net sales ÷ delivered orders (3 decimals); 0 without orders |
+| Hub `stockValue` | Σ available pieces (on hand − reserved, > 0) × current effective cost (variant override, else product cost), active products and variants only (D-172) |
+| Hub `netProfit`, `netSales`, `courierHeld` | Finance overview for this month to date (snapshot for courier-held) |
+| Hub `series`, `topProducts` | The last 14 days (as the sales series) and this month's products ranked by revenue |
+
+**Performance (10.A5):** with 500 orders (half delivered, every fifth delivered one partly returned), the medians are **101 ms** for the summary, **28 ms** for the P&L and **18 ms** for a 366-day sales report (LocalDB, test host). No new index is needed. The measurement is the opt-in test `ReportPerfTests` (`LAMMA_PERF=1`).
