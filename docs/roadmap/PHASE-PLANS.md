@@ -551,7 +551,7 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 5. `Frontend` started | ☑ | 2026-11-22 | 11-I: 11.B1–11.B3 implemented; checks pass |
 | 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-22 | 11-I, with the landing redesign and the order-journey scene |
 | 7. PR merged into `develop` (founder) | ☑ | 2026-11-22 | part 11-I; 11-II follows on its own cycle (D-173) |
-| 8. `Next Phase` given | ☐ | | |
+| 8. `Next Phase` given | ☑ | 2026-11-22 | for part 11-II |
 
 ### Phase 11-II gate status
 | Gate | Status | Date | Notes |
@@ -561,9 +561,9 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-22 | 11.A8–11.A14 implemented and verified; migration `AddSubscriptionsAndAdmin` pending |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-22 | `AddSubscriptionsAndAdmin` applied (the API queries the new columns on `Lamma_Dev`) |
 | 5. `Frontend` started | ☑ | 2026-11-22 | 11.B5–11.B8 implemented; checks pass; manual checklist PHASE-11-PLAN §7.6 |
-| 6. Frontend pushed (founder confirmed) | ☐ | | |
-| 7. PR merged into `develop` (founder) | ☐ | | |
-| 8. `Next Phase` given | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-28 | with the manual-test fixes and UI polish |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-28 | part 11-II |
+| 8. `Next Phase` given | ☑ | 2026-11-28 | Phase 11 closed; Phase 12 planning |
 
 **Depends on:** 1. **Blocking:** prices set (D-165); OQ-092 (domain, go-live only). **Decisions:** D-159–D-167. Detailed tasks are written in the Phase 11 plan (gate 2).
 
@@ -581,6 +581,7 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 
 ## Phase 12 — Hardening & launch readiness
 **Depends on:** 1–11. **Blocking:** OQ-084, OQ-086, OQ-089.
+**Plan (Proposed 2026-11-28, waiting for approval):** [`PHASE-12-PLAN.md`](PHASE-12-PLAN.md): part 12-I hardening (12.A1–12.A8, 12.B1–12.B5) and part 12-II launch (12.C1–12.C6); decisions P-029–P-032 and OQ-084/086/089/092.
 
 | ID | Task |
 |---|---|

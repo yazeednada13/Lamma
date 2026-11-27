@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 11: Subscription, platform admin & public sign-up** (part 11-II, branch `feature/phase11-admin-subscription`) |
-| Current gate | **Gate 6 for part 11-II: Frontend checkpoint.** 11.B5–11.B8 implemented; checks pass; waiting for the founder's manual check (PHASE-11-PLAN §7.6) and push |
-| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22). Phase 9 (`feature/phase9-dashboard`) merged (2026-11-22). Phase 10 (`feature/phase10-reports`) merged (2026-11-22). Phase 11-I (`feature/phase11-subscription-admin`) merged (2026-11-22) |
+| Current phase | **Phase 12: Hardening & launch readiness** (branch to be created by the founder from `develop`, e.g. `feature/phase12-hardening`) |
+| Current gate | **Gate 2: Plan.** Phase 12 plan written ([PHASE-12-PLAN.md](../roadmap/PHASE-12-PLAN.md)); waiting for the founder's approval and decisions |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22). Phase 9 (`feature/phase9-dashboard`) merged (2026-11-22). Phase 10 (`feature/phase10-reports`) merged (2026-11-22). Phase 11-I (`feature/phase11-subscription-admin`) merged (2026-11-22). Phase 11-II (`feature/phase11-admin-subscription`) merged (2026-11-28); Phase 11 closed |
 | Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders`, `AddSignupLeads`, `AddSubscriptionsAndAdmin` applied by the founder (verified read-only in `Lamma_Dev`; the last one seen working through the API) |
-| Next expected founder action | Run the 11-II manual checklist (PHASE-11-PLAN §7.6), push the 11-II frontend, then ask for the PR |
+| Next expected founder action | Create the Phase 12 branch from `develop`, answer the Phase 12 open decisions, approve the plan, then write `Backend` |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -37,8 +37,8 @@
 | 8 Returns & pre-orders | **Merged into develop (founder-reported 2026-11-22)** |
 | 9 Dashboard | **Merged into develop (founder-reported 2026-11-22)** |
 | 10 Reports | **Merged into develop (founder-reported 2026-11-22)** |
-| 11 Subscription, platform admin & public sign-up (expanded, D-159) | **Part 11-I merged into develop (2026-11-22); part 11-II at gate 6** |
-| 12 Hardening & launch | Pending |
+| 11 Subscription, platform admin & public sign-up (expanded, D-159) | **Merged into develop (11-I 2026-11-22, 11-II 2026-11-28); closed** |
+| 12 Hardening & launch | **Gate 2: plan written, waiting for approval** |
 
 ## Resolved for Phase 1 (2026-11-10)
 - .NET 9 (D-076)
@@ -194,3 +194,5 @@
 | 2026-11-22 | `Backend` given for 11-II; 11.A8–11.A14 implemented and verified (subscription status, read-only filter with the endpoint walk, owner subscription API with CliQ proofs, platform admin role and API with audit, emails and daily reminders); migration `AddSubscriptionsAndAdmin` pending; waiting at gate 4 |
 | 2026-11-23 | Founder pushed the 11-II backend and gave `Frontend`; 11.B5–11.B8 implemented (subscription page with CliQ payment drawer, status banner and sidebar, read-only page and dialog, onboarding prefill, admin area: dashboard, subscribers, subscriber actions, payments queue with proofs, leads); checks pass; waiting at gate 6 |
 | 2026-11-27 | 11-II manual test (founder asked Claude to run it). Fixes: copy toast «انتسخ»; empty-state art size on /subscription; client file-type check in the pay drawer; Escape closes the zoomed proof; clear message for an empty reject reason; amount formatted in the approve dialog; short status detail in the admin table and subscriber page (no owner wording for the admin); Levantine counts in the audit and leads («5 أيام», «مرتين», «هلّق»); readable dates in the audit; email wraps cleanly; suspended account: sidebar, dialog, /subscription header and /trial-expired tag no longer say «اشترك»; two-column KPIs on phones; no «إعداداتك محفوظة» sticker on the subscription pages. Backend: registering now sets `LastLoginAt` (first login), with a test |
+| 2026-11-28 | Founder pushed the 11-II frontend (with the manual-test fixes and the UI polish); PR text delivered; at gate 7 |
+| 2026-11-28 | Founder merged the 11-II PR into `develop`; Phase 11 closed. `Next Phase` given: Phase 12 plan written (PHASE-12-PLAN.md), waiting at gate 2 |
