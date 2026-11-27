@@ -4,17 +4,28 @@ using Lamma.Domain.Businesses;
 
 namespace Lamma.Application.Accounts;
 
-/// <summary>The signed-in owner and, once onboarded, a summary of their business.</summary>
-public sealed record AccountDto(Guid Id, string FullName, string Email, bool IsOnboarded, BusinessSummaryDto? Business);
+/// <summary>
+/// The signed-in user and, once onboarded, a summary of their business. <c>IsPlatformAdmin</c> sends the admin to the
+/// admin area (D-175); <c>SuggestedBusinessName</c> prefills onboarding from the sign-up form (D-185).
+/// </summary>
+public sealed record AccountDto(
+    Guid Id,
+    string FullName,
+    string Email,
+    bool IsOnboarded,
+    BusinessSummaryDto? Business,
+    bool IsPlatformAdmin = false,
+    string? SuggestedBusinessName = null);
 
-/// <summary>Trial figures are display-only; trial-expiry enforcement is not approved (D-011).</summary>
+/// <summary>The business and its subscription status (D-167, D-183), so the app shell can show banners.</summary>
 public sealed record BusinessSummaryDto(
     Guid Id,
     string Name,
     string BusinessType,
     DateTime TrialEndsAt,
     int TrialDaysRemaining,
-    string Plan);
+    string Plan,
+    Subscriptions.SubscriptionSummaryDto? Subscription = null);
 
 public sealed record UpdateAccountRequest(string FullName);
 
@@ -26,8 +37,7 @@ public sealed record BusinessSummaryRow(
     string Name,
     BusinessType BusinessType,
     DateTime TrialEndsAt,
-    string TimeZoneId,
-    SubscriptionPlan Plan);
+    string TimeZoneId);
 
 public sealed class UpdateAccountRequestValidator : AbstractValidator<UpdateAccountRequest>
 {

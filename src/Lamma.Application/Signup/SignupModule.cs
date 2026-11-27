@@ -60,6 +60,11 @@ public interface ISignupLeadRepository
 
     Task<SignupLead?> FindByTokenHashAsync(string tokenHash, CancellationToken cancellationToken);
 
+    Task<SignupLead?> FindByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>The lead that became this user (for the onboarding store-name prefill, D-185).</summary>
+    Task<SignupLead?> FindByUserIdAsync(Guid userId, CancellationToken cancellationToken);
+
     void Add(SignupLead lead);
 }
 
@@ -91,6 +96,9 @@ public interface ISignupService
 
     /// <summary>Creates the account from a valid invitation and signs in; onboarding then starts the trial (D-180).</summary>
     Task<AccountDto> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
+
+    /// <summary>The admin's «resend»: a fresh link for a pending lead, ignoring the daily limit. The caller saves.</summary>
+    Task<SignupLead> ResendAsync(Guid leadId, CancellationToken cancellationToken);
 }
 
 internal sealed class SignupService(
@@ -100,6 +108,7 @@ internal sealed class SignupService(
     IEmailSender email,
     IAppLinks links,
     IUnitOfWork unitOfWork,
+    Subscriptions.IPlatformAdmins admins,
     IClock clock) : ISignupService
 {
     public async Task SubmitAsync(PublicSignupRequest request, CancellationToken cancellationToken)
@@ -153,6 +162,23 @@ internal sealed class SignupService(
             cancellationToken);
     }
 
+    public async Task<SignupLead> ResendAsync(Guid leadId, CancellationToken cancellationToken)
+    {
+        var lead = await leads.FindByIdAsync(leadId, cancellationToken)
+            ?? throw new NotFoundException("signup.lead_not_found", "الطلب مش موجود.");
+        if (lead.Status != SignupLeadStatus.Pending)
+        {
+            throw new ConflictException("signup.already_registered", "هالشخص سجّل حسابه من قبل.");
+        }
+
+        var (token, hash) = InviteTokens.Generate();
+        lead.IssueInvite(hash, clock.UtcNow, byAdmin: true);
+        await email.SendAsync(
+            EmailTemplates.Invitation(lead.Email, lead.FullName, lead.StoreName, links.Register(token), SignupLead.InviteValidHours),
+            cancellationToken);
+        return lead;
+    }
+
     public async Task<InvitationDto> GetInvitationAsync(string token, CancellationToken cancellationToken)
     {
         var lead = await ValidLeadAsync(token, cancellationToken);
@@ -183,6 +209,7 @@ internal sealed class SignupService(
             },
             cancellationToken);
 
+        await admins.SyncAsync(lead.Email, cancellationToken); // the admin account is promoted at once (D-182)
         await identity.SignInAsync(userId, persistent: false, cancellationToken);
         return await accounts.GetByUserIdAsync(userId, cancellationToken);
     }

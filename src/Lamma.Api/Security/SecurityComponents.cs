@@ -12,6 +12,9 @@ public static class Policies
 {
     /// <summary>Authenticated AND onboarded (has a business). Applied to all business-data endpoints.</summary>
     public const string RequireBusiness = "RequireBusiness";
+
+    /// <summary>The platform admin (D-175). Business endpoints stay closed to it (it has no business).</summary>
+    public const string RequirePlatformAdmin = "RequirePlatformAdmin";
 }
 
 /// <summary>Satisfied only when the current user has a business (resolved on the server).</summary>

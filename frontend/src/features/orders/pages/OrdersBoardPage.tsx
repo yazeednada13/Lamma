@@ -1,19 +1,28 @@
 import { Link } from "react-router";
 import { errorMessage } from "@/services/api/apiClient";
 import { Button, ButtonLink } from "@/shared/ui/Button";
-import { Illustration } from "@/shared/ui/brand/Illustration";
 import { flyTo } from "@/shared/ui/celebrate/flyTo";
 import { ErrorState } from "@/shared/ui/feedback/ErrorState";
 import { Icon } from "@/shared/ui/Icon";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { useOrders, useOrderStatusCounts, type OrderStatus } from "../api/ordersApi";
 import { OrderCard, StatusBadge } from "../components/OrderBits";
+import { StatusSticker } from "../components/StatusSticker";
 import { useOrderMove } from "../components/useOrderMove";
 import { FLOW, STATUS } from "../domain/orderDomain";
 
 /** Open columns show up to 50 cards; «تم التوصيل» shows the latest 5 (prototype). */
 const COLUMN_SIZE = 50;
 const DELIVERED_SHOWN = 5;
+
+/** What an empty column says, in the column's own words. */
+const EMPTY_TEXT: Partial<Record<OrderStatus, string>> = {
+  new: "ما في طلبات جديدة",
+  confirmed: "ما في طلبات مستنية تجهيز",
+  preparing: "ما في شي بيتغلّف هلّق",
+  courier: "ما في شي مع المندوب",
+  delivered: "لسا ما وصل ولا طلب",
+};
 
 function Column({
   status,
@@ -78,12 +87,8 @@ function Column({
       )}
       {list.data && items.length === 0 && (
         <div className="board__empty">
-          {status === "preparing" ? (
-            <Illustration kind="parcel" />
-          ) : status === "courier" ? (
-            <Illustration kind="delivery" state="courier" />
-          ) : null}
-          <span className="caption">ما في طلبات هون</span>
+          <StatusSticker status={status} />
+          <span className="caption">{EMPTY_TEXT[status] ?? "ما في طلبات هون"}</span>
         </div>
       )}
     </div>

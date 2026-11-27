@@ -1,20 +1,15 @@
 import { useCurrentAccount } from "@/features/auth";
 import { LatestOrdersGrid } from "@/features/orders";
-import { channelLabel, useBusinessTypeLabel, useSalesChannelSettings } from "@/features/settings";
 import { errorMessage } from "@/services/api/apiClient";
 import { addMoney, formatMoneyNumber } from "@/shared/lib/money";
 import { firstName } from "@/shared/lib/personName";
-import { SleepingCourier } from "@/shared/ui/brand/EmptyScenes";
 import { Illustration } from "@/shared/ui/brand/Illustration";
-import { ButtonLink } from "@/shared/ui/Button";
 import { CountUp, countFormat } from "@/shared/ui/CountUp";
-import { EmptyState } from "@/shared/ui/feedback/EmptyState";
 import { ErrorState } from "@/shared/ui/feedback/ErrorState";
 import { PageSkeleton } from "@/shared/ui/feedback/Skeleton";
 import { Icon } from "@/shared/ui/Icon";
 import { MetricCard } from "@/shared/ui/MetricCard";
 import { Money } from "@/shared/ui/Money";
-import { PageHeader } from "@/shared/ui/PageHeader";
 import { Link } from "react-router";
 import { useDashboard, useLowProducts, type Dashboard } from "../api/dashboardApi";
 import {
@@ -31,6 +26,7 @@ import {
   TrialPromo,
 } from "../components/DashboardWidgets";
 import { DeliveryLane, FloatTicker, type FloatItem } from "../components/DashboardMotion";
+import { FirstSteps } from "../components/FirstSteps";
 import { greeting, leadSentence, monthName, prevMonthName, todayLabel } from "../domain/dashboardDomain";
 
 /** «لمّة اليوم» (prototype `#/dashboard`, D-153–D-158); a new account sees the getting-started checklist instead. */
@@ -40,7 +36,7 @@ export function DashboardPage() {
     return <ErrorState message={errorMessage(dashboard.error)} onRetry={() => void dashboard.refetch()} />;
   const d = dashboard.data;
   if (!d) return <PageSkeleton />;
-  return d.isEmpty || d.latestOrders.length === 0 ? <FirstSteps d={d} /> : <FullDashboard d={d} />;
+  return d.isEmpty || d.latestOrders.length === 0 ? <FirstSteps d={d} tips={TIPS} /> : <FullDashboard d={d} />;
 }
 
 /** How Lamma works, in one line each (the rules the app really applies). Shown as floating tips in the closing scene. */
@@ -270,102 +266,6 @@ function FullDashboard({ d }: { d: Dashboard }) {
         <TrialPromo daysLeft={d.trialDaysLeft} />
 
         <DeliveryLane delivered={d.journey.deliveredThisMonth} onTheWay={d.journey.courier} tips={TIPS} />
-      </div>
-    </>
-  );
-}
-
-/** New account (prototype `#/dashboard-new`): the steps tick off from real data. */
-function FirstSteps({ d }: { d: Dashboard }) {
-  const account = useCurrentAccount();
-  const channels = useSalesChannelSettings();
-  const business = account.business!;
-  const businessTypeLabel = useBusinessTypeLabel(business.businessType);
-  const enabledChannels = channels.data?.channels.filter((c) => c.isEnabled).map((c) => channelLabel[c.channel]) ?? [];
-  const steps = [
-    {
-      done: true,
-      title: "جهّز مشروعك",
-      text: `${businessTypeLabel}${enabledChannels.length > 0 ? ` · ${enabledChannels.join(" و")}` : ""}`,
-      to: "/settings",
-      cta: "عدّل",
-    },
-    {
-      done: d.journey.products > 0,
-      title: "أضف أول منتج",
-      text: "بالمقاسات والألوان وكمية كل وحدة",
-      to: "/products/new",
-      cta: "أضف منتج",
-    },
-    {
-      done: d.latestOrders.length > 0,
-      title: "سجّل أول طلب",
-      text: "من رسالة واتساب أو إنستغرام",
-      to: "/orders/new",
-      cta: "سجّل طلب",
-    },
-    {
-      done: d.activity.some((a) => a.kind === "expense"),
-      title: "سجّل مصروف",
-      text: "عشان نحسبلك الربح الحقيقي",
-      to: "/finance/expenses?add=1",
-      cta: "سجّل مصروف",
-    },
-  ];
-  const done = steps.filter((s) => s.done).length;
-
-  return (
-    <>
-      <PageHeader
-        title={`أهلًا فيك بلمّة يا ${firstName(account.fullName)}`}
-        subtitle="خطوات قليلة وبكون كل شغلك بمكانه"
-      />
-      <div className="grid g-main">
-        <div className="card">
-          <div className="row" style={{ gap: 16, marginBottom: 8 }}>
-            <div className="ring" style={{ ["--p" as string]: Math.round((done / steps.length) * 100) }}>
-              <span>
-                <bdi>
-                  {done}/{steps.length}
-                </bdi>
-              </span>
-            </div>
-            <div>
-              <h3>ابدأ هون</h3>
-              <p className="muted">كل خطوة بتاخد أقل من دقيقة</p>
-            </div>
-          </div>
-          <ul className="checklist">
-            {steps.map((s, i) => (
-              <li key={s.title}>
-                {s.done ? (
-                  <span className="done">
-                    <Icon name="check" size={16} />
-                  </span>
-                ) : (
-                  <span className="todo" />
-                )}
-                <span className="grow">
-                  <b>{s.title}</b>
-                  <br />
-                  <span className="caption">{s.text}</span>
-                </span>
-                <ButtonLink
-                  to={s.to}
-                  variant={s.done ? "ghost" : i === steps.findIndex((x) => !x.done) ? "primary" : "outline"}
-                  size="sm"
-                >
-                  {s.cta}
-                </ButtonLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <EmptyState
-          art={<SleepingCourier />}
-          title="هون رح تشوف «لمّة اليوم»"
-          text="أول ما تسجّل طلبات، بنجمعلك كل شي بجملة وحدة كل يوم."
-        />
       </div>
     </>
   );

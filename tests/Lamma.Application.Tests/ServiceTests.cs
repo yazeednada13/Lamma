@@ -9,7 +9,7 @@ public sealed class AuthServiceTests
 {
     private readonly FakeIdentityService _identity = new();
 
-    private AuthService Create(FakeEmailSender? email = null) => new(_identity, new FakeAccountService(), email ?? new FakeEmailSender(), new FakeLinks());
+    private AuthService Create(FakeEmailSender? email = null) => new(_identity, new FakeAccountService(), email ?? new FakeEmailSender(), new FakeLinks(), new FakePlatformAdmins());
 
     [Fact]
     public async Task Forgot_password_when_email_is_not_configured_fails_before_any_lookup()
@@ -97,7 +97,7 @@ public sealed class OnboardingServiceTests
     private readonly FakeClock _clock = new();
 
     private OnboardingService Create()
-        => new(new FakeCurrentUser(_userId), _businesses, _memberships, _unitOfWork, new FakeAccountService(), _clock);
+        => new(new FakeCurrentUser(_userId), _businesses, _memberships, _unitOfWork, new FakeAccountService(), new FakePlatformAdmins(), _clock);
 
     private static OnboardingRequest Request => new("بوتيك ريم", "clothing", ["instagram", "whatsapp"]);
 

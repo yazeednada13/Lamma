@@ -30,6 +30,12 @@ internal sealed class AppLinks(IOptions<AppOptions> options) : IAppLinks
 
     public string Login() => $"{Base}/login";
 
+    public string Home() => $"{Base}/";
+
+    public string Subscription() => $"{Base}/subscription";
+
+    public string AdminPayments() => $"{Base}/admin/payments";
+
     private string Base => options.Value.FrontendBaseUrl.TrimEnd('/');
 }
 

@@ -56,11 +56,16 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("SubscriptionPlan")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(32)");
+                    b.Property<int?>("ReferenceNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SuspendReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("SuspendedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
 
                     b.Property<string>("TimeZoneId")
                         .IsRequired()
@@ -81,6 +86,11 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2(3)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ReferenceNumber")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Businesses_ReferenceNumber")
+                        .HasFilter("[ReferenceNumber] IS NOT NULL");
 
                     b.ToTable("Businesses", null, t =>
                         {
@@ -1243,6 +1253,78 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Platform.AdminAuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(40)");
+
+                    b.Property<Guid>("AdminUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("At")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<Guid?>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid?>("LeadId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("RequestKey")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestKey")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AdminAuditLogs_RequestKey")
+                        .HasFilter("[RequestKey] IS NOT NULL");
+
+                    b.HasIndex("BusinessId", "At");
+
+                    b.ToTable("AdminAuditLogs", (string)null);
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Platform.ReminderLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<DateOnly>("TargetDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId", "Kind", "TargetDate")
+                        .IsUnique();
+
+                    b.ToTable("ReminderLogs", (string)null);
+                });
+
             modelBuilder.Entity("Lamma.Domain.Signup.SignupLead", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1344,6 +1426,139 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                     b.ToTable("SignupLeads", (string)null);
                 });
 
+            modelBuilder.Entity("Lamma.Domain.Subscriptions.PaymentRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PeriodId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Plan")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("ProofContentType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<string>("ProofPath")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("RejectReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<Guid?>("ReviewedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<Guid>("SubmittedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_PaymentRequests_BusinessId_Pending")
+                        .HasFilter("[Status] = 'pending'");
+
+                    b.HasIndex("Status", "SubmittedAt");
+
+                    b.ToTable("PaymentRequests", (string)null);
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Subscriptions.SubscriptionPeriod", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 3)
+                        .HasColumnType("decimal(19,3)");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<Guid?>("CancelledByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CliqReference")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("EndsOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<Guid?>("PaymentRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Plan")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<DateOnly>("StartsOn")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId", "StartsOn");
+
+                    b.ToTable("SubscriptionPeriods", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SubscriptionPeriods_Dates", "[EndsOn] >= [StartsOn]");
+                        });
+                });
+
             modelBuilder.Entity("Lamma.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1372,6 +1587,10 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasPrecision(3)
+                        .HasColumnType("datetime2(3)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -1880,6 +2099,24 @@ namespace Lamma.Infrastructure.Persistence.Migrations
                         .WithMany("Allocations")
                         .HasForeignKey("PaymentId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Subscriptions.PaymentRequest", b =>
+                {
+                    b.HasOne("Lamma.Domain.Businesses.Business", null)
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lamma.Domain.Subscriptions.SubscriptionPeriod", b =>
+                {
+                    b.HasOne("Lamma.Domain.Businesses.Business", null)
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

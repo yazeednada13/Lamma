@@ -22,7 +22,8 @@ internal sealed class AuthService(
     IIdentityService identity,
     IAccountService accounts,
     IEmailSender emailSender,
-    IAppLinks links) : IAuthService
+    IAppLinks links,
+    Subscriptions.IPlatformAdmins admins) : IAuthService
 {
     public async Task<AccountDto> SignUpAsync(SignUpRequest request, CancellationToken cancellationToken)
     {
@@ -45,6 +46,7 @@ internal sealed class AuthService(
 
     public async Task<AccountDto> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
     {
+        await admins.SyncAsync(request.Email.Trim(), cancellationToken); // a listed admin gets the role before signing in (D-175)
         var outcome = await identity.PasswordSignInAsync(request.Email.Trim(), request.Password, request.RememberMe, cancellationToken);
         return outcome.Status switch
         {

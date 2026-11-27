@@ -123,8 +123,11 @@ public sealed class SignupLead : Entity
         => Status == SignupLeadStatus.Pending
            && (SendWindowStartedAt is null || nowUtc - SendWindowStartedAt.Value >= SendWindow || SendsInWindow < MaxSendsPerWindow);
 
-    /// <summary>Stores the hash of a new invitation token; any earlier link stops working.</summary>
-    public void IssueInvite(string tokenHash, DateTime nowUtc)
+    /// <summary>
+    /// Stores the hash of a new invitation token; any earlier link stops working. <paramref name="byAdmin"/> skips the
+    /// 3-per-24-hours limit (the platform admin's «resend»).
+    /// </summary>
+    public void IssueInvite(string tokenHash, DateTime nowUtc, bool byAdmin = false)
     {
         EnsurePending();
         if (tokenHash.Length != TokenHashLength)
@@ -132,7 +135,7 @@ public sealed class SignupLead : Entity
             throw new ArgumentException("A SHA-256 hex hash is expected.", nameof(tokenHash));
         }
 
-        if (!CanSend(nowUtc))
+        if (!byAdmin && !CanSend(nowUtc))
         {
             throw new DomainException("signup.too_many_sends", "وصلك أكثر من رابط اليوم. جرّب بكرة.");
         }

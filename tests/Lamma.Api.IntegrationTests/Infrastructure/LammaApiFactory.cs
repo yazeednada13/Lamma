@@ -100,6 +100,9 @@ public class LammaApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     public CapturingEmailSender Email { get; } = new();
 
+    /// <summary>The platform admin of the test host (D-175).</summary>
+    public const string AdminEmail = "admin@lamma.test";
+
     protected virtual int LoginPermitsPerMinute => 1000;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -112,6 +115,8 @@ public class LammaApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("RateLimiting:SensitivePermitsPerMinute", "1000");
         builder.UseSetting("Storage:RootPath", StorageRoot);
         builder.UseSetting("RateLimiting:PublicSignupPermitsPerMinute", "1000");
+        builder.UseSetting("Reminders:Enabled", "false"); // the reminder pass is run directly by its tests
+        builder.UseSetting("Platform:AdminEmails:0", AdminEmail);
         builder.UseSetting("Registration:InviteOnly", "false"); // the shared helpers sign up directly; invite-only has its own tests
 
         builder.ConfigureTestServices(services =>

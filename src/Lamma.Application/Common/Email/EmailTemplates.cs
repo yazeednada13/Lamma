@@ -55,6 +55,89 @@ public static class EmailTemplates
         return new EmailMessage(toEmail, "تغيير كلمة السر بلمّة", Layout("تغيير كلمة السر", body), text, PasswordResetKind, resetLink);
     }
 
+    public const string PaymentReceivedKind = "payment_received";
+    public const string PaymentForReviewKind = "payment_for_review";
+    public const string PaymentApprovedKind = "payment_approved";
+    public const string PaymentRejectedKind = "payment_rejected";
+    public const string ReminderKind = "reminder";
+    public const string ReadOnlyKind = "read_only";
+
+    private static string PlanName(string plan) => plan == "yearly" ? "السنوية" : "الشهرية";
+
+    private static string Day(DateOnly d) => d.ToString("d/M/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>To the owner: we got the transfer proof, the plan opens once it is checked (D-163).</summary>
+    public static EmailMessage PaymentReceived(string toEmail, string fullName, string plan, string amount, string reference, string subscriptionLink)
+    {
+        var body = new StringBuilder()
+            .Append(Paragraph($"أهلًا {E(FirstName(fullName))}،", bold: true))
+            .Append(Paragraph($"وصلتنا صورة تحويلك للخطة {PlanName(plan)} بقيمة <b>{E(amount)} د.أ</b> (المرجع {E(reference)}). شكرًا إلك!"))
+            .Append(Paragraph("بنتأكد من التحويل وبنفعّل خطتك بأقرب وقت، وبيوصلك إيميل أول ما تتفعّل."))
+            .Append(Button("شوف اشتراكك", subscriptionLink))
+            .ToString();
+        return new EmailMessage(toEmail, "وصلتنا دفعتك، شكرًا 🙏", Layout("وصلتنا دفعتك", body), $"وصلتنا صورة تحويلك ({amount} د.أ، {reference}). بنفعّل خطتك أول ما نتأكد منها.\n{subscriptionLink}", PaymentReceivedKind, subscriptionLink);
+    }
+
+    /// <summary>To the platform admin: a payment waits for review.</summary>
+    public static EmailMessage PaymentForReview(string toEmail, string businessName, string plan, string amount, string reference, string adminLink)
+    {
+        var body = new StringBuilder()
+            .Append(Paragraph("دفعة جديدة بانتظار المراجعة", bold: true))
+            .Append(Paragraph($"<b>{E(businessName)}</b> بعت صورة تحويل للخطة {PlanName(plan)} بقيمة <b>{E(amount)} د.أ</b>، والمرجع {E(reference)}."))
+            .Append(Button("راجع الدفعة", adminLink))
+            .ToString();
+        return new EmailMessage(toEmail, $"دفعة جديدة: {businessName}", Layout("دفعة جديدة", body), $"دفعة جديدة من {businessName}: {amount} د.أ ({reference}).\n{adminLink}", PaymentForReviewKind, adminLink);
+    }
+
+    public static EmailMessage PaymentApproved(string toEmail, string fullName, string plan, DateOnly startsOn, DateOnly endsOn, string appLink)
+    {
+        var body = new StringBuilder()
+            .Append(Paragraph($"مبروك {E(FirstName(fullName))}! 🎉", bold: true))
+            .Append(Paragraph($"تفعّلت خطتك {PlanName(plan)} من <b>{Day(startsOn)}</b> لحد <b>{Day(endsOn)}</b>. كل المزايا مفتوحة، وكمّل شغلك براحتك."))
+            .Append(Button("افتح لمّة", appLink))
+            .ToString();
+        return new EmailMessage(toEmail, "تفعّلت خطتك بلمّة ✅", Layout("تفعّلت خطتك", body), $"تفعّلت خطتك {PlanName(plan)} من {Day(startsOn)} لحد {Day(endsOn)}.\n{appLink}", PaymentApprovedKind, appLink);
+    }
+
+    public static EmailMessage PaymentRejected(string toEmail, string fullName, string reason, string subscriptionLink)
+    {
+        var body = new StringBuilder()
+            .Append(Paragraph($"أهلًا {E(FirstName(fullName))}،", bold: true))
+            .Append(Paragraph("راجعنا صورة التحويل وما قدرنا نفعّل الخطة بسبب:"))
+            .Append(Paragraph($"<b>{E(reason)}</b>"))
+            .Append(Paragraph("تقدر تبعت صورة تحويل جديدة من صفحة الاشتراك، أو تتواصل معنا بالواتساب."))
+            .Append(Button("ابعت صورة جديدة", subscriptionLink))
+            .ToString();
+        return new EmailMessage(toEmail, "بخصوص دفعتك بلمّة", Layout("بخصوص دفعتك", body), $"ما قدرنا نفعّل الخطة: {reason}\nابعت صورة جديدة: {subscriptionLink}", PaymentRejectedKind, subscriptionLink);
+    }
+
+    /// <summary>7/3/1 days before the trial or the plan ends (D-186).</summary>
+    public static EmailMessage Reminder(string toEmail, string fullName, bool trial, int daysLeft, DateOnly endsOn, string subscriptionLink)
+    {
+        var what = trial ? "تجربتك المجانية" : "اشتراكك";
+        var when = daysLeft == 1 ? "بكرة" : $"بعد {daysLeft} أيام";
+        var body = new StringBuilder()
+            .Append(Paragraph($"أهلًا {E(FirstName(fullName))}،", bold: true))
+            .Append(Paragraph($"{what} بلمّة بتخلص <b>{when}</b> ({Day(endsOn)})."))
+            .Append(Paragraph("عشان تضل تضيف طلبات وتعدّل بدون توقف، اشترك أو جدّد من صفحة الاشتراك. الدفع بكليك وبيتفعّل بسرعة."))
+            .Append(Button(trial ? "اشترك الآن" : "جدّد اشتراكك", subscriptionLink))
+            .Append(Note("بياناتك محفوظة دايمًا، حتى لو ما اشتركت."))
+            .ToString();
+        return new EmailMessage(toEmail, $"{what} بتخلص {when}", Layout($"{what} بتخلص {when}", body), $"{what} بتخلص {when} ({Day(endsOn)}). اشترك من هون: {subscriptionLink}", ReminderKind, subscriptionLink);
+    }
+
+    /// <summary>Once, when the account becomes read-only (D-162, D-186).</summary>
+    public static EmailMessage ReadOnlyNotice(string toEmail, string fullName, bool trial, string subscriptionLink)
+    {
+        var body = new StringBuilder()
+            .Append(Paragraph($"أهلًا {E(FirstName(fullName))}،", bold: true))
+            .Append(Paragraph(trial ? "خلصت تجربتك المجانية بلمّة. شكرًا إنك جرّبتنا!" : "خلص اشتراكك بلمّة."))
+            .Append(Paragraph("كل بياناتك محفوظة وبتقدر تشوفها وتدوّر فيها. الإضافة والتعديل بيرجعوا أول ما تشترك."))
+            .Append(Button("اشترك الآن", subscriptionLink))
+            .ToString();
+        return new EmailMessage(toEmail, trial ? "خلصت تجربتك المجانية بلمّة" : "خلص اشتراكك بلمّة", Layout("حسابك صار للقراءة فقط", body), $"حسابك صار للقراءة فقط. بياناتك محفوظة. اشترك من هون: {subscriptionLink}", ReadOnlyKind, subscriptionLink);
+    }
+
     private static string FirstName(string fullName)
     {
         var name = fullName.Trim();

@@ -549,6 +549,18 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 | 3. `Backend` started | ☑ | 2026-11-22 | part 11-I (11.A1–11.A7) implemented and verified; migration `AddSignupLeads` pending |
 | 4. Backend pushed (founder confirmed) | ☑ | 2026-11-22 | 11-I; `AddSignupLeads` applied (seen working on `Lamma_Dev`) |
 | 5. `Frontend` started | ☑ | 2026-11-22 | 11-I: 11.B1–11.B3 implemented; checks pass |
+| 6. Frontend pushed (founder confirmed) | ☑ | 2026-11-22 | 11-I, with the landing redesign and the order-journey scene |
+| 7. PR merged into `develop` (founder) | ☑ | 2026-11-22 | part 11-I; 11-II follows on its own cycle (D-173) |
+| 8. `Next Phase` given | ☐ | | |
+
+### Phase 11-II gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-22 | `feature/phase11-admin-subscription` |
+| 2. Plan approved | ☑ | 2026-11-22 | PHASE-11-PLAN §7, D-182–D-186 |
+| 3. `Backend` started | ☑ | 2026-11-22 | 11.A8–11.A14 implemented and verified; migration `AddSubscriptionsAndAdmin` pending |
+| 4. Backend pushed (founder confirmed) | ☑ | 2026-11-22 | `AddSubscriptionsAndAdmin` applied (the API queries the new columns on `Lamma_Dev`) |
+| 5. `Frontend` started | ☑ | 2026-11-22 | 11.B5–11.B8 implemented; checks pass; manual checklist PHASE-11-PLAN §7.6 |
 | 6. Frontend pushed (founder confirmed) | ☐ | | |
 | 7. PR merged into `develop` (founder) | ☐ | | |
 | 8. `Next Phase` given | ☐ | | |

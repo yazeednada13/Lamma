@@ -2,7 +2,10 @@ using System.Net;
 using System.Text.Json;
 using Lamma.Api.IntegrationTests.Infrastructure;
 using Lamma.Application.Common.Email;
+using Lamma.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Lamma.Api.IntegrationTests;
 
@@ -41,6 +44,12 @@ public sealed class SignupApiTests(LammaApiFactory factory)
         var registered = await visitor.PostAsync("/api/v1/auth/register", new { token, password = "pass1234", confirmPassword = "pass1234" });
         Assert.Equal(HttpStatusCode.Created, registered.StatusCode);
         Assert.Equal(email, (await registered.JsonAsync()).GetProperty("email").GetString());
+        using (var scope = factory.Services.CreateScope())
+        {
+            // Registering signs the user in, so it counts as their first login (admin «آخر دخول»).
+            var db = scope.ServiceProvider.GetRequiredService<LammaDbContext>();
+            Assert.NotNull(await db.Users.Where(u => u.Email == email).Select(u => u.LastLoginAt).SingleAsync());
+        }
 
         await visitor.RefreshTokenAsync();
         await visitor.OnboardAsync("بوتيك ريم");

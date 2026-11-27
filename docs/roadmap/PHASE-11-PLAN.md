@@ -136,3 +136,76 @@ DECISIONS (D-173–D-181), API-DESIGN §21, DATABASE-DESIGN (new tables), FRONTE
 | 8 | Open the same link again / after 72 h | «الرابط ما بيشتغل» with the server's reason and «ابعتلي رابط جديد» → `/#join` |
 | 9 | `/signup`, «ابدأ تجربتك المجانية» on `/login` | Both lead to the landing form |
 | 10 | Signed in at `/` | The dashboard as before |
+
+---
+
+## 7. Part 11-II detailed plan (approved 2026-11-22)
+11-I is merged. This section turns the approved outline (11.A8–11.A14, 11.B5–11.B8; D-162–D-167, D-173–D-181) into concrete work. The founder sent the CliQ details: alias **YAZEED133**, account name **YAZEED NADA** (D-179; not secret, shown to subscribers).
+
+### 7.1 Points confirmed with this plan
+| ID | Point | Recommendation |
+|---|---|---|
+| D-182 | **The admin email** for `Platform:AdminEmails`. The admin account is created like any other: the public form → invitation → `/register` with that email, then promoted at startup. It needs no business, and onboarding is skipped for it | The founder names the email (it goes into user-secrets or an environment variable, not the repo) |
+| D-183 | **Status words in Arabic:** «تجربة مجانية» · «فترة سماح» (3 days, D-167) · «انتهت التجربة» · «مشترك شهري/سنوي حتى …» · «انتهى الاشتراك» · «موقوف». Read-only = trial ended, plan ended, or suspended | Yes |
+| D-184 | **Reference code:** `LM-` + a number per business starting at 1001, assigned on first use, unique | Yes |
+| D-185 | **Onboarding prefill:** the store name from the sign-up form fills the onboarding name field (editable) | Yes (the 11-I known limitation) |
+| D-186 | **Reminders:** 09:00 Amman every day, by email and in the app, 7, 3 and 1 days before the trial or plan ends, plus once when the account becomes read-only. Sent once per business, kind and date | Yes |
+
+### 7.2 Backend tasks (run together after `Backend`)
+| ID | Task | Key details |
+|---|---|---|
+| 11.A8 | **Subscription domain** | `SubscriptionPeriod` (business, plan monthly/yearly, startsOn/endsOn as business dates, amount, CliQ reference, source `payment`/`admin`, payment request id, created by, created at, cancelled at/by). `Business` gains `SuspendedAt`, `SuspendReason` and `ReferenceCode`; `SubscriptionPlan` is dropped (D-181). A pure `SubscriptionStatus.Compute(trialEndsAt, periods, suspension, now, zone)` returns the status, plan, end date, days left, grace and read-only flag. Unit-tested on every boundary |
+| 11.A9 | **Read-only enforcement (D-162, D-176)** | One MVC filter on every business-policy action with an unsafe method: 403 ProblemDetails `subscription.read_only` (Arabic message) unless the action carries `[AllowWhenReadOnly]`. Allowed: account and password, logout, subscription payment requests. The status is computed once per request. A test walks all 53 write endpoints and checks each one is either blocked or explicitly allowed |
+| 11.A10 | **Owner subscription API** | `GET subscription`: status, days left, trial dates, current period, history, plans with prices (9 / 90 JOD, D-165), CliQ alias and name, reference code, pending request. `POST subscription/payment-requests` (multipart: plan + proof; jpg/png/webp/pdf ≤ 5 MB checked by content; one pending; Idempotency-Key). `GET subscription/payment-requests/{id}/proof` (own only). The account DTO gains a small `subscription` summary (status, read-only, days left, end date) so the app shell can show banners without another call |
+| 11.A11 | **Platform admin access (D-175)** | Role `PlatformAdmin` given at startup to the emails in `Platform:AdminEmails` (idempotent). Policy `RequirePlatformAdmin`. The account DTO gains `isPlatformAdmin`. `AdminAuditLog` (admin, action, business or lead, JSON details, at) is written in the same transaction as each change. `AspNetUsers.LastLoginAt` is updated on login |
+| 11.A12 | **Admin API** (`/api/v1/admin`) | **Dashboard:** pending leads, active trials, trials ending in 7 days, paying subscribers, read-only, suspended, pending payments, monthly revenue (monthly 9 + yearly 90/12 of active periods), sign-ups per week (8 weeks), trial → paid conversion. **Subscribers:** search (name, email, mobile, store), status filter, paging. **Subscriber detail:** owner, business, created, last sign-in, order and product counts only (P-025), periods, payment requests, notes, audit. **Actions:** extend trial (days), activate plan (plan, start, amount, reference, note; the D-177 start rule as default), extend plan (days), end plan, suspend (reason), reactivate, add note. **Payments:** pending list, proof, approve (opens the period, email), reject (reason, email). **Leads:** list (pending, registered, filters) and resend the invitation. Every action is Idempotency-Key protected and audited |
+| 11.A13 | **Emails and reminders** | Templates: payment received, approved (plan and end date), rejected (reason), reminders (7/3/1 days), read-only notice. A hosted `BackgroundService` runs daily at 09:00 Amman; a `ReminderLog` (business, kind, target date, unique) makes repeats harmless |
+| 11.A14 | **Checkpoint** | Migration **`AddSubscriptionsAndAdmin`**. API-DESIGN §21 (11-II part), DATABASE-DESIGN, LOCAL-DEVELOPMENT (admin and billing settings). Report and commands |
+
+**Focused tests (D-106), one full run at the end:**
+- Status calculator boundaries: the last trial day, each grace day, plan end, extension after expiry, suspension.
+- Read-only: the write-endpoint walk; GET always allowed.
+- Payment request: file checks, one pending at a time, the approval start date (running vs ended, D-177), rejection.
+- Admin: each action writes an audit row; owners get 403 on admin routes and the admin gets 403 on business routes; the detail shows no customers, orders or finances (P-025).
+- Reminders: once per day and kind. Dashboard figures: revenue and conversion.
+
+### 7.3 Frontend tasks (run together after `Frontend`)
+| ID | Task |
+|---|---|
+| 11.B5 | **`/subscription`** (prototype `#/subscription`): ring and day dots for the trial or plan; two plans (monthly 9, yearly 90 «وفّر شهرين»); a «ادفع بكليك» drawer with the alias, name, amount and reference (copy buttons) and the proof upload; the pending, approved and rejected states; period history in place of the invoices table |
+| 11.B6 | **Status everywhere:** the sidebar card and banners follow the status (trial, grace, read-only, plan ending); the prototype's «انتهت التجربة» page; a blocked action (403 `subscription.read_only`) opens a friendly dialog with «اشترك» instead of an error; onboarding prefills the store name (D-185) |
+| 11.B7 | **Admin area** (`/admin`, its own layout, Lamma identity): dashboard cards and the weekly sign-ups chart; subscribers table (search, filter, status chips); subscriber page with the actions (each confirmed, D-120); payments queue with a proof viewer and approve/reject; leads list with resend. The admin lands on `/admin` after login. Arabic RTL, responsive |
+| 11.B8 | **Checkpoint:** checks, build, manual checklist (trial → grace → read-only → payment → approval → active; admin actions; widths) |
+
+### 7.4 Database
+Migration **`AddSubscriptionsAndAdmin`** (applied by the founder):
+- New tables: `SubscriptionPeriods`, `PaymentRequests`, `AdminAuditLogs`, `ReminderLogs`.
+- `Businesses`: + `SuspendedAt`, `SuspendReason`, `ReferenceCode` (unique, filtered); − `SubscriptionPlan`.
+- `AspNetUsers`: + `LastLoginAt`.
+- Existing businesses keep their trial dates and get no periods, so their status is computed from the trial alone.
+
+### 7.5 Risks
+- **Read-only coverage:** a missed write endpoint would let an expired account write. Covered by the endpoint walk test.
+- **The first admin:** if `Platform:AdminEmails` is empty there is simply no admin; the app works as before.
+- **Proof files** are private data: stored outside the web root and served only to the owner and the admin.
+- **Reminder emails need a real provider and a domain** (OQ-092) to reach inboxes; until then they go to the dev file folder.
+
+### 7.6 Part 11-II frontend manual checklist (gate 6, D-106)
+Before you start: set the admin email in user-secrets (`Platform:AdminEmails:0`), sign that account up through the landing form → email file → `/register`, then restart the API so it is promoted.
+
+| # | Scenario | Expected |
+|---|---|---|
+| 1 | Sign in as an owner in the trial | Sidebar card «تجربة مجانية، ضل N يوم»; no banner while more than 7 days are left |
+| 2 | Admin: extend the trial so it has ≤ 7 days left (or use a fresh trial and end-plan) | Owner sees the top banner «ضل … من تجربتك المجانية · اشترك» |
+| 3 | Owner opens `/subscription` | Ring + day dots, two plans (9 / 90 «وفّر شهرين»), reference `LM-…`, period history empty |
+| 4 | «ادفع بكليك» → copy buttons → upload a jpg/png/pdf (try a 6 MB file and a .txt first) | Copy works; big or wrong files are refused in Arabic; a valid one shows «بانتظار المراجعة»; a second submit is blocked while one is pending |
+| 5 | Admin signs in | Lands on `/admin` (no onboarding, no sidebar); dashboard cards and the weekly chart; tab counts |
+| 6 | Admin → الدفعات | The pending card with the proof (image zooms, PDF opens); reject with a reason → owner sees the reason on `/subscription` and an email file |
+| 7 | Owner pays again, admin approves | Owner becomes «مشترك» with the end date; the plan starts after the trial (D-177); email file |
+| 8 | Admin → المشتركين | Search by name/email/phone, status chips, paging; open a subscriber: facts, counts only (no order details) |
+| 9 | Subscriber page actions: تفعيل خطة, تمديد التجربة, تمديد الخطة, إنهاء الخطة, إيقاف → إرجاع, ملاحظة | Each asks to confirm or opens its drawer; the status line updates; every action appears in «سجل العمليات» |
+| 10 | Suspend the owner, then the owner tries to add an order | One dialog «حسابك موقوف/للقراءة فقط» with «اشترك الآن» → `/subscription`; reading pages still works; the banner shows |
+| 11 | Owner opens `/trial-expired` when read-only | The «انتهت التجربة» state page with the subscribe button |
+| 12 | Admin → المسجّلين | Pending/registered filter, search, «ابعت الرابط» (new email file, send count +1), WhatsApp link opens with the local number |
+| 13 | An owner opens `/admin` | Redirected away (not an admin) |
+| 14 | Widths 1440 / 1024 / 768 / 390 | Admin bar tabs scroll on phones; tables scroll inside their card; drawers full-width on 390; no page-wide horizontal scroll; RTL |

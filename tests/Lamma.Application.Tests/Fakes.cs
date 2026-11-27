@@ -51,6 +51,12 @@ internal sealed class FakeLinks : IAppLinks
     public string Register(string token) => $"https://app/register?token={token}";
 
     public string Login() => "https://app/login";
+
+    public string Home() => "https://app/";
+
+    public string Subscription() => "https://app/subscription";
+
+    public string AdminPayments() => "https://app/admin/payments";
 }
 
 internal sealed class FakeIdentityService : IIdentityService
@@ -148,4 +154,15 @@ internal sealed class FakeUnitOfWork : IUnitOfWork
     }
 
     public Task ExecuteInTransactionAsync(Func<CancellationToken, Task> work, CancellationToken cancellationToken) => work(cancellationToken);
+}
+
+internal sealed class FakePlatformAdmins : Lamma.Application.Subscriptions.IPlatformAdmins
+{
+    public HashSet<Guid> AdminIds { get; } = [];
+
+    public IReadOnlyList<string> Emails { get; } = [];
+
+    public Task<bool> IsAdminAsync(Guid userId, CancellationToken cancellationToken) => Task.FromResult(AdminIds.Contains(userId));
+
+    public Task SyncAsync(string email, CancellationToken cancellationToken) => Task.CompletedTask;
 }

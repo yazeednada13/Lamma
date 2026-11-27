@@ -5,11 +5,11 @@
 ## Current position
 | Item | Value |
 |---|---|
-| Current phase | **Phase 11: Subscription, platform admin & public sign-up** (branch `feature/phase11-subscription-admin`) |
-| Current gate | **Gate 6: Frontend checkpoint, part 11-I.** 11.B1–11.B3 implemented; checks pass; waiting for the founder's manual check ([PHASE-11-PLAN.md](../roadmap/PHASE-11-PLAN.md) §6) |
-| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22). Phase 9 (`feature/phase9-dashboard`) merged (2026-11-22). Phase 10 (`feature/phase10-reports`) merged (2026-11-22) |
-| Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders`, `AddSignupLeads` applied by the founder (verified read-only in `Lamma_Dev`) |
-| Next expected founder action | Run the 11-I manual checklist, push the frontend, then the 11-I PR (or continue to 11-II on the same branch) |
+| Current phase | **Phase 11: Subscription, platform admin & public sign-up** (part 11-II, branch `feature/phase11-admin-subscription`) |
+| Current gate | **Gate 6 for part 11-II: Frontend checkpoint.** 11.B5–11.B8 implemented; checks pass; waiting for the founder's manual check (PHASE-11-PLAN §7.6) and push |
+| Git (founder-reported) | Phase 0 merged into `develop` (`0034166`). Phase 1 (`feature/phase1-foundation`) pushed and merged into `develop` (2026-11-17). Phase 2 (`feature/phase2-catalog`) merged into `develop` (2026-11-18). Phase 3 (`feature/phase3-inventory`) merged into `develop` (2026-11-20). Phase 4 (`feature/phase4-customers`) merged (2026-11-20). Phase 5 (`feature/phase5-orders`) merged (2026-11-21). Phase 6 (`feature/phase6-payments`) merged (2026-11-21). Phase 7 (`feature/phase7-courier-expenses`) merged (2026-11-21). Phase 8 (`feature/phase8-returns-preorders`) merged (2026-11-22). Phase 9 (`feature/phase9-dashboard`) merged (2026-11-22). Phase 10 (`feature/phase10-reports`) merged (2026-11-22). Phase 11-I (`feature/phase11-subscription-admin`) merged (2026-11-22) |
+| Migrations | `InitialIdentityAndBusiness`, `AddCatalog`, `AddInventory`, `AddCustomers`, `AddOrders`, `AddPayments`, `AddCourierAndExpenses`, `AddReturnsAndPreOrders`, `AddSignupLeads`, `AddSubscriptionsAndAdmin` applied by the founder (verified read-only in `Lamma_Dev`; the last one seen working through the API) |
+| Next expected founder action | Run the 11-II manual checklist (PHASE-11-PLAN §7.6), push the 11-II frontend, then ask for the PR |
 
 ## Phase 0 tasks
 | ID | Task | Status | Output |
@@ -37,7 +37,7 @@
 | 8 Returns & pre-orders | **Merged into develop (founder-reported 2026-11-22)** |
 | 9 Dashboard | **Merged into develop (founder-reported 2026-11-22)** |
 | 10 Reports | **Merged into develop (founder-reported 2026-11-22)** |
-| 11 Subscription, platform admin & public sign-up (expanded, D-159) | **Part 11-I frontend done (2026-11-22); at gate 6** |
+| 11 Subscription, platform admin & public sign-up (expanded, D-159) | **Part 11-I merged into develop (2026-11-22); part 11-II at gate 6** |
 | 12 Hardening & launch | Pending |
 
 ## Resolved for Phase 1 (2026-11-10)
@@ -102,6 +102,10 @@
 | 2026-11-22 | Phase 11-I backend: focused tests (Domain 10, Application 5, API 4) | all passed |
 | 2026-11-22 | Phase 11-I backend: `dotnet build` / `dotnet test Lamma.sln` | 0 warnings; **466 passed** (Domain 230, Application 90, Infrastructure 24, Architecture 8, API 114) after one fix (the `Utm` type broke the no-public-setters rule); the API project also showed 1 intermittent pre-existing failure (Phase 7 category race) in 1 of 3 isolated runs |
 | 2026-11-22 | Phase 11-I frontend: `tsc -b`, `eslint .`, `check:architecture` (277 files, 0 violations, 0 cycles), `vite build`, `vitest run` | all clean; **136 passed, 0 failed** (36 files; new: sign-up domain 4, landing 2, register 3; the open sign-up tests replaced; the api-client error test now uses `/auth/register`) |
+| 2026-11-22 | Phase 11-II backend: focused tests (Domain 13, Application 7, API 6) | all passed |
+| 2026-11-22 | Phase 11-II backend: `dotnet build` / `dotnet test Lamma.sln` (one full run) | 0 warnings; **492 passed, 0 failed** (Domain 243, Application 97, Infrastructure 24, Architecture 8, API 120) |
+| 2026-11-23 | Phase 11-II frontend: `tsc -b`, `eslint .`, `check:architecture` (302 files, 0 violations, 0 cycles), `vitest run`, `vite build` | all clean; **143 passed, 0 failed** (38 files; new: subscription domain, admin domain; the shell tests follow the new status copy); browser smoke: `/admin/*` signed out → `/login`, new endpoints answer 401 |
+| 2026-11-27 | Phase 11-II manual test by Claude on the real API (local QA owner and QA admin; checklist PHASE-11-PLAN §7.6) | all scenarios pass after the fixes listed in the change log; widths 390/768/1024/1440 without horizontal scroll; frontend `tsc`, `eslint`, `check:architecture` (0/0), `vitest` **144 passed**, `vite build` clean; backend focused 20 + full run **492 passed, 0 failed** |
 | 2026-11-10 | API smoke run (Development, https 7101) | /health 200; anonymous /account → 401 ProblemDetails; POST without CSRF → 400; OpenAPI lists 13 paths |
 
 ## Change log
@@ -183,3 +187,10 @@
 | 2026-11-22 | Phase 11-I Frontend 11.B1–11.B3 implemented; checks pass; browser check on the real API: landing at 390/768/1024/1440 without overflow, form → lead saved → email file → `/register` (locked email, mismatch refused) → onboarding; one fix (a float card covered the slip's steps at 390 px); waiting at gate 6 |
 | 2026-11-22 | Landing page redesigned after the founder's review (colors without pink/red, apricot accent, olive night and mist, more motion: gathering hero, business band, before/after switch, sticky feature phone, profit waterfall, pricing switch, confetti); checked in the browser at 390/768/1024/1440 without overflow; `tsc`, `lint`, `check:architecture` (280 files, 0/0), `vitest` **136 passed**, `vite build` clean |
 | 2026-11-22 | Landing review 2: «قديش» replaced in the whole UI; hero stickers no longer overlap the card or the replay button; clearer customers line; tighter feature chapters; new order-journey motion scene with a live order card. Overlap measurements at 1440/1024/768/390 for every scene stage and the hero: none; no horizontal scroll; `tsc`, `lint`, `check:architecture` (281 files, 0/0), `vitest` **136 passed**, `vite build` clean |
+| 2026-11-22 | Founder pushed the 11-I frontend (with both landing reviews) |
+| 2026-11-22 | Founder chose a separate PR for 11-I; PR text delivered; at gate 7 |
+| 2026-11-22 | Founder merged the 11-I PR into `develop`; sent the CliQ alias and account name; gave `Next Phase` for 11-II |
+| 2026-11-22 | 11-II plan approved (D-182–D-186); the founder provided the admin email (kept out of the repo) |
+| 2026-11-22 | `Backend` given for 11-II; 11.A8–11.A14 implemented and verified (subscription status, read-only filter with the endpoint walk, owner subscription API with CliQ proofs, platform admin role and API with audit, emails and daily reminders); migration `AddSubscriptionsAndAdmin` pending; waiting at gate 4 |
+| 2026-11-23 | Founder pushed the 11-II backend and gave `Frontend`; 11.B5–11.B8 implemented (subscription page with CliQ payment drawer, status banner and sidebar, read-only page and dialog, onboarding prefill, admin area: dashboard, subscribers, subscriber actions, payments queue with proofs, leads); checks pass; waiting at gate 6 |
+| 2026-11-27 | 11-II manual test (founder asked Claude to run it). Fixes: copy toast «انتسخ»; empty-state art size on /subscription; client file-type check in the pay drawer; Escape closes the zoomed proof; clear message for an empty reject reason; amount formatted in the approve dialog; short status detail in the admin table and subscriber page (no owner wording for the admin); Levantine counts in the audit and leads («5 أيام», «مرتين», «هلّق»); readable dates in the audit; email wraps cleanly; suspended account: sidebar, dialog, /subscription header and /trial-expired tag no longer say «اشترك»; two-column KPIs on phones; no «إعداداتك محفوظة» sticker on the subscription pages. Backend: registering now sets `LastLoginAt` (first login), with a test |

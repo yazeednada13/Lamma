@@ -1,4 +1,5 @@
 import type { RouteObject } from "react-router";
+import { adminRoute } from "@/features/admin";
 import { authRoutes, resetPasswordRoute } from "@/features/auth";
 import { createCatalogRoutes, productTemplatesSettingsSection } from "@/features/catalog";
 import { createCustomersRoutes } from "@/features/customers";
@@ -9,11 +10,12 @@ import { CustomerOrdersSection, ordersRoutes, ProductOrdersSection } from "@/fea
 import { courierSettingsSection, expenseCategoriesSettingsSection, financeRoutes } from "@/features/finance";
 import { reportsRoutes } from "@/features/reports";
 import { LandingPage } from "@/features/signup";
+import { subscriptionRoutes } from "@/features/subscription";
 import { paymentsRoutes } from "@/features/payments";
 import { createSettingsRoutes } from "@/features/settings";
 import { AuthenticatedLayout } from "../layouts/AuthenticatedLayout";
 import { navigationRoutes } from "../navigation/navigationRoutes";
-import { RedirectIfAuthenticated, RequireAuth, RequireBusiness, RequireNotOnboarded } from "./guards";
+import { RedirectIfAuthenticated, RequireAuth, RequireBusiness, RequireNotOnboarded, RequirePlatformAdmin } from "./guards";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { COMING_SOON_ROUTES } from "./plannedRoutes";
@@ -43,12 +45,13 @@ export const routes: RouteObject[] = [
         element: <RequireAuth anonymousHome={<LandingPage />} />,
         children: [
           { element: <RequireNotOnboarded />, children: [onboardingRoute] },
+          { element: <RequirePlatformAdmin />, children: [adminRoute] },
           {
             element: <RequireBusiness />,
             children: [
               {
                 element: <AuthenticatedLayout />,
-                children: [dashboardRoute, ...catalogRoutes, ...inventoryRoutes, ...customersRoutes, ...ordersRoutes, ...paymentsRoutes, ...financeRoutes, ...reportsRoutes, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
+                children: [dashboardRoute, ...catalogRoutes, ...inventoryRoutes, ...customersRoutes, ...ordersRoutes, ...paymentsRoutes, ...financeRoutes, ...reportsRoutes, ...subscriptionRoutes, ...settingsRoutes, ...navigationRoutes, ...plannedRoutes, { path: "*", element: <NotFoundPage /> }],
               },
             ],
           },

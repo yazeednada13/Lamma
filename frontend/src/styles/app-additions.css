@@ -271,3 +271,45 @@
 @media (max-width: 480px) { .wbars { gap: 6px; } .wbars span { font-size: 10.5px; } }
 /* Phase 10: the profit waterfall keeps readable labels on phones and scrolls inside its card instead of shrinking. */
 @media (max-width: 767px) { .wf { overflow-x: auto; } .wf svg { min-width: 600px; } }
+/* Phase 11-II (founder review 2026-11-27): the subscription hero moves from the prototype's peach wash to Lamma's
+   olive night with an apricot glow behind the ring, matching the landing page and the featured yearly plan. */
+.subhero { background: radial-gradient(60% 120% at 100% 0%, rgb(244 162 97 / .28) 0%, transparent 60%), radial-gradient(50% 90% at 0% 100%, rgb(126 140 94 / .22) 0%, transparent 70%), linear-gradient(135deg, #2A3520 0%, #1C2414 100%); border: 0; color: var(--lamma-text-on-olive); box-shadow: 0 24px 48px -28px rgb(28 36 20 / .7); isolation: isolate; }
+.subhero::after { content: ""; position: absolute; inset-inline-start: -60px; top: -80px; width: 260px; height: 260px; border-radius: 50%; border: 1px solid rgb(255 255 255 / .06); box-shadow: 0 0 0 40px rgb(255 255 255 / .025), 0 0 0 80px rgb(255 255 255 / .02); pointer-events: none; z-index: -1; }
+.subhero h1 { color: #FFFFFF; }
+.subhero .muted { color: #C9CEB6; }
+.subhero .bigring { background: conic-gradient(var(--lamma-apricot-500) calc(var(--p) * 1%), rgb(255 255 255 / .12) 0); box-shadow: 0 0 40px -6px rgb(244 162 97 / .45); }
+.subhero .bigring span { background: #1F2617; color: #C9CEB6; }
+.subhero .bigring b { color: var(--lamma-apricot-500); }
+.subhero .daysdots i { background: rgb(255 255 255 / .12); }
+.subhero .daysdots i.used { background: var(--lamma-apricot-500); }
+.subhero .daysdots i.is-today { background: #FFFFFF; box-shadow: 0 0 0 3px rgb(244 162 97 / .35); }
+/* Phase 11-II (founder review 2026-11-27): one dark card per page. The olive hero is the anchor, so both plans are light
+   and alike; the featured yearly plan stands out with an apricot frame, a faint warm wash and apricot checks. */
+.plan2 { border-color: #E3E7D8; }
+.plan2 li .ic { color: var(--lamma-olive-500); }
+.plan2.is-featured { background: linear-gradient(180deg, #FFF6EC 0%, #FFFFFF 46%); color: var(--lamma-text-primary); border: 2px solid var(--lamma-apricot-500); box-shadow: 0 22px 44px -26px rgb(184 112 46 / .55); }
+.plan2.is-featured .muted, .plan2.is-featured .caption { color: var(--lamma-text-secondary); }
+.plan2.is-featured li .ic { color: var(--lamma-apricot-700); }
+.plan2.is-featured .plan2__price bdi { color: var(--lamma-apricot-700); }
+/* New order → «عميل جديد» (founder review 2026-11-27): a designed add row instead of the bare list button. A warm,
+   dashed «slot» that fills on hover, with a round apricot plus and an arrow that moves in the reading direction. */
+.newcust { appearance: none; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 10px; padding: 12px 14px; text-align: start; cursor: pointer; border-radius: 16px; border: 1.5px dashed #E9C9A0; background: linear-gradient(135deg, #FFF8F0 0%, #FFFDF9 100%); transition: border-color 160ms, background-color 160ms, box-shadow 160ms, transform 160ms var(--lamma-ease-enter); }
+.newcust:hover { border-style: solid; border-color: var(--lamma-apricot-500); background: #FFF3E6; box-shadow: 0 10px 22px -16px rgb(184 112 46 / .7); }
+.newcust:active { transform: scale(.99); }
+.newcust:focus-visible { outline: 3px solid rgb(244 162 97 / .45); outline-offset: 2px; }
+.newcust__plus { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--lamma-apricot-500); color: #1F2617; box-shadow: 0 6px 14px -6px rgb(244 162 97 / .9), inset 0 -2px 0 rgb(0 0 0 / .08); transition: transform 220ms var(--lamma-ease-spring); }
+.newcust:hover .newcust__plus { transform: rotate(90deg) scale(1.05); }
+.newcust__txt { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.newcust__txt b { font: 600 15px/1.4 var(--lamma-font); color: var(--lamma-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.newcust__txt small { font: 400 12.5px/1.4 var(--lamma-font); color: var(--lamma-text-secondary); }
+.newcust__go { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--lamma-apricot-700); background: #fff; border: 1px solid #F1D7BD; transition: transform 200ms var(--lamma-ease-enter); }
+.newcust:hover .newcust__go { transform: translateX(-3px); }
+@media (prefers-reduced-motion: reduce) { .newcust, .newcust__plus, .newcust__go { transition: none; } .newcust:hover .newcust__plus, .newcust:hover .newcust__go { transform: none; } }
+/* Status board (founder review 2026-11-27): every empty column gets its own die-cut sticker, all one size, slightly
+   tilted like stickers on a board; they bob gently out of step and straighten on hover. */
+.board__empty { min-height: 168px; justify-content: center; gap: 10px; padding: 20px 10px; }
+.stk-status { width: 84px; height: 84px; flex: none; filter: drop-shadow(0 8px 12px rgb(31 38 23 / .16)); transform: rotate(var(--stk-r, -6deg)); animation: stk-bob 5.5s ease-in-out infinite; animation-delay: var(--stk-d, 0s); transition: transform 220ms var(--lamma-ease-spring); }
+.board__empty:hover .stk-status { animation-play-state: paused; transform: rotate(0deg) scale(1.06); }
+.stk-new { --stk-r: -7deg; --stk-d: 0s; } .stk-confirmed { --stk-r: 5deg; --stk-d: -1.1s; } .stk-preparing { --stk-r: -4deg; --stk-d: -2.2s; } .stk-courier { --stk-r: 6deg; --stk-d: -3.3s; } .stk-delivered { --stk-r: -5deg; --stk-d: -4.4s; }
+@keyframes stk-bob { 0%, 100% { transform: rotate(var(--stk-r, -6deg)) translateY(0); } 50% { transform: rotate(var(--stk-r, -6deg)) translateY(-5px); } }
+@media (prefers-reduced-motion: reduce) { .stk-status { animation: none; transition: none; } }

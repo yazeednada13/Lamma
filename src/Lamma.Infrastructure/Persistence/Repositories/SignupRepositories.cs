@@ -40,5 +40,11 @@ internal sealed class SignupLeadRepository(LammaDbContext db) : ISignupLeadRepos
     public Task<SignupLead?> FindByTokenHashAsync(string tokenHash, CancellationToken cancellationToken)
         => db.SignupLeads.FirstOrDefaultAsync(l => l.InviteTokenHash == tokenHash, cancellationToken);
 
+    public Task<SignupLead?> FindByIdAsync(Guid id, CancellationToken cancellationToken)
+        => db.SignupLeads.FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
+
+    public Task<SignupLead?> FindByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+        => db.SignupLeads.AsNoTracking().FirstOrDefaultAsync(l => l.UserId == userId, cancellationToken);
+
     public void Add(SignupLead lead) => db.SignupLeads.Add(lead);
 }

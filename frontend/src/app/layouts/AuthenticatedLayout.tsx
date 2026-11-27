@@ -1,6 +1,6 @@
 import { AccountMenu, SidebarUserCard } from "@/features/auth";
 import { useNavBadges } from "@/features/dashboard";
-import { SidebarBusinessCard, SidebarTrialCard, TrialBanner } from "@/features/subscription";
+import { ReadOnlyWatcher, SidebarBusinessCard, SidebarTrialCard, TrialBanner } from "@/features/subscription";
 import { AppShell } from "./app-shell/AppShell";
 
 /**
@@ -19,7 +19,12 @@ export function AuthenticatedLayout() {
           <SidebarUserCard />
         </>
       }
-      banners={<TrialBanner />}
+      banners={
+        <>
+          <TrialBanner />
+          <ReadOnlyWatcher />
+        </>
+      }
       topbarEnd={<AccountMenu />}
     />
   );

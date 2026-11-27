@@ -20,14 +20,6 @@ public enum PaymentMethod
     OrangeMoney,
 }
 
-/// <summary>Display only in V1. Trial-expiry enforcement is NOT approved (D-011).</summary>
-public enum SubscriptionPlan
-{
-    Trial,
-    Monthly,
-    Yearly,
-}
-
 /// <summary>V1 has exactly one role: the owner (D-004). Kept as a type for future multi-user support (D-005).</summary>
 public enum MembershipRole
 {

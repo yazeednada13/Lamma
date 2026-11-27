@@ -49,6 +49,7 @@ internal sealed class OnboardingService(
     IMembershipRepository memberships,
     IUnitOfWork unitOfWork,
     IAccountService accounts,
+    Subscriptions.IPlatformAdmins admins,
     IClock clock) : IOnboardingService
 {
     public IReadOnlyList<BusinessTypeOption> GetBusinessTypes() => BusinessTypeCatalog.All;
@@ -56,6 +57,11 @@ internal sealed class OnboardingService(
     public async Task<AccountDto> CompleteAsync(OnboardingRequest request, CancellationToken cancellationToken)
     {
         var userId = currentUser.RequiredUserId;
+        if (await admins.IsAdminAsync(userId, cancellationToken))
+        {
+            throw new ForbiddenException("admin.no_business", "حساب الإدارة ما إله متجر.");
+        }
+
         if (await memberships.ExistsForUserAsync(userId, cancellationToken))
         {
             throw AlreadyCompleted();
