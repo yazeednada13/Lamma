@@ -11,7 +11,7 @@ describe("app shell", () => {
 
     const sidebar = await screen.findByRole("complementary", { name: "القائمة الرئيسية" });
     expect(within(sidebar).getByText("بوتيك ريم")).toBeInTheDocument();
-    expect(within(sidebar).getByText("تجربة مجانية · ضل 18 يوم")).toBeInTheDocument();
+    expect(within(sidebar).getByText("تجربة مجانية، ضل 18 يوم")).toBeInTheDocument();
     expect(within(sidebar).getByText("12 من 30 يوم تجربة")).toBeInTheDocument();
     expect(within(sidebar).getByText("ريم الخطيب")).toBeInTheDocument();
   });
@@ -42,11 +42,11 @@ describe("app shell", () => {
     expect(screen.getByRole("link", { name: "استلام بضاعة" })).toHaveClass("is-active");
   });
 
-  it("shows the late-trial banner in the last 3 days", async () => {
+  it("shows the late-trial banner in the last 7 days", async () => {
     fake.signInOnboarded();
     fake.trialDaysRemaining = 2;
     renderApp("/");
-    expect(await screen.findByText(/ضل 2 يوم بس من التجربة/)).toBeInTheDocument();
+    expect(await screen.findByText(/ضل يومين من تجربتك المجانية/)).toBeInTheDocument();
   });
 
   it("search and notifications are visibly marked as coming soon", async () => {

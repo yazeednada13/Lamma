@@ -139,8 +139,19 @@ class FakeLamma {
             trialEndsAt: "2026-12-10T09:00:00Z",
             trialDaysRemaining: this.trialDaysRemaining,
             plan: "trial",
+            // The server computes this summary (D-167); the fake mirrors an active trial.
+            subscription: {
+              status: this.trialDaysRemaining > 0 ? "trial" : "trial_ended",
+              readOnly: this.trialDaysRemaining <= 0,
+              daysLeft: Math.max(0, this.trialDaysRemaining),
+              endsOn: "2026-12-10",
+              plan: "trial",
+              paidUntil: null,
+            },
           }
         : null,
+      isPlatformAdmin: false,
+      suggestedBusinessName: null,
     };
   }
 }

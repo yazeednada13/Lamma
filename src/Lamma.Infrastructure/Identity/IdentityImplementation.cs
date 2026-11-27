@@ -93,6 +93,8 @@ internal sealed class IdentityService(
     {
         var user = await users.FindByIdAsync(userId.ToString()) ?? throw new InvalidOperationException("User not found.");
         await signIn.SignInAsync(user, persistent);
+        user.LastLoginAt = clock.UtcNow; // registering signs the user in: that is their first login
+        await users.UpdateAsync(user);
     }
 
     public Task SignOutAsync() => signIn.SignOutAsync();

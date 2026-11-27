@@ -189,3 +189,23 @@ Migration **`AddSubscriptionsAndAdmin`** (applied by the founder):
 - **The first admin:** if `Platform:AdminEmails` is empty there is simply no admin; the app works as before.
 - **Proof files** are private data: stored outside the web root and served only to the owner and the admin.
 - **Reminder emails need a real provider and a domain** (OQ-092) to reach inboxes; until then they go to the dev file folder.
+
+### 7.6 Part 11-II frontend manual checklist (gate 6, D-106)
+Before you start: set the admin email in user-secrets (`Platform:AdminEmails:0`), sign that account up through the landing form → email file → `/register`, then restart the API so it is promoted.
+
+| # | Scenario | Expected |
+|---|---|---|
+| 1 | Sign in as an owner in the trial | Sidebar card «تجربة مجانية، ضل N يوم»; no banner while more than 7 days are left |
+| 2 | Admin: extend the trial so it has ≤ 7 days left (or use a fresh trial and end-plan) | Owner sees the top banner «ضل … من تجربتك المجانية · اشترك» |
+| 3 | Owner opens `/subscription` | Ring + day dots, two plans (9 / 90 «وفّر شهرين»), reference `LM-…`, period history empty |
+| 4 | «ادفع بكليك» → copy buttons → upload a jpg/png/pdf (try a 6 MB file and a .txt first) | Copy works; big or wrong files are refused in Arabic; a valid one shows «بانتظار المراجعة»; a second submit is blocked while one is pending |
+| 5 | Admin signs in | Lands on `/admin` (no onboarding, no sidebar); dashboard cards and the weekly chart; tab counts |
+| 6 | Admin → الدفعات | The pending card with the proof (image zooms, PDF opens); reject with a reason → owner sees the reason on `/subscription` and an email file |
+| 7 | Owner pays again, admin approves | Owner becomes «مشترك» with the end date; the plan starts after the trial (D-177); email file |
+| 8 | Admin → المشتركين | Search by name/email/phone, status chips, paging; open a subscriber: facts, counts only (no order details) |
+| 9 | Subscriber page actions: تفعيل خطة, تمديد التجربة, تمديد الخطة, إنهاء الخطة, إيقاف → إرجاع, ملاحظة | Each asks to confirm or opens its drawer; the status line updates; every action appears in «سجل العمليات» |
+| 10 | Suspend the owner, then the owner tries to add an order | One dialog «حسابك موقوف/للقراءة فقط» with «اشترك الآن» → `/subscription`; reading pages still works; the banner shows |
+| 11 | Owner opens `/trial-expired` when read-only | The «انتهت التجربة» state page with the subscribe button |
+| 12 | Admin → المسجّلين | Pending/registered filter, search, «ابعت الرابط» (new email file, send count +1), WhatsApp link opens with the local number |
+| 13 | An owner opens `/admin` | Redirected away (not an admin) |
+| 14 | Widths 1440 / 1024 / 768 / 390 | Admin bar tabs scroll on phones; tables scroll inside their card; drawers full-width on 390; no page-wide horizontal scroll; RTL |

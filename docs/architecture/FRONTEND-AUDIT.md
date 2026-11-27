@@ -81,7 +81,7 @@ The `screens/` folder mentioned in the README does not exist in the copy.
 | 29 | `#/settings` | إعدادات المشروع | `/settings` | `BusinessSettingsPage` | AppShell | 1 (profile, channels, payment methods, inventory default), 2 (templates), 7 (expense categories) |
 | 30 | `#/account` | الحساب | `/account` | `AccountPage` | AppShell | 1 |
 | 31 | `#/subscription` | الاشتراك | `/subscription` | `SubscriptionPage` | AppShell | 11 |
-| 32 | `#/trial-expired` | انتهت التجربة | — (state) | `TrialExpiredState` | AppShell | 11, **only if enforcement is approved** |
+| 32 | `#/trial-expired` | انتهت التجربة | `/trial-expired` | `ReadOnlyPage` | AppShell | 11-II (read-only mode approved, D-162) |
 | 33 | `#/more` | المزيد (موبايل) | `/more` | `MoreHubPage` | AppShell (mobile) | 1 |
 | 34 | `#/new` | إضافة جديد (موبايل) | `/new` | `QuickAddHubPage` | AppShell (mobile) | 1 (entries enabled per phase) |
 | 35 | `#/loading` | التحميل | — | `PageSkeleton` component | — | 1 |
@@ -208,3 +208,6 @@ Route naming is **Proposed**. The `:id` in the prototype is the order number (`#
 
 **Landing review 2 (founder feedback, 2026-11-22):** «قديش» replaced everywhere in the UI (amounts → «كم», «من قديش» = since when → «من متى»; landing, dashboard tip, receive-stock hint, payments subtitle). The hero stickers now sit above and below the order card and never cover it or the replay button. The customers line reads «مين أكثر زبون بيشتري منك، ومين ما رجع اشترى من فترة». The feature chapters on desktop are 28px apart (were half a screen). New **order-journey scene** under «كل إشي مربوط ببعضه» (`components/JourneyScene.tsx`, `journey.module.css`): five stations right to left, a parcel that rides the courier scooter, coins flying to the wallet, a sun crossing the sky, speech bubbles, a clickable stepper with pause/play, and a live order card (status, payment, timed log). Checked by measuring overlaps at 1440/1024/768/390 for every stage.
 
+**Phase 11-II routes (2026-11-22):** `/subscription` = `SubscriptionPage` (prototype `#/subscription`: ring and day dots, but two plans 9/90 instead of three and the period history instead of the invoices table, OQ-085 / D-165); `/trial-expired` = `ReadOnlyPage` (prototype state page; it does not repeat the prototype's record counts, because the server does not send them to an expired owner and the message is the same without them). New, not in the reference: the admin area `/admin` (dashboard), `/admin/subscribers`, `/admin/subscribers/:businessId`, `/admin/payments`, `/admin/leads`, in its own layout with the Lamma tokens.
+
+**Welcome page redesign (founder request, 2026-11-27):** the new-account dashboard (prototype `#/dashboard-new`) is no longer a checklist card. It is «فاتورة الافتتاح» (`features/dashboard/components/FirstSteps.tsx`, `welcome.module.css`): an olive stage with the greeting and the next step, and an order slip that prints out of a slot, one line per step (stamped «تمّ» when done), with the store's product art and a «جديد» sticker; a moving ribbon of what Lamma does; the «لمّة اليوم» teaser below. Same steps, same data, same links; nothing moves under reduced motion.

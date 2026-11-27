@@ -33,7 +33,8 @@ export function PeekSticker({ section, pathname }: { section: string; pathname: 
   const [on, setOn] = useState(false);
 
   useEffect(() => {
-    const lines = PEEK[section];
+    // The subscription pages sit under the settings section, but «إعداداتك محفوظة» would read as a save message there.
+    const lines = pathname.startsWith("/subscription") || pathname === "/trial-expired" ? undefined : PEEK[section];
     if (!lines || prefersReducedMotion()) return;
     const [sticker, text] = lines[Math.floor(Math.random() * lines.length)]!;
     const timers = [

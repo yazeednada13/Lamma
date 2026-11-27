@@ -3,5 +3,4 @@
 
 /** Routes of modules planned for later phases (title, phase). */
 export const COMING_SOON_ROUTES: readonly { path: string; title: string; phase: number }[] = [
-  { path: "subscription", title: "الاشتراك", phase: 11 },
 ];

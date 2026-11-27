@@ -20,7 +20,7 @@ export function OnboardingPage() {
   const complete = useCompleteOnboarding();
 
   const [step, setStep] = useState<Step>(1);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(account.suggestedBusinessName ?? ""); // prefilled from the sign-up form (D-185)
   const [nameError, setNameError] = useState<string | undefined>();
   const [type, setType] = useState<string | null>(null);
   const [channels, setChannels] = useState<SalesChannelCode[]>(["instagram", "whatsapp"]);

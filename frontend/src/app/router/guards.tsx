@@ -59,21 +59,36 @@ export function RequireAuth({ anonymousHome }: { anonymousHome?: ReactNode }) {
   );
 }
 
-/** Onboarded owners only (has a business); others finish onboarding first. */
+/** Onboarded owners only (has a business); others finish onboarding first. The platform admin goes to /admin. */
 export function RequireBusiness() {
-  return <WithAccount>{(account) => (account?.isOnboarded ? <Outlet /> : <Navigate to="/onboarding" replace />)}</WithAccount>;
+  return (
+    <WithAccount>
+      {(account) =>
+        account?.isPlatformAdmin ? <Navigate to="/admin" replace /> : account?.isOnboarded ? <Outlet /> : <Navigate to="/onboarding" replace />
+      }
+    </WithAccount>
+  );
 }
 
-/** Onboarding is for signed-in owners without a business. */
+/** Onboarding is for signed-in owners without a business (never the platform admin, D-182). */
 export function RequireNotOnboarded() {
-  return <WithAccount>{(account) => (account?.isOnboarded ? <Navigate to="/" replace /> : <Outlet />)}</WithAccount>;
+  return (
+    <WithAccount>
+      {(account) => (account?.isPlatformAdmin ? <Navigate to="/admin" replace /> : account?.isOnboarded ? <Navigate to="/" replace /> : <Outlet />)}
+    </WithAccount>
+  );
+}
+
+/** The platform admin area (D-175): everyone else goes home. */
+export function RequirePlatformAdmin() {
+  return <WithAccount>{(account) => (account?.isPlatformAdmin ? <Outlet /> : <Navigate to="/" replace />)}</WithAccount>;
 }
 
 /** Login/sign-up pages redirect away when already signed in. */
 export function RedirectIfAuthenticated() {
   return (
     <WithAccount>
-      {(account) => (account ? <Navigate to={account.isOnboarded ? "/" : "/onboarding"} replace /> : <Outlet />)}
+      {(account) => (account ? <Navigate to={account.isPlatformAdmin ? "/admin" : account.isOnboarded ? "/" : "/onboarding"} replace /> : <Outlet />)}
     </WithAccount>
   );
 }

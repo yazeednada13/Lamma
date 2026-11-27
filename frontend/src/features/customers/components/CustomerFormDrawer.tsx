@@ -18,23 +18,27 @@ interface CustomerFormDrawerProps {
   customer?: CustomerDetails;
   onClose: () => void;
   onSaved?: (customer: CustomerDetails) => void;
+  /** New customer only: what the user typed in the search, used as the name, or as the number when it is digits. */
+  initialQuery?: string;
 }
 
 /** Quick add / edit customer (prototype `App.addCustomer`, D-116–D-118). Reused by the Phase 5 new-order flow. */
-export function CustomerFormDrawer({ open, customer, onClose, onSaved }: CustomerFormDrawerProps) {
+export function CustomerFormDrawer({ open, customer, onClose, onSaved, initialQuery }: CustomerFormDrawerProps) {
   return (
     <Drawer open={open} onClose={onClose} title={customer ? "تعديل العميل" : "عميل جديد"}>
-      {open && <CustomerForm key={customer?.id ?? "new"} customer={customer} onClose={onClose} onSaved={onSaved} />}
+      {open && <CustomerForm key={customer?.id ?? "new"} customer={customer} onClose={onClose} onSaved={onSaved} initialQuery={initialQuery} />}
     </Drawer>
   );
 }
 
-function CustomerForm({ customer, onClose, onSaved }: Omit<CustomerFormDrawerProps, "open">) {
+function CustomerForm({ customer, onClose, onSaved, initialQuery }: Omit<CustomerFormDrawerProps, "open">) {
+  const query = customer ? "" : (initialQuery ?? "").trim();
+  const queryIsPhone = /^[+\d\s-]{4,}$/.test(query);
   const channels = useSalesChannelSettings();
   const save = useSaveCustomer();
   const defaultChannel = channels.data?.channels.find((c) => c.isEnabled)?.channel ?? "instagram";
-  const [name, setName] = useState(customer?.name ?? "");
-  const [phone, setPhone] = useState(phoneDisplay(customer?.phone ?? null));
+  const [name, setName] = useState(customer?.name ?? (queryIsPhone ? "" : query));
+  const [phone, setPhone] = useState(customer ? phoneDisplay(customer.phone ?? null) : queryIsPhone ? query : phoneDisplay(null));
   const [channel, setChannel] = useState<SalesChannelCode | null>(customer?.channel ?? null);
   const [city, setCity] = useState(customer?.city ?? "");
   const [area, setArea] = useState(customer?.area ?? "");

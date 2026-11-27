@@ -68,6 +68,17 @@ export function resetCsrfToken(): void {
 }
 
 /** Called when the session is gone (401 auth.unauthenticated), so the app can return to login. */
+const errorListeners = new Set<(error: ApiError) => void>();
+
+/**
+ * Listens to every API error (after the CSRF retry), e.g. to react to one error code anywhere in the app.
+ * Returns the unsubscribe function. Listeners must not throw.
+ */
+export function onApiError(listener: (error: ApiError) => void): () => void {
+  errorListeners.add(listener);
+  return () => errorListeners.delete(listener);
+}
+
 export function setUnauthorizedHandler(handler: (() => void) | null): void {
   unauthorizedHandler = handler;
 }
@@ -178,13 +189,26 @@ export async function apiRequest<T>(method: HttpMethod, path: string, body?: unk
       unauthorizedHandler?.();
     }
 
+    errorListeners.forEach((listener) => listener(error));
     throw error;
   };
 
   return send(true);
 }
 
+/** A private file (e.g. a payment proof) as a Blob, with the session cookie; errors become ApiError. */
+async function getBlob(path: string): Promise<Blob> {
+  const response = await safeFetch(apiUrl(path), { method: "GET" });
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return response.blob();
+}
+
 export const api = {
+  /** A private file as a Blob (show it through URL.createObjectURL). */
+  blob: getBlob,
   get: <T>(path: string, options?: RequestOptions) => apiRequest<T>("GET", path, undefined, options),
   post: <T>(path: string, body?: unknown, options?: RequestOptions) => apiRequest<T>("POST", path, body, options),
   put: <T>(path: string, body?: unknown, options?: RequestOptions) => apiRequest<T>("PUT", path, body, options),

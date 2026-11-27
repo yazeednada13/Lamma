@@ -1,0 +1,607 @@
+/*
+ * «فاتورة الافتتاح»: the welcome page of a new account. One dark olive stage (the page's only dark surface), a paper
+ * order slip that prints out of a slot, apricot stamps for finished lines. Lamma tokens only; RTL with logical
+ * properties; one orchestrated entrance, nothing moves under prefers-reduced-motion.
+ */
+
+.page {
+  --night: #1c2414;
+  --night-2: #2a3520;
+  --paper: #ffffff;
+  --ink: #1f2617;
+  --ink-2: #55604a;
+  --rule: #d9dfcb;
+  --apricot: var(--lamma-apricot-500);
+  --apricot-ink: var(--lamma-apricot-700);
+  display: grid;
+  gap: 22px;
+}
+
+/* ---------- stage ---------- */
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 32px;
+  align-items: center;
+  padding: 40px 44px;
+  border-radius: 30px;
+  color: #eef1e6;
+  background:
+    radial-gradient(55% 90% at 8% 20%, rgb(244 162 97 / 0.22) 0%, transparent 62%),
+    radial-gradient(45% 70% at 100% 100%, rgb(126 140 94 / 0.25) 0%, transparent 70%),
+    linear-gradient(140deg, var(--night-2) 0%, var(--night) 70%);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* faint ruled lines, like the back of an order book */
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: repeating-linear-gradient(180deg, transparent 0 37px, rgb(255 255 255 / 0.035) 37px 38px);
+  mask-image: linear-gradient(90deg, transparent, #000 35%, #000 65%, transparent);
+}
+
+.hello {
+  display: grid;
+  gap: 14px;
+  align-content: center;
+  animation: rise 700ms var(--lamma-ease-enter) both;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 14px/1.4 var(--lamma-font);
+  color: #c9ceb6;
+}
+
+.title {
+  margin: 0;
+  font: 700 clamp(30px, 3.4vw, 46px) / 1.2 var(--lamma-font-brand);
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  text-wrap: balance;
+}
+
+.lead {
+  margin: 0;
+  max-width: 46ch;
+  font: 400 16px/1.8 var(--lamma-font);
+  color: #c9ceb6;
+}
+
+.next {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  margin-top: 10px;
+  padding-inline-start: 16px;
+  border-inline-start: 3px solid var(--apricot);
+}
+
+.nextLabel {
+  font: 500 13px/1.4 var(--lamma-font);
+  color: var(--apricot);
+}
+
+.nextTitle {
+  font: 700 24px/1.3 var(--lamma-font);
+  color: #ffffff;
+}
+
+.nextText {
+  font: 400 14px/1.6 var(--lamma-font);
+  color: #c9ceb6;
+}
+
+.nextCta {
+  margin-top: 12px;
+  box-shadow: 0 14px 30px -14px rgb(244 162 97 / 0.7);
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font: 500 13px/1 var(--lamma-font);
+  color: #c9ceb6;
+}
+
+.meter i {
+  width: 34px;
+  height: 6px;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.meter .meterDone {
+  background: var(--apricot);
+}
+
+.meter .meterNow {
+  background: linear-gradient(90deg, var(--apricot) 0 40%, rgb(255 255 255 / 0.14) 40%);
+  background-size: 200% 100%;
+  animation: nudge 1.8s ease-in-out infinite;
+}
+
+.meter span {
+  margin-inline-start: 8px;
+}
+
+/* ---------- desk: slot, slip, product ---------- */
+.desk {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding-top: 8px;
+}
+
+.productArt {
+  position: absolute;
+  inset-inline-end: -30px;
+  top: 18px;
+  z-index: 3;
+  width: 86px;
+  padding: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px #ffffff, 0 12px 22px -8px rgb(0 0 0 / 0.45);
+  transform: rotate(12deg);
+  animation: peek 520ms 2050ms var(--lamma-ease-spring) both;
+}
+
+.productArt :global(svg) {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.slot {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 420px);
+  height: 14px;
+  border-radius: 99px;
+  background: #11170c;
+  box-shadow:
+    inset 0 3px 6px rgb(0 0 0 / 0.6),
+    0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.slip {
+  --bite: 9px;
+  position: relative;
+  z-index: 1;
+  width: min(calc(100% - 28px), 392px);
+  margin-top: -7px;
+  padding: 26px 22px 18px;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 30px 50px -26px rgb(0 0 0 / 0.65);
+  transform-origin: top center;
+  animation: print 1100ms 250ms cubic-bezier(0.25, 0.9, 0.3, 1) both;
+}
+
+/* torn, perforated bottom edge */
+.slip::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(var(--bite) * -1);
+  height: calc(var(--bite) * 2);
+  background: radial-gradient(circle at 9px 0, transparent var(--bite), var(--paper) calc(var(--bite) + 0.5px)) 0 0 / 18px 100% repeat-x;
+}
+
+.sticker {
+  position: absolute;
+  inset-inline-start: -22px;
+  top: 36px;
+  width: 64px;
+  transform: rotate(-14deg);
+  filter: drop-shadow(0 8px 10px rgb(0 0 0 / 0.25));
+  animation: slap 500ms 1900ms var(--lamma-ease-spring) both;
+}
+
+.sticker :global(svg) {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.slipHead {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding-bottom: 14px;
+  border-bottom: 1.5px dashed var(--rule);
+  text-align: center;
+}
+
+.slipBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 12px/1.4 var(--lamma-font);
+  color: var(--ink-2);
+}
+
+.slipShop {
+  font: 700 20px/1.35 var(--lamma-font-brand);
+}
+
+.slipMeta {
+  font: 400 12px/1.4 var(--lamma-font);
+  color: var(--ink-2);
+}
+
+.lines {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  display: grid;
+}
+
+.line {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(10px, 0.25fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 8px;
+  margin-inline: -8px;
+  border-radius: 10px;
+  border-bottom: 1px solid #eef1e6;
+  animation: line-in 420ms calc(700ms + var(--i) * 140ms) var(--lamma-ease-enter) both;
+  transition: background-color 160ms;
+}
+
+.line:last-child {
+  border-bottom: 0;
+}
+
+.line:hover {
+  background: #f6f8f1;
+}
+
+.num {
+  font: 700 13px/1 var(--lamma-font);
+  color: var(--ink-2);
+  direction: ltr;
+}
+
+.what {
+  display: grid;
+  gap: 2px;
+}
+
+.what b {
+  font: 600 15px/1.4 var(--lamma-font);
+}
+
+.caption {
+  font: 400 12.5px/1.5 var(--lamma-font);
+  color: var(--ink-2);
+}
+
+.leader {
+  align-self: center;
+  height: 0;
+  border-bottom: 2px dotted var(--rule);
+}
+
+.isDone .what b {
+  color: var(--ink-2);
+}
+
+.isDone .num {
+  color: var(--apricot-ink);
+}
+
+.isNext {
+  background: #fff6ec;
+}
+
+.isNext:hover {
+  background: #ffefdc;
+}
+
+.isNext .num {
+  color: var(--apricot-ink);
+}
+
+.isNext::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -14px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--apricot);
+  box-shadow: 0 0 0 0 rgb(244 162 97 / 0.6);
+  animation: ping 1.8s 2.2s ease-out infinite;
+}
+
+.doneCell {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+
+.stamp {
+  display: inline-block;
+  padding: 3px 12px;
+  border: 2.5px solid var(--apricot-ink);
+  border-radius: 8px;
+  color: var(--apricot-ink);
+  font: 700 15px/1.2 var(--lamma-font-brand);
+  transform: rotate(-8deg);
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+  animation: stamp 380ms calc(1300ms + var(--i) * 140ms) cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+.edit {
+  font: 500 11.5px/1.2 var(--lamma-font);
+  color: var(--ink-2);
+}
+
+.slipFoot {
+  display: grid;
+  grid-template-columns: auto minmax(10px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1.5px dashed var(--rule);
+  font: 600 14px/1.4 var(--lamma-font);
+}
+
+.barcode {
+  height: 26px;
+  margin: 14px auto 4px;
+  width: 70%;
+  opacity: 0.8;
+  background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 9px, var(--ink) 9px 12px, transparent 12px 14px);
+}
+
+/* ---------- ribbon ---------- */
+.ribbon {
+  display: grid;
+  gap: 12px;
+}
+
+.ribbonTitle {
+  margin: 0;
+  font: 600 16px/1.4 var(--lamma-font);
+  color: var(--lamma-text-primary);
+}
+
+.track {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.belt {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  animation: belt 46s linear infinite;
+}
+
+.track:hover .belt {
+  animation-play-state: paused;
+}
+
+.tip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 10px 12px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #e3e7d8;
+  white-space: nowrap;
+}
+
+.tip b {
+  display: block;
+  font: 600 13.5px/1.3 var(--lamma-font);
+}
+
+.tip small {
+  font: 400 12px/1.3 var(--lamma-font);
+  color: var(--lamma-text-secondary);
+}
+
+/* ---------- later ---------- */
+.later {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 20px;
+  border-radius: 20px;
+  border: 1.5px dashed #cdd3bc;
+  color: var(--lamma-text-secondary);
+}
+
+.later h2 {
+  margin: 0 0 2px;
+  font: 600 15px/1.4 var(--lamma-font);
+  color: var(--lamma-text-primary);
+}
+
+.later p {
+  margin: 0;
+  font: 400 13.5px/1.6 var(--lamma-font);
+}
+
+.laterArt {
+  flex: none;
+  width: 120px;
+}
+
+.laterArt :global(svg) {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ---------- motion ---------- */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes print {
+  from {
+    clip-path: inset(0 -120px 100% -120px);
+    transform: translateY(-18px);
+  }
+  to {
+    clip-path: inset(-120px -120px -120px -120px);
+    transform: none;
+  }
+}
+
+@keyframes line-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: rotate(-20deg) scale(2.2);
+  }
+  to {
+    opacity: 0.9;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
+@keyframes slap {
+  from {
+    opacity: 0;
+    transform: rotate(-40deg) scale(1.6);
+  }
+}
+
+@keyframes peek {
+  from {
+    opacity: 0;
+    transform: rotate(40deg) scale(1.6);
+  }
+}
+
+@keyframes ping {
+  0% {
+    box-shadow: 0 0 0 0 rgb(244 162 97 / 0.6);
+  }
+  80%,
+  100% {
+    box-shadow: 0 0 0 10px rgb(244 162 97 / 0);
+  }
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    background-position: 100% 0;
+  }
+  50% {
+    background-position: 60% 0;
+  }
+}
+
+/* RTL: the belt moves toward the reading direction (rightward content enters from the left). */
+@keyframes belt {
+  to {
+    transform: translateX(50%);
+  }
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 1023px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 32px 28px 40px;
+  }
+
+  .desk {
+    justify-items: center;
+  }
+
+  .slip {
+    margin-inline-start: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .stage {
+    padding: 26px 18px 34px;
+    border-radius: 24px;
+    gap: 26px;
+  }
+
+  .slip {
+    padding: 22px 16px 16px;
+  }
+
+  .line {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .line .leader {
+    display: none;
+  }
+
+  .sticker {
+    width: 52px;
+    inset-inline-start: -12px;
+  }
+
+  .productArt {
+    width: 66px;
+    padding: 6px;
+    inset-inline-end: -14px;
+    top: 14px;
+  }
+
+  .later {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hello,
+  .slip,
+  .line,
+  .stamp,
+  .sticker,
+  .productArt,
+  .belt,
+  .meter .meterNow,
+  .isNext::before {
+    animation: none;
+  }
+
+  .track {
+    overflow-x: auto;
+  }
+}

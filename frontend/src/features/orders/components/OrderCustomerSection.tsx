@@ -45,6 +45,8 @@ export function OrderCustomerSection({
   const [adding, setAdding] = useState(false);
   const options = useCustomerOptions(search.trim());
   const c = customer?.data;
+  const query = search.trim();
+  const matches = (options.data?.items ?? []).filter((x) => !x.isArchived);
 
   const choose = (x: CustomerOption) => {
     setSearch("");
@@ -101,10 +103,9 @@ export function OrderCustomerSection({
               onChange={(e) => setSearch(e.target.value)}
             />
           </span>
-          <div className="select-list" style={{ boxShadow: "none", marginTop: 8 }} role="listbox" aria-label="العملاء">
-            {(options.data?.items ?? [])
-              .filter((x) => !x.isArchived)
-              .map((x) => (
+          {matches.length > 0 && (
+            <div className="select-list" style={{ boxShadow: "none", marginTop: 8 }} role="listbox" aria-label="العملاء">
+              {matches.map((x) => (
                 <button
                   key={x.id}
                   type="button"
@@ -118,14 +119,20 @@ export function OrderCustomerSection({
                   <span className="caption ltr end">{x.phone ? phoneDisplay(x.phone) : ""}</span>
                 </button>
               ))}
-            <button
-              type="button"
-              className="select-list__item select-list__item--create"
-              onClick={() => setAdding(true)}
-            >
-              <Icon name="plus" size={16} /> عميل جديد{search.trim() ? ` «${search.trim()}»` : ""}
-            </button>
-          </div>
+            </div>
+          )}
+          <button type="button" className="newcust" onClick={() => setAdding(true)}>
+            <span className="newcust__plus" aria-hidden="true">
+              <Icon name="plus" size={20} />
+            </span>
+            <span className="newcust__txt">
+              <b>{query ? `أضف «${query}» كعميل جديد` : "عميل جديد"}</b>
+              <small>{query ? "بنعبّيلك اللي كتبته، وكمّل الباقي" : "الاسم والرقم بس، والعنوان إذا بدك"}</small>
+            </span>
+            <span className="newcust__go" aria-hidden="true">
+              <Icon name="chevron-left" size={16} />
+            </span>
+          </button>
         </>
       )}
       <div className="row wrap" style={{ marginTop: 12, gap: 6 }} role="radiogroup" aria-label="من وين إجى الطلب">
@@ -144,6 +151,7 @@ export function OrderCustomerSection({
       </div>
       <QuickAddCustomerDrawer
         open={adding}
+        initialQuery={query}
         onClose={() => setAdding(false)}
         onSaved={(saved) => {
           setAdding(false);
