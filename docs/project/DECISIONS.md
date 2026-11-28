@@ -168,6 +168,12 @@ Sources:
 | D-184 | **Reference code:** `LM-` + a number per business starting at 1001, assigned on first use, unique | F (2026-11-22, Phase 11-II plan) |
 | D-185 | **Onboarding prefill:** the store name from the sign-up form fills the onboarding name field (editable) | F (2026-11-22, Phase 11-II plan) |
 | D-186 | **Reminders:** 09:00 Amman every day, by email and in the app, 7, 3 and 1 days before the trial or plan ends, plus once when the account becomes read-only. Sent once per business, kind and date | F (2026-11-22, Phase 11-II plan) |
+| D-187 | **Phase 12 in two parts:** 12-I hardening (security, performance, reliability, accessibility, code splitting, known debts) runs now; 12-II launch (hosting config, deployment runbook, backups, monitoring, legal pages, launch checklist) is planned in detail after the hosting, legal-text and domain decisions | F (2026-11-28, Phase 12 plan, was P-029) |
+| D-188 | **Data Protection keys** are persisted to a configured folder on persistent disk (no new package); revisited with the host in 12-II | F (2026-11-28, Phase 12 plan, was P-030) |
+| D-189 | **Error monitoring for V1:** the host's logs only (structured JSON logs, no personal data); no external service such as Sentry | F (2026-11-28, Phase 12 plan, was P-031) |
+| D-190 | **No E2E suite (Playwright) in V1:** the manual checklist covers the flows; revisit after launch | F (2026-11-28, Phase 12 plan, was P-032) |
+| D-191 | **Offline draft (resolves OQ-084):** the new-order form keeps a local draft in the browser only (per user, cleared on submit, never sent anywhere) and offers to restore it | F (2026-11-28, Phase 12 plan) |
+| D-192 | **Legal text (OQ-089):** Claude drafts Arabic terms and privacy pages, marked Proposed; the founder (ideally with a lawyer) approves the text before launch (12-II) | F (2026-11-28, Phase 12 plan) |
 | D-120 | **One confirmation dialog for every confirm-worthy action** (archive, delete, and similar): a centered Lamma-styled popup (tone band, icon seal, subject chip, short consequence text, full-width confirm/cancel), the shared `useConfirm()` (`shared/ui/confirm/ConfirmProvider.tsx`). Archive actions use an archive icon and the label «أرشفة»; restore needs no confirmation | F (2026-11-20, founder request during the Phase 4 review) |
 | D-090 | **Default variant:** every product has at least one ProductVariant. A simple product gets one hidden default variant with no option values. Stock, movements and order items always reference a variant (approves P-006) | F (2026-11-17, Phase 2 plan) |
 | D-091 | **Six system product templates:** `clothing` ملابس, `perfume` عطور, `beauty` تجميل, `jewelry` إكسسوارات, `gift` بوكس هدايا, `other` عام. Default axes and fields per PHASE-PLANS Phase 2 §2.1. Business type → template: clothing, kids → clothing; perfume → perfume; beauty → beauty; accessories → jewelry; gifts → gift; all other types → other | F (2026-11-17, Phase 2 plan) |
@@ -260,6 +266,7 @@ Details are in the architecture docs. Each item becomes Approved only when the f
 | 2026-11-17 | D-089 added: feature-based frontend architecture; FRONTEND-ARCHITECTURE.md is authoritative |
 | 2026-11-17 | D-090–D-105 added: Phase 2 (Catalog) decisions; the founder accepted the recommended answers and approved the Phase 2 plan |
 | 2026-11-22 | D-182–D-186 added: Phase 11-II details (admin account from a server setting, status words, reference code, onboarding prefill, reminders); the founder approved the 11-II plan |
+| 2026-11-28 | D-187–D-192 added: Phase 12 plan approved with the recommendations (P-029–P-032 approved; OQ-084 resolved; OQ-089 approach set). OQ-086 (hosting) and OQ-092 (domain) stay open for 12-II |
 | 2026-11-22 | D-173–D-181 added: Phase 11 decisions (two cycles, URLs, admin account, read-only detail, plan start, proof, billing settings, trial start, plan column); the founder approved the Phase 11 plan |
 | 2026-11-22 | D-168–D-172 added: Phase 10 (Reports) decisions; the founder approved the Phase 10 plan; OQ-081 resolved by D-170 |
 | 2026-11-22 | D-166 (Brevo free plan) and D-167 (lifecycle details, approves P-024–P-026) added; the domain stays open (OQ-092) |

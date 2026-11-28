@@ -1,4 +1,4 @@
-# Phase 12 Plan — Hardening & launch readiness (Proposed 2026-11-28, waiting for approval)
+# Phase 12 Plan — Hardening & launch readiness (Approved 2026-11-28)
 
 ## Context
 Phase 11 is merged (11-I 2026-11-22, 11-II 2026-11-28). Every V1 feature now exists. Phase 12 makes it safe, fast and ready to put in front of real merchants. The roadmap lists six tasks (12.A1–12.A3, 12.B1–12.B3) and three blocking questions: OQ-084 (offline drafts), OQ-086 (hosting) and OQ-089 (legal pages). OQ-092 (the domain) is still open and blocks real email delivery.
@@ -50,7 +50,7 @@ Each part runs plan → `Backend` → checkpoint → `Frontend` → checkpoint �
 | 12.B1 | **Code splitting** | Route-level `lazy()` for every feature route, the admin area and the landing page in their own chunks; a light route fallback (the existing skeleton). Keep the first screen fast on 4G | No chunk over 250 kB gzip; the build warning is gone; first load of `/` (signed in) smaller than today, measured |
 | 12.B2 | **Accessibility audit** | Keyboard path through every main flow (login → onboarding → new order → status → payment), focus visible everywhere, focus trapped and returned in drawers and dialogs, labels on every control, colour contrast (AA) of the Lamma tokens on olive and mist, `aria-live` for toasts, `lang="ar" dir="rtl"`. Fix what fails | Checklist in `TESTING-STRATEGY.md` all ticked; no contrast failures in the token pairs we use |
 | 12.B3 | **Reduced motion and cross-browser** | Check every animated piece (landing, welcome slip, board stickers, celebrations) with `prefers-reduced-motion`; check Chrome, Safari (iOS) and Samsung Internet behaviour for date inputs, file upload, sticky bars, `100dvh` | A short results table; fixes for anything broken |
-| 12.B4 | **Error and offline states** | One consistent error screen with the trace id; the existing offline screen; if OQ-084 is approved, the new-order form keeps a local draft (browser storage, per user, cleared on submit, never sent anywhere) and offers to restore it | Manual check; unit test for the draft rules if approved |
+| 12.B4 | **Error and offline states** | One consistent error screen with the trace id; the existing offline screen; the new-order form keeps (D-191) a local draft (browser storage, per user, cleared on submit, never sent anywhere) and offers to restore it | Manual check; unit test for the draft rules if approved |
 | 12.B5 | **Checkpoint** | `tsc`, `lint`, `check:architecture`, tests, build, bundle sizes, manual checklist | — |
 
 ---
@@ -91,7 +91,7 @@ SECURITY-REVIEW.md (new), MASTER-ARCHITECTURE (headers, keys, proxy, logging, he
 
 ---
 
-## 6. Decisions needed from the founder
+## 6. Decisions (approved 2026-11-28 with the recommendations: P-029→D-187, P-030→D-188, P-031→D-189, P-032→D-190, OQ-084→D-191, OQ-089→D-192; OQ-086 and OQ-092 stay open for 12-II)
 | ID | Question | Options | Recommendation |
 |---|---|---|---|
 | P-029 | Run Phase 12 in two parts (12-I now, 12-II after hosting/legal/domain)? | Yes / one part | **Yes** |
@@ -103,4 +103,4 @@ SECURITY-REVIEW.md (new), MASTER-ARCHITECTURE (headers, keys, proxy, logging, he
 | OQ-092 | The domain | Buy one (e.g. `lamma.jo` or `.com`) | Needed before real emails; 12-II |
 | P-032 | E2E smoke tests (Playwright) | (a) yes (**npm package approval**); (b) no, manual checklist | **(b)** for V1; revisit after launch |
 
-**Gate 1 reminder:** please create the Phase 12 branch from the latest `develop` (for example `feature/phase12-hardening`) before `Backend`.
+**Branch:** `feature/phase12-hardening` (created by the founder from `develop`, 2026-11-28).

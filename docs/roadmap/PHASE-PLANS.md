@@ -581,7 +581,19 @@ Docs only. Status is tracked in PROJECT-PROGRESS.md. Tasks 0.1–0.8: repository
 
 ## Phase 12 — Hardening & launch readiness
 **Depends on:** 1–11. **Blocking:** OQ-084, OQ-086, OQ-089.
-**Plan (Proposed 2026-11-28, waiting for approval):** [`PHASE-12-PLAN.md`](PHASE-12-PLAN.md): part 12-I hardening (12.A1–12.A8, 12.B1–12.B5) and part 12-II launch (12.C1–12.C6); decisions P-029–P-032 and OQ-084/086/089/092.
+**Approved plan (2026-11-28):** [`PHASE-12-PLAN.md`](PHASE-12-PLAN.md): part 12-I hardening (12.A1–12.A8, 12.B1–12.B5) and part 12-II launch (12.C1–12.C6); decisions D-187–D-192. OQ-086 (hosting) and OQ-092 (domain) stay open for 12-II.
+
+### Phase 12-I gate status
+| Gate | Status | Date | Notes |
+|---|---|---|---|
+| 1. Branch created by founder | ☑ | 2026-11-28 | `feature/phase12-hardening` |
+| 2. Plan approved | ☑ | 2026-11-28 | D-187–D-192 |
+| 3. `Backend` started | ☐ | | |
+| 4. Backend pushed (founder confirmed) | ☐ | | |
+| 5. `Frontend` started | ☐ | | |
+| 6. Frontend pushed (founder confirmed) | ☐ | | |
+| 7. PR merged into `develop` (founder) | ☐ | | |
+| 8. `Next Phase` given | ☐ | | |
 
 | ID | Task |
 |---|---|

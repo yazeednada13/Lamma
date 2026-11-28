@@ -209,7 +209,7 @@ Recommendation:
 
 **OQ-083 · P2 · Phase 9: command palette (Ctrl K) global search.** It appears in the prototype but not in the spec. Is it in scope? Recommendation: a simple search across orders, customers, and products, if approved. **Resolved (2026-11-22) → D-156.**
 
-**OQ-084 · P2 · Phase 12: offline drafts.** The offline screen promises that "the order you were writing is saved as a draft". Is this in scope? Recommendation: local draft persistence for the new-order form only, if approved.
+**OQ-084 · P2 · Phase 12: offline drafts.** The offline screen promises that "the order you were writing is saved as a draft". Is this in scope? Recommendation: local draft persistence for the new-order form only, if approved. **Resolved (2026-11-28) → D-191.**
 
 **OQ-085 · P2 · Phase 11: subscription details.** These need decisions:
 - Prices (undecided, D-010).
@@ -230,6 +230,6 @@ Recommendation:
 
 **OQ-090 · P2 · Design: double focus ring on inputs.** In the reference CSS, a focused input inside `.control` shows its own `:focus-visible` ring plus the control's ring. Fixing it means changing a reference style. Recommendation: remove the input's own ring (`.control input:focus-visible { box-shadow: none }`). Waiting for founder approval.
 
-**OQ-089 · P2 · Legal: terms and privacy.** The prototype says "by creating an account you agree to the terms and privacy policy". Content and pages are needed before launch.
+**OQ-089 · P2 · Legal: terms and privacy.** The prototype says "by creating an account you agree to the terms and privacy policy". Content and pages are needed before launch. **Approach set (2026-11-28) → D-192:** Claude drafts, the founder approves the text (12-II).
 
 **OQ-091 · P2 · Phase 2: business-type labels are defined twice.** The API returns `labelAr` for each business type (used by onboarding). The client also keeps its own labels and illustrations in `features/settings/domain/businessTypes.ts` (used by settings). Recommendation: the API stays the source of the label, and the client keeps only the illustration mapping. This changes behaviour, so it waits for founder approval. **Resolved (2026-11-17) → D-103.**
